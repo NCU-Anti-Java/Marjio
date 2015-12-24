@@ -1,12 +1,16 @@
-group 'io.github.antijava'
-version '1.0-SNAPSHOT'
-
-apply plugin: 'java'
-
-repositories {
-    mavenCentral()
+allprojects {
+    apply plugin: 'java'
+    group 'io.github.antijava'
+    version '1.0-SNAPSHOT'
 }
 
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+subprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile 'junit:junit:4.11'
+        testCompile 'org.hamcrest:hamcrest-core:1.3'
+    }
 }
