@@ -35,6 +35,7 @@ public class SceneManager implements ISceneManager {
 
         mLastScene = mScene;
         mScene = scene;
+        mScene.initialize();
 
         prepareTranslation();
     }
