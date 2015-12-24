@@ -4,5 +4,8 @@ package io.github.antijava.marjio.common;
  * Created by fntsr on 2015/12/23.
  */
 public interface IInput {
-    void cache();
+    boolean isPressing();
+    boolean isPressed();
+    boolean isReleased();
+    boolean isTrigger();
 }

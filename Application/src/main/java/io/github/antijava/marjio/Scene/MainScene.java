@@ -9,6 +9,7 @@ public class MainScene extends SceneBase {
 
     private IGraphics graphics;
     private IInput input;
+    private ISceneManager sceneManager;
 
     private final String[] MENU_TEXT = {"Host Game", "Join Game", "Exit"};
     private final int HOST_GAME = 0;
@@ -25,7 +26,8 @@ public class MainScene extends SceneBase {
     @Override
     public void update() {
 
-        // draw menu text. select choice mark as other color.
+        checkKeyState();
+        // draw menu background and text. select choice mark as other color.
 
     }
 
@@ -34,15 +36,19 @@ public class MainScene extends SceneBase {
         currentChoice = 0;
         graphics = application.getGraphics();
         input = application.getInput();
+        sceneManager = application.getSceneManager();
     }
 
     private void select(){
         switch (currentChoice){
             case HOST_GAME: {
-                //application.getSceneManager().setScene();
+                // Host scene
+                //sceneManager.setScene();
                 break;
             }
             case JOIN_GAME:{
+                // Join scene
+                //sceneManager.setScene();
                 break;
             }
             case EXIT:{
@@ -52,36 +58,21 @@ public class MainScene extends SceneBase {
         }
     }
 
-    @Override
-    public void pressed(){
-        /*
-        switch (key){
-            case 0: {   // UP
-                if(--currentChoice < 0)
-                    currentChoice = 0;
-                break;
-            }
-            case 1: {   // DOWN
-                if(++currentChoice >= MENU_TEXT.length)
-                    currentChoice = MENU_TEXT.length - 1;
-                break;
-            }
-            case 2: {   // ENTER
-                select();
-                break;
-            }
+    private void checkKeyState(){
+        if(input.isPressed() || input.isPressing()){
+            // UP
+            if(--currentChoice < 0)
+                currentChoice = 0;
         }
-        */
-    }
-
-    @Override
-    public void pressing() {
-
-    }
-
-    @Override
-    public void realeased() {
-
+        else if(input.isPressed() || input.isPressing()){
+            // DOWN
+            if(++currentChoice >= MENU_TEXT.length)
+                currentChoice = MENU_TEXT.length - 1;
+        }
+        else if(input.isPressed() || input.isPressing()){
+            // CONFIRM
+            select();
+        }
     }
 
 }

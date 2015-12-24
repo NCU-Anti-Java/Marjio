@@ -33,6 +33,7 @@ public class SceneManager implements ISceneManager {
     @Override
     public void setScene(IScene scene){
         nowScene = scene;
+        nowScene.initialize();
     }
 
 }
