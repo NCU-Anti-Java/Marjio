@@ -6,11 +6,19 @@ import io.github.antijava.marjio.common.*;
  * Created by Zheng-Yuan on 12/24/2015.
  */
 abstract public class SceneBase implements IScene {
+    private final IApplication mApplication;
 
-    protected IApplication application;
-
-    public SceneBase(IApplication application){
-        this.application = application;
+    public SceneBase(IApplication application) {
+        mApplication = application;
     }
 
+    protected IApplication getApplication() {
+        return mApplication;
+    }
+
+    @Override
+    public void initialize() {}
+
+    @Override
+    public void finalize() {}
 }

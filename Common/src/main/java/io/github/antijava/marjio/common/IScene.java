@@ -6,4 +6,5 @@ package io.github.antijava.marjio.common;
 public interface IScene {
     void update();
     void initialize();
+    void finalize();
 }

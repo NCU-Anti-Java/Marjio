@@ -34,6 +34,7 @@ public class SceneManager implements ISceneManager {
             return;
 
         mLastScene = mScene;
+        mLastScene.finalize();
         mScene = scene;
         mScene.initialize();
 
