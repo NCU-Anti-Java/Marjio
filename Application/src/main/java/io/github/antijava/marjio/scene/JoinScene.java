@@ -83,10 +83,12 @@ public class JoinScene extends SceneBase {
     private void select() {
         switch (mCurrentChoice) {
             case INPUT_IPADDRESS: {
-                if(connect()) {
+                try {
+                    final IClient client = getApplication().getClient();
+                    client.start(mIPAddress.toString());
                     // TODO: Transate to room scene with client state.
                 }
-                else {
+                catch (Exception ex) {
                     // TODO: Show Error.
                 }
                 break;
@@ -97,11 +99,5 @@ public class JoinScene extends SceneBase {
                 break;
             }
         }
-    }
-
-    private boolean connect() {
-        final IClient client = getApplication().getClient();
-        // TODO: Connect to server
-        return true;
     }
 }
