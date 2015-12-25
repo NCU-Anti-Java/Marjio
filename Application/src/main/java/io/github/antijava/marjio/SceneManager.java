@@ -25,7 +25,8 @@ public class SceneManager implements ISceneManager {
         if (mScene == null)
             return true;
 
-        mScene.update();
+        if (!mScene.isDisposed())
+            mScene.update();
         return false;
     }
 
@@ -36,16 +37,13 @@ public class SceneManager implements ISceneManager {
 
         mLastScene = mScene;
         if (mLastScene != null)
-            mLastScene.finalize();
+            mLastScene.dispose();
         mScene = scene;
-        if (mScene != null)
-            mScene.initialize();
 
         prepareTranslation();
     }
 
     // region Translating
-
     /**
      * Scene translating.
      * @return if break update chain, that is, not to update the scenes.
@@ -59,6 +57,7 @@ public class SceneManager implements ISceneManager {
         // Finish translation
         mTranslating = false;
         mScene = mLastScene;
+        mLastScene = null;
         return false;
     }
 

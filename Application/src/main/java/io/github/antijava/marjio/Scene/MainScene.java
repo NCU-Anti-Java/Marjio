@@ -1,6 +1,7 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.exception.ObjectDisposedException;
 
 /**
  * Created by Zheng-Yuan on 12/24/2015.
@@ -14,17 +15,16 @@ public class MainScene extends SceneBase {
 
     public MainScene(IApplication application) {
         super(application);
+
+        mCurrentChoice = 0;
     }
 
     @Override
-    public void update() {
+    public void update() throws ObjectDisposedException {
+        super.update();
+
         checkKeyState();
         // TODO: draw menu background and text. select choice mark as other color.
-    }
-
-    @Override
-    public void initialize() {
-        mCurrentChoice = 0;
     }
 
     private void select() {
