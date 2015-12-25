@@ -48,19 +48,15 @@ public class MainScene extends SceneBase {
     private void checkKeyState() {
         final IInput input = getApplication().getInput();
 
-        // TODO: Input keys
-        if (input.isPressed() || input.isPressing()) {
-            // UP
+        if (input.isPressed(Key.UP) || input.isPressing(Key.DOWN)) {
             if (--mCurrentChoice < 0)
                 mCurrentChoice = 0;
         }
-        else if (input.isPressed() || input.isPressing()) {
-            // DOWN
+        else if (input.isPressed(Key.DOWN) || input.isPressing(Key.DOWN)) {
             if (++mCurrentChoice >= MENU_TEXT.length)
                 mCurrentChoice = MENU_TEXT.length - 1;
         }
-        else if (input.isPressed() || input.isPressing()) {
-            // CONFIRM
+        else if (input.isPressed(Key.ENTER) || input.isPressing(Key.ENTER)) {
             select();
         }
     }
