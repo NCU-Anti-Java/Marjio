@@ -40,7 +40,7 @@ public class Application implements IApplication, Constant {
     public void run() {
         long lastUpdate = System.currentTimeMillis();
         while (true) {
-            // TODO: getInput().cache
+            // TODO: getInput().update
             if (getSceneManager().update())
                 break;
             // TODO: getGraphics().update
