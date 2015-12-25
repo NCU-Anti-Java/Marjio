@@ -43,6 +43,8 @@ public class JoinScene extends SceneBase {
 
     @Override
     public void update() {
+        super.update();
+        
         checkKeyState();
         // TODO: Draw view. Mark current choice as other color.
     }
