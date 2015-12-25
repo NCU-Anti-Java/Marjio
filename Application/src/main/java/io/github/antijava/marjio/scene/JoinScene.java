@@ -52,8 +52,7 @@ public class JoinScene extends SceneBase {
 
         for (Iterator it = VALID_INPUT.iterator(); it.hasNext(); ) {
             Key key = (Key)it.next();
-            // TODO: Add key
-            if (input.isPressed() || input.isPressing()) {
+            if (input.isPressed(key) || input.isPressing(key)) {
                 switch (key) {
                     case Key.UP: {
                         if (--mCurrentChoice < 0)
