@@ -36,19 +36,15 @@ public class JoinScene extends SceneBase {
 
     public JoinScene(IApplication application) {
         super(application);
+        mCurrentChoice = 0;
+        mCurrentAddressIndex = 0;
+        mIPAddress = new StringBuffer();
     }
 
     @Override
     public void update() {
         checkKeyState();
         // TODO: Draw view. Mark current choice as other color.
-    }
-
-    @Override
-    public void initialize() {
-        mCurrentChoice = 0;
-        mCurrentAddressIndex = 0;
-        mIPAddress = new StringBuffer();
     }
 
     private void checkKeyState() {
