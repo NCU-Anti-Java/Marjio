@@ -18,14 +18,15 @@ public class SceneManager implements ISceneManager {
     }
 
     @Override
-    public void update() {
+    public boolean update() {
         if (translate())
-            return;
+            return false;
 
         if (mScene == null)
-            return;
+            return true;
 
         mScene.update();
+        return false;
     }
 
     @Override
@@ -34,9 +35,11 @@ public class SceneManager implements ISceneManager {
             return;
 
         mLastScene = mScene;
-        mLastScene.finalize();
+        if (mLastScene != null)
+            mLastScene.finalize();
         mScene = scene;
-        mScene.initialize();
+        if (mScene != null)
+            mScene.initialize();
 
         prepareTranslation();
     }
