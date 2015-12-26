@@ -56,22 +56,22 @@ public class JoinScene extends SceneBase {
             Key key = (Key)it.next();
             if (input.isPressed(key) || input.isPressing(key)) {
                 switch (key) {
-                    case Key.UP: {
+                    case UP: {
                         if (--mCurrentChoice < 0)
                             mCurrentChoice = 0;
                         break;
                     }
-                    case Key.DOWN: {
+                    case DOWN: {
                         if (++mCurrentChoice >= MENU_TEXT.length)
                             mCurrentChoice = MENU_TEXT.length - 1;
                         break;
                     }
-                    case Key.ENTER: {
+                    case ENTER: {
                         select();
                         break;
                     }
                     default: {
-                        // TODO: Do we need man-made input box? Deal with valid input such as 0..9 , '.', backspace, delete.
+                        // TODO: Do we need man-made inputBox box? Deal with valid inputBox such as 0..9 , '.', backspace, delete.
                         if (mCurrentChoice == INPUT_IPADDRESS)
                             ;
                         break;
