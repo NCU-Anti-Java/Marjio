@@ -37,7 +37,8 @@ public class IPAddressInputBox extends InputTextBox {
         return mText.toString();
     }
 
-    public void checkKeyState() {
+    @Override
+    public void update() {
         final List<Key> validInput = getValidInput();
         final IInput input = getApplication().getInput();
         for (Iterator it = validInput.iterator(); it.hasNext(); ) {
@@ -73,5 +74,10 @@ public class IPAddressInputBox extends InputTextBox {
                 break;
             }
         }
+    }
+
+    @Override
+    public void draw(){
+        // TODO: How to draw this component on Graphics.
     }
 }

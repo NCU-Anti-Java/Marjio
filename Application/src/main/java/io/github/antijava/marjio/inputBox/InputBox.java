@@ -2,13 +2,14 @@ package io.github.antijava.marjio.inputBox;
 
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.Key;
+import io.github.antijava.marjio.common.graphics.ISprite;
 
 import java.util.List;
 
 /**
  * Created by Zheng-Yuan on 12/26/2015.
  */
-abstract public class InputBox {
+abstract public class InputBox implements ISprite {
     private final List<Key> mValidInput;
     private final IApplication mApplication;
 

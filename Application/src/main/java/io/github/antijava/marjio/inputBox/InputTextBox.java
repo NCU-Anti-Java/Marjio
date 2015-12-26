@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.inputBox;
 
+import com.oracle.jrockit.jfr.ValueDefinition;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.Key;
 
@@ -111,4 +112,7 @@ abstract public class InputTextBox extends InputBox {
                 throw new UnsupportedOperationException("The key is not implemented converting to char.");
         }
     }
+
+    @Override
+    public void update(){};
 }
