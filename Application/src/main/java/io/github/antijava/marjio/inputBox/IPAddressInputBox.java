@@ -6,7 +6,6 @@ import io.github.antijava.marjio.common.Key;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -41,8 +40,7 @@ public class IPAddressInputBox extends InputTextBox {
     public void update() {
         final List<Key> validInput = getValidInput();
         final IInput input = getApplication().getInput();
-        for (Iterator it = validInput.iterator(); it.hasNext(); ) {
-            Key key = (Key) it.next();
+        for (Key key : validInput) {
             if (input.isPressed(key) || input.isPressing(key)) {
                 switch (key) {
                     case LEFT: {
@@ -74,10 +72,5 @@ public class IPAddressInputBox extends InputTextBox {
                 break;
             }
         }
-    }
-
-    @Override
-    public void draw(){
-        // TODO: How to draw this component on Graphics.
     }
 }
