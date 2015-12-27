@@ -201,7 +201,13 @@ public class Bitmap implements IBitmap {
      */
     @Override
     public void blt(int x, int y, IBitmap src, Rectangle srcRect, int opacity) {
-        //TODO: implement
+        for (int i = x; i <= x + srcRect.width; i++) {
+            for (int j = y; j <= y + srcRect.height; j++) {
+                Color srcColor = src.getPixel(srcRect.x + i, srcRect.y + j).mul((float) opacity / 255);
+                Color dstColor = getPixel(i, j).mul(1 - (float) opacity / 255);
+                mImage.setRGB(i, j, dstColor.add(srcColor).toIntBits());
+            }
+        }
     }
 
     /**
@@ -217,7 +223,8 @@ public class Bitmap implements IBitmap {
      */
     @Override
     public void stretch_blt(int x, int y, int width, int height, IBitmap src, Rectangle srcRect, int opacity) {
-        //TODO: implement
+        src.resize(width, height);
+        blt(x, y, src, srcRect, opacity);
     }
 
     /**
@@ -230,7 +237,7 @@ public class Bitmap implements IBitmap {
      */
     @Override
     public void stretch_blt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity) {
-        //TODO: implement
+        stretch_blt(rect.x, rect.y, rect.width, rect.height, src, srcRect, opacity);
     }
 
     /**
