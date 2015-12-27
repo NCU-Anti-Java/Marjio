@@ -2,6 +2,7 @@ package io.github.antijava.marjio.common;
 
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.IFont;
+import io.github.antijava.marjio.common.graphics.Viewport;
 
 import java.nio.file.NoSuchFileException;
 
@@ -14,6 +15,13 @@ public interface IGraphics {
      * @return Default font.
      */
     IFont getDefaultFont();
+
+    /**
+     * Get default viewport of the Graphics.
+     *
+     * @return Default viewport.
+     */
+    Viewport getDefaultViewport();
 
     /**
      * Allocate a bitmap of declared size.
