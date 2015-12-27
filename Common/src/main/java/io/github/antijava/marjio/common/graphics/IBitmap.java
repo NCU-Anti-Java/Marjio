@@ -142,7 +142,7 @@ public interface IBitmap extends Disposable {
      * @param srcRect The source rectangle for the bitmap.
      * @param opacity Opacity can be set from 0 to 255.
      */
-    void stretch_blt(int x, int y, int width, int height, IBitmap src, Rectangle srcRect, int opacity);
+    void stretchBlt(int x, int y, int width, int height, IBitmap src, Rectangle srcRect, int opacity);
 
     /**
      * Performs a block transfer from the {@param src} box {@param srcRect} to destination rect.
@@ -152,7 +152,7 @@ public interface IBitmap extends Disposable {
      * @param srcRect The source rectangle for the bitmap.
      * @param opacity Opacity can be set from 0 to 255.
      */
-    void stretch_blt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity);
+    void stretchBlt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity);
 
     /**
      * Resizes the bitmap.
