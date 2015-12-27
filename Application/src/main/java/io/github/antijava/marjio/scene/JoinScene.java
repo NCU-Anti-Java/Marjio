@@ -1,6 +1,7 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.inputBox.IPAddressInputBox;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,34 +12,16 @@ import java.util.List;
  * Created by Zheng-Yuan on 12/24/2015.
  */
 public class JoinScene extends SceneBase {
-    private final static List<Key> VALID_INPUT = new ArrayList<Key>(Arrays.asList(
-            Key.LEFT, Key.RIGHT, Key.UP, Key.DOWN,
-            Key.BACK_SPACE, Key.DELETE, Key.DECIMAL,
-            Key.NUMPAD0, Key.DIGIT0,
-            Key.NUMPAD1, Key.DIGIT1,
-            Key.NUMPAD2, Key.DIGIT2,
-            Key.NUMPAD3, Key.DIGIT3,
-            Key.NUMPAD4, Key.DIGIT4,
-            Key.NUMPAD5, Key.DIGIT5,
-            Key.NUMPAD6, Key.DIGIT6,
-            Key.NUMPAD7, Key.DIGIT7,
-            Key.NUMPAD8, Key.DIGIT8,
-            Key.NUMPAD9, Key.DIGIT9,
-            Key.ENTER
-    ));
     private final String[] MENU_TEXT = {"Remote Address", "Go Back"};
-    private final int IPADDRESS_MAX_LENGTH = 15;
     private final int INPUT_IPADDRESS = 0;
     private final int GO_BACK = 1;
     private int mCurrentChoice;
-    private StringBuffer mIPAddress;
-    private int mCurrentAddressIndex;
+    private IPAddressInputBox mIPAddressInputBox;
 
     public JoinScene(IApplication application) {
         super(application);
         mCurrentChoice = 0;
-        mCurrentAddressIndex = 0;
-        mIPAddress = new StringBuffer();
+        mIPAddressInputBox = new IPAddressInputBox(application);
     }
 
     @Override
@@ -52,33 +35,19 @@ public class JoinScene extends SceneBase {
     private void checkKeyState() {
         final IInput input = getApplication().getInput();
 
-        for (Iterator it = VALID_INPUT.iterator(); it.hasNext(); ) {
-            Key key = (Key)it.next();
-            if (input.isPressed(key) || input.isPressing(key)) {
-                switch (key) {
-                    case Key.UP: {
-                        if (--mCurrentChoice < 0)
-                            mCurrentChoice = 0;
-                        break;
-                    }
-                    case Key.DOWN: {
-                        if (++mCurrentChoice >= MENU_TEXT.length)
-                            mCurrentChoice = MENU_TEXT.length - 1;
-                        break;
-                    }
-                    case Key.ENTER: {
-                        select();
-                        break;
-                    }
-                    default: {
-                        // TODO: Do we need man-made input box? Deal with valid input such as 0..9 , '.', backspace, delete.
-                        if (mCurrentChoice == INPUT_IPADDRESS)
-                            ;
-                        break;
-                    }
-                }
-                break;
-            }
+        if (input.isPressed(Key.UP) || input.isPressing(Key.UP)) {
+            if (--mCurrentChoice < 0)
+                mCurrentChoice = 0;
+        }
+        else if (input.isPressed(Key.DOWN) || input.isPressing(Key.DOWN)) {
+            if (++mCurrentChoice >= MENU_TEXT.length)
+                mCurrentChoice = MENU_TEXT.length - 1;
+        }
+        else if (input.isPressed(Key.ENTER) || input.isPressing(Key.ENTER)) {
+            select();
+        }
+        else if (mCurrentChoice == INPUT_IPADDRESS){
+            mIPAddressInputBox.update();
         }
     }
 
@@ -87,7 +56,7 @@ public class JoinScene extends SceneBase {
             case INPUT_IPADDRESS: {
                 try {
                     final IClient client = getApplication().getClient();
-                    client.start(mIPAddress.toString());
+                    client.start(mIPAddressInputBox.getText());
                     // TODO: Transate to room scene with client state.
                 }
                 catch (Exception ex) {
