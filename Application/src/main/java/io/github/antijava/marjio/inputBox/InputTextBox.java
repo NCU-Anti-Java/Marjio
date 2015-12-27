@@ -1,7 +1,7 @@
 package io.github.antijava.marjio.inputBox;
 
 import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.Key;
+import io.github.antijava.marjio.common.input.Key;
 
 import java.util.List;
 
