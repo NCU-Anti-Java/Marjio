@@ -149,8 +149,8 @@ public class Bitmap implements IBitmap {
      */
     @Override
     public void fillRect(int x, int y, int width, int height, Color color) {
-        for (int i = x; i < x + width; i++)
-            for (int j = y; j < y + height; j++)
+        for (int i = x; i <= x + width; i++)
+            for (int j = y; j <= y + height; j++)
                 mImage.setRGB(i, j, color.toIntBits());
     }
 
