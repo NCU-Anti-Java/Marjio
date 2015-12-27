@@ -33,34 +33,43 @@ public interface IBitmap extends Disposable {
      * Draws the outline text to the bitmap.
      *
      * @param text The text that will be drawn.
+     * @param color The color of the text.
      * @param x The x coordinate for the left of the text.
      * @param y The y coordinate for the top of the text.
-     * @param maxWidth The maximum allowed width of the text.
+     * @param maxWidth The maximum allowed width of the text. -1 for unlimited.
      * @param lineHeight The height of the text line.
-     * @param font The font of the text.
      * @param align The alignment of the text.
      */
-    void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight, IFont font, TextAlign align);
-
+    void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight, Color color, TextAlign align);
     /**
-     * {@code align} defaults to {@link TextAlign#LEFT}.
+     * {@code color} defaults to {@link Color::BLACK}.
      *
-     * @see #drawText(CharSequence, int, int, int, int, IFont, TextAlign)
-     */
-    void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight, IFont font);
-    /**
-     * {@code font} defaults to {@link IGraphics#getDefaultFont()}.
-     *
-     * @see #drawText(CharSequence, int, int, int, int, IFont, TextAlign)
+     * @see #drawText(CharSequence, int, int, int, int, Color, TextAlign)
      */
     void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight, TextAlign align);
     /**
      * {@code align} defaults to {@link TextAlign#LEFT}.
-     * {@code font} defaults to {@link IGraphics#getDefaultFont()}.
      *
-     * @see #drawText(CharSequence, int, int, int, int, IFont, TextAlign)
+     * @see #drawText(CharSequence, int, int, int, int, Color, TextAlign)
+     */
+    void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight, Color color);
+    /**
+     * {@code color} defaults to {@link Color::BLACK}.
+     * {@code align} defaults to {@link TextAlign#LEFT}.
+     *
+     * @see #drawText(CharSequence, int, int, int, int, Color, TextAlign)
      */
     void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight);
+
+    /**
+     * Returns a rectangle contains the outline text.
+     *
+     * @param text The text.
+     * @param lineHeight The height of the text line.
+     *
+     * @return The rectangle measured.
+     */
+    Rectangle measureText(CharSequence text, int lineHeight);
 
     /**
      * Fills the entire bitmap.
@@ -99,6 +108,48 @@ public interface IBitmap extends Disposable {
     Color getPixel(int x, int y);
 
     /**
+     * Changes pixel color to the specified point.
+     *
+     * @param x The x coordinate of the pixel in the bitmap.
+     * @param y The y coordinate of the pixel in the bitmap.
+     * @param color The pixel color.
+     */
+    void setPixel(int x, int y, Color color);
+
+    /**
+     * Performs a block transfer from the {@param src} box {@param srcRect} to specified coordinates.
+     *
+     * @param x The x coordinate for the left-top corner.
+     * @param y The y coordinate for the left-top corner.
+     * @param src The source bitmap.
+     * @param srcRect The source rectangle for the bitmap.
+     * @param opacity Opacity can be set from 0 to 255.
+     */
+    void blt(int x, int y, IBitmap src, Rectangle srcRect, int opacity);
+
+    /**
+     * Performs a block transfer from the {@param src} box {@param srcRect} to destination rect.
+     *
+     * @param x The x coordinate for the left-top corner of destination rectangle.
+     * @param y The y coordinate for the left-top corner of destination rectangle.
+     * @param width The width of destination rectangle.
+     * @param height The height of destination rectangle.
+     * @param src The source bitmap.
+     * @param srcRect The source rectangle for the bitmap.
+     * @param opacity Opacity can be set from 0 to 255.
+     */
+    void stretch_blt(int x, int y, int width, int height, IBitmap src, Rectangle srcRect, int opacity);
+    /**
+     * Performs a block transfer from the {@param src} box {@param srcRect} to destination rect.
+     *
+     * @param rect The destination rectangle.
+     * @param src The source bitmap.
+     * @param srcRect The source rectangle for the bitmap.
+     * @param opacity Opacity can be set from 0 to 255.
+     */
+    void stretch_blt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity);
+
+    /**
      * Resizes the bitmap.
      *
      * @param width The new width of the bitmap.
@@ -106,6 +157,15 @@ public interface IBitmap extends Disposable {
      */
     void resize(int width, int height);
     // endregion Drawing
+
+    // region Setter
+    /**
+     * Set the font use to {@link #drawText} and {@link #measureText}.
+     *
+     * @param font The font.
+     */
+    void setFont(IFont font);
+    // endregion Setter
 
     // region Getter
     /**
@@ -117,6 +177,12 @@ public interface IBitmap extends Disposable {
      * Returns the width of the bitmap.
      */
     int getWidth();
+
+    /**
+     * Returns the font set to  {@link #drawText} and {@link #measureText}.
+     * Defaults to {@link IGraphics#getDefaultFont()}.
+     */
+    IFont getFont();
 
     /**
      * Returns the rectangle of the bitmap.
