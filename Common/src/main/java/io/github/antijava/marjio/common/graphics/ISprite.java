@@ -30,22 +30,25 @@ public interface ISprite {
     int getY();
 
     /**
-     * Returns z coordinate for the upper-left corner.
+     * Returns z coordinate.
      */
     int getZ();
 
     /**
-     * Returns x coordinate for the upper-left corner.
+     * Returns x scale for zooming.
+     * Defaults to 1.
      */
-    int getZoomX();
+    double getZoomX();
 
     /**
-     * Returns x coordinate for the upper-left corner.
+     * Returns y scale for zooming.
+     * Defaults to 1.
      */
-    int getZoomY();
+    double getZoomY();
 
     /**
-     * Returns x coordinate for the upper-left corner.
+     * Returns opacity.
+     * Range 0 to 255.
      */
     int getOpacity();
 
