@@ -125,8 +125,7 @@ public class Bitmap implements IBitmap {
     public Rectangle measureText(CharSequence text, int lineHeight) {
         TextLayout layout = new TextLayout(text.toString(), textFont, frc);
         Rectangle2D bounds = layout.getBounds();
-        Rectangle rect = new Rectangle((int)bounds.getX(), (int)bounds.getY(), (int)bounds.getWidth(), (int)bounds.getHeight());
-        return rect;
+        return new Rectangle((int)bounds.getX(), (int)bounds.getY(), (int)bounds.getWidth(), (int)bounds.getHeight());
     }
 
     /**
