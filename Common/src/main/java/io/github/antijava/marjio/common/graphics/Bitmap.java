@@ -15,6 +15,7 @@ public class Bitmap implements IBitmap {
     BufferedImage mImage;
     Graphics2D mGraphics2D;
     IGraphics mGraphics;
+    IFont mFont;
     Font textFont;
     FontRenderContext frc;
 
@@ -25,8 +26,7 @@ public class Bitmap implements IBitmap {
         mGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Font properties
-        IFont font = mGraphics.getDefaultFont();
-        setFont(font);
+        setFont(mGraphics.getDefaultFont());
         frc = new FontRenderContext(null, true, true);
     }
 
@@ -257,6 +257,8 @@ public class Bitmap implements IBitmap {
      */
     @Override
     public void setFont(IFont font) {
+        mFont = font;
+
         int fontStyle = Font.PLAIN;
         if (font.isBold())
             fontStyle = fontStyle | Font.BOLD;
@@ -291,8 +293,7 @@ public class Bitmap implements IBitmap {
      */
     @Override
     public IFont getFont() {
-        // TODO: return font
-        return null;
+        return mFont;
     }
 
     /**
