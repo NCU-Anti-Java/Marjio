@@ -1,12 +1,8 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.inputBox.IPAddressInputBox;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by Zheng-Yuan on 12/24/2015.

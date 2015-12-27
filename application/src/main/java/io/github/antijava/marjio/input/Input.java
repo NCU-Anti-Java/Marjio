@@ -1,9 +1,9 @@
 package io.github.antijava.marjio.input;
 
-import io.github.antijava.marjio.common.Event;
+import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.IInput;
-import io.github.antijava.marjio.common.Key;
-import io.github.antijava.marjio.common.Status;
+import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Status;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

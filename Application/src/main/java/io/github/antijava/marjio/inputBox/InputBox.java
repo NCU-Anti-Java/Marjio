@@ -1,8 +1,7 @@
 package io.github.antijava.marjio.inputBox;
 
 import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.Key;
-import io.github.antijava.marjio.common.graphics.ISprite;
+import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.graphics.SpriteBase;
 import org.jetbrains.annotations.NotNull;
 

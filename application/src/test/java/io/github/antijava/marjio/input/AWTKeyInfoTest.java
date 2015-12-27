@@ -1,6 +1,6 @@
 package io.github.antijava.marjio.input;
 
-import io.github.antijava.marjio.common.Key;
+import io.github.antijava.marjio.common.input.Key;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

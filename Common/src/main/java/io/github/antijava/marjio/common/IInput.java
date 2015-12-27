@@ -1,5 +1,9 @@
 package io.github.antijava.marjio.common;
 
+import io.github.antijava.marjio.common.input.Event;
+import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Status;
+
 import java.util.List;
 
 /**

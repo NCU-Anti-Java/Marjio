@@ -1,6 +1,7 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.input.Key;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
