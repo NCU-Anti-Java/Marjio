@@ -37,7 +37,6 @@ public class Graphics implements IGraphics {
         mPanel = new JPanel() {
             @Override
             public void paint(java.awt.Graphics g) {
-                g.clearRect(0, 0, 800, 600);
                 g.drawImage(bufferedImage, 0, 0, null);
             }
         };
