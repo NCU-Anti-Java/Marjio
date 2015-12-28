@@ -2,6 +2,9 @@ package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Status;
+
+import java.util.List;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
@@ -22,9 +25,8 @@ public class RoomScene extends SceneBase {
     @Override
     public void update() {
         super.update();
-
         checkKeyState();
-        // TODO: Draw the room scene
+        checkStatus();
     }
 
     private void checkKeyState() {
@@ -41,6 +43,10 @@ public class RoomScene extends SceneBase {
         else if(input.isPressed(Key.ENTER) || input.isPressing(Key.ENTER)) {
             select();
         }
+    }
+
+    public void checkStatus () {
+        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
     }
 
     private void select() {

@@ -4,13 +4,16 @@ import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IGraphics;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.constant.WindowConstant;
 import io.github.antijava.marjio.graphics.SpriteBase;
 import org.jetbrains.annotations.NotNull;
+
+import java.nio.file.NoSuchFileException;
 
 /**
  * Created by Davy on 2015/12/28.
  */
-public class WindowBase extends SpriteBase {
+public class WindowBase extends SpriteBase implements WindowConstant {
     private static final Rectangle BG_STRETCH_SRC = new Rectangle(1,  1, 62, 62);
     private static final Rectangle BG_TILE_SRC = new Rectangle(0, 64, 64, 64);
     private static final Rectangle[] CORNER_SRC = new Rectangle[] {
@@ -85,7 +88,15 @@ public class WindowBase extends SpriteBase {
         setHeight(height);
     }
 
+    public WindowBase(@NotNull IApplication application, final int width, final int height) {
+        this(application, getDefaultWindowskin(application), width, height);
+    }
+
     // region Getter
+    protected IApplication getApplication() {
+        return mApplication;
+    }
+
     public int getWidth() {
         return mWidth;
     }
@@ -274,5 +285,13 @@ public class WindowBase extends SpriteBase {
         mCursorBitmap.stretchBlt(backgroundRect, mWindowskin, CURSOR_BG_SRC, 0);
 
         mDirty = true;
+    }
+
+    public static IBitmap getDefaultWindowskin(final IApplication application) {
+        try {
+            return application.getGraphics().loadBitmap(DEFAULT_WINDOWSKIN);
+        } catch (NoSuchFileException e) {
+            return application.getGraphics().createBitmap(128, 128);
+        }
     }
 }

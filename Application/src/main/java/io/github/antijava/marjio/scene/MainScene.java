@@ -29,17 +29,17 @@ public class MainScene extends SceneBase {
     }
 
     private void select() {
+        final ISceneManager sceneManager = getApplication().getSceneManager();
         switch (mCurrentChoice) {
             case HOST_GAME: {
-                // TODO: Host scene
+                sceneManager.translationTo(new RoomScene(getApplication(), true));
                 break;
             }
             case JOIN_GAME: {
-                // TODO: Join scene
+                sceneManager.translationTo(new JoinScene(getApplication()));
                 break;
             }
             case EXIT: {
-                final ISceneManager sceneManager = getApplication().getSceneManager();
                 sceneManager.translationTo(null);
                 break;
             }
