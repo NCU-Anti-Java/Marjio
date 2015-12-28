@@ -56,7 +56,6 @@ public class SceneManager implements ISceneManager {
 
         // Finish translation
         mTranslating = false;
-        mScene = mLastScene;
         mLastScene = null;
         return false;
     }
