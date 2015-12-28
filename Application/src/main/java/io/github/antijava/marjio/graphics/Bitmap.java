@@ -12,7 +12,9 @@ import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.awt.TexturePaint;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
@@ -26,7 +28,7 @@ public class Bitmap implements IBitmap {
     private IFont mFont;
 
     private Graphics2D mAwtGraphics2D;
-    private BufferedImage mImage;
+    BufferedImage mImage;
     private Font mAwtTextFont;
     private final FontRenderContext mAwtFontRenderContext;
 
@@ -35,6 +37,18 @@ public class Bitmap implements IBitmap {
         mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         mAwtGraphics2D = mImage.createGraphics();
         mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Font properties
+        setFont(mGraphics.getDefaultFont());
+        mAwtFontRenderContext = new FontRenderContext(null, true, true);
+    }
+
+    public Bitmap(IGraphics graphics, BufferedImage image) {
+        mGraphics = graphics;
+        mImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        mAwtGraphics2D = mImage.createGraphics();
+        mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        mAwtGraphics2D.drawImage(image, 0, 0, null);
 
         // Font properties
         setFont(mGraphics.getDefaultFont());
@@ -68,9 +82,26 @@ public class Bitmap implements IBitmap {
         if (isDisposed())
             throw new ObjectDisposedException();
 
+        // Calculate clipping bounds
+        // Do when maxWidth != -1
+        if (maxWidth != -1) {
+            final Rectangle bounds = measureText(text, lineHeight);
+            bounds.width = maxWidth;
+
+            // Apply clipping bounds
+            mAwtGraphics2D.clipRect(x, y, bounds.width, bounds.height);
+        }
+
+        // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
         layout.draw(mAwtGraphics2D, x, y);
+
+        // Remove clipping bounds
+        // Do when maxWidth != -1
+        if (maxWidth != -1) {
+            mAwtGraphics2D.clipRect(0, 0, mImage.getWidth(), mImage.getHeight());
+        }
     }
 
     @Override
@@ -142,7 +173,7 @@ public class Bitmap implements IBitmap {
 
         final Bitmap srcBitmap = (Bitmap) src;
         final BufferedImage srcSubimage = srcBitmap.mImage.getSubimage(srcRect.x, srcRect.y, srcRect.width, srcRect.height);
-        final Composite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity / 255.0f);
+        final Composite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f - ((float) opacity / 255.0f));
         final Composite oldComposite = mAwtGraphics2D.getComposite();
         mAwtGraphics2D.setComposite(composite);
         mAwtGraphics2D.drawImage(srcSubimage, x, y, null);
@@ -158,7 +189,7 @@ public class Bitmap implements IBitmap {
 
         final Bitmap srcBitmap = (Bitmap) src;
         final BufferedImage srcSubimage = srcBitmap.mImage.getSubimage(srcRect.x, srcRect.y, srcRect.width, srcRect.height);
-        final Composite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) opacity / 255.0f);
+        final Composite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f - ((float) opacity / 255.0f));
         final Composite oldComposite = mAwtGraphics2D.getComposite();
         mAwtGraphics2D.setComposite(composite);
         mAwtGraphics2D.drawImage(srcSubimage, x, y, width, height, null);
@@ -168,6 +199,33 @@ public class Bitmap implements IBitmap {
     @Override
     public void stretchBlt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity) {
         stretchBlt(rect.x, rect.y, rect.width, rect.height, src, srcRect, opacity);
+    }
+
+    @Override
+    public void tileBlt(int x, int y, int width, int height, IBitmap src, Rectangle srcRect, int opacity) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
+        if (!(src instanceof Bitmap))
+            throw new RuntimeException("Source bitmap should be " + Bitmap.class);
+
+        final Bitmap srcBitmap = (Bitmap) src;
+        final BufferedImage srcSubimage = srcBitmap.mImage.getSubimage(srcRect.x, srcRect.y, srcRect.width, srcRect.height);
+        final TexturePaint texturePaint = new TexturePaint(srcSubimage, new java.awt.Rectangle(srcRect.width, srcRect.height));
+        final Composite composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f - ((float) opacity / 255.0f));
+        final Paint oldPaint = mAwtGraphics2D.getPaint();
+        final Composite oldComposite = mAwtGraphics2D.getComposite();
+        mAwtGraphics2D.setPaint(texturePaint);
+        mAwtGraphics2D.setComposite(composite);
+        mAwtGraphics2D.translate(x, y);
+        mAwtGraphics2D.fillRect(0, 0, width, height);
+        mAwtGraphics2D.translate(-x, -y);
+        mAwtGraphics2D.setPaint(oldPaint);
+        mAwtGraphics2D.setComposite(oldComposite);
+    }
+
+    @Override
+    public void tileBlt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity) {
+        tileBlt(rect.x, rect.y, rect.width, rect.height, src, srcRect, opacity);
     }
 
     @Override
