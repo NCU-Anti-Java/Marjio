@@ -60,6 +60,8 @@ public class RoomScene extends SceneBase {
                         server.stop();
                     } catch (InterruptedException e) {
                         // TODO
+                    } catch (UnsupportedOperationException e) {
+                        // TODO
                     }
                 }
                 else {
@@ -69,7 +71,10 @@ public class RoomScene extends SceneBase {
                         client.stop();
                     } catch (InterruptedException e) {
                         // TODO
+                    } catch (UnsupportedOperationException e) {
+                        // TODO
                     }
+
                 }
                 sceneManager.translationTo(new MainScene(getApplication()));
                 break;

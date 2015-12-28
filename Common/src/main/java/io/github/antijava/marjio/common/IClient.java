@@ -13,12 +13,12 @@ public interface IClient {
      *
      * @param hostAddress Server address
      */
-    void start(InetAddress hostAddress) throws Exception;
+    void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException;
 
     /**
      * Stop the connection.
      */
-    void stop() throws Exception;
+    void stop() throws InterruptedException, UnsupportedOperationException;
 
     /**
      * Send message to Server.
