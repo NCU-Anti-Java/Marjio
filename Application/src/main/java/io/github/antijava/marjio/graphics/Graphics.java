@@ -4,12 +4,10 @@ import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IGraphics;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.IFont;
-import io.github.antijava.marjio.common.graphics.ISprite;
+import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.constant.GameConstant;
+import io.github.antijava.marjio.window.WindowBase;
 import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.functions.Func2;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -23,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @author Davy
