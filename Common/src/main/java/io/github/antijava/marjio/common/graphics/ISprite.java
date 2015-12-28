@@ -13,12 +13,6 @@ public interface ISprite {
 
     // region Getter
     /**
-     * Gets a list contains all sprites.
-     * @return A list contains sprites.
-     */
-    ArrayList<ISprite> getSprites();
-
-    /**
      * Returns the image for the sprite.
      */
     IBitmap getBitmap();
