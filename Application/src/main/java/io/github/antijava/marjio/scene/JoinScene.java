@@ -51,9 +51,9 @@ public class JoinScene extends SceneBase {
         switch (mCurrentChoice) {
             case INPUT_IPADDRESS: {
                 try {
-                    final IClient client = getApplication().getClient();
-                    client.start(mIPAddressInputBox.getText());
                     // TODO: Transate to room scene with client state.
+                    final ISceneManager sceneManager = getApplication().getSceneManager();
+                    sceneManager.translationTo(new RoomScene(getApplication(), false));
                 }
                 catch (Exception ex) {
                     // TODO: Show Error.
