@@ -37,22 +37,17 @@ public class Bitmap implements IBitmap {
         mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         mAwtGraphics2D = mImage.createGraphics();
         mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        mAwtGraphics2D.setBackground(new java.awt.Color(255, 255, 255, 0));
 
         // Font properties
         setFont(mGraphics.getDefaultFont());
         mAwtFontRenderContext = new FontRenderContext(null, true, true);
     }
 
-    public Bitmap(IGraphics graphics, BufferedImage image) {
-        mGraphics = graphics;
-        mImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        mAwtGraphics2D = mImage.createGraphics();
-        mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        mAwtGraphics2D.drawImage(image, 0, 0, null);
+    public Bitmap(final IGraphics graphics, BufferedImage image) {
+        this(graphics, image.getWidth(), image.getHeight());
 
-        // Font properties
-        setFont(mGraphics.getDefaultFont());
-        mAwtFontRenderContext = new FontRenderContext(null, true, true);
+        mAwtGraphics2D.drawImage(image, 0, 0, null);
     }
 
     // region Drawing
@@ -82,9 +77,26 @@ public class Bitmap implements IBitmap {
         if (isDisposed())
             throw new ObjectDisposedException();
 
+        // Calculate clipping bounds
+        // Do when maxWidth != -1
+        if (maxWidth != -1) {
+            final Rectangle bounds = measureText(text, lineHeight);
+            bounds.width = maxWidth;
+
+            // Apply clipping bounds
+            mAwtGraphics2D.clipRect(x, y, bounds.width, bounds.height);
+        }
+
+        // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
         layout.draw(mAwtGraphics2D, x, y);
+
+        // Remove clipping bounds
+        // Do when maxWidth != -1
+        if (maxWidth != -1) {
+            mAwtGraphics2D.clipRect(0, 0, mImage.getWidth(), mImage.getHeight());
+        }
     }
 
     @Override
@@ -276,7 +288,7 @@ public class Bitmap implements IBitmap {
 
     // region Helper
     private java.awt.Color convertToAwtColor(Color color) {
-        return new java.awt.Color(color.toIntBits());
+        return new java.awt.Color(color.toIntBits(), true);
     }
     // endregion Helper
 }

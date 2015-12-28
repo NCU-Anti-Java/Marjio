@@ -2,11 +2,19 @@ package io.github.antijava.marjio.input;
 
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.input.IKeyInfo;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
-import org.jetbrains.annotations.NotNull;
+import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
 
-import java.util.*;
+
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 
 
 /**
@@ -56,7 +64,7 @@ public final class Input implements IInput {
 
 
     @Override
-    public boolean isPressing(@NotNull Key key) {
+    public boolean isPressing(Key key) {
         key = keymap.getOrDefault(key, key);
 
         return  key != Key.UNDEFINED &&
@@ -65,7 +73,7 @@ public final class Input implements IInput {
     }
 
     @Override
-    public boolean isPressed(@NotNull Key key) {
+    public boolean isPressed(Key key) {
         key = keymap.getOrDefault(key, key);
 
         return key != Key.UNDEFINED &&
@@ -74,7 +82,7 @@ public final class Input implements IInput {
     }
 
     @Override
-    public boolean isReleased(@NotNull Key key) {
+    public boolean isReleased(Key key) {
         key = keymap.getOrDefault(key, key);
 
         return  key != Key.UNDEFINED &&
@@ -83,7 +91,7 @@ public final class Input implements IInput {
     }
 
     @Override
-    public boolean isTrigger(@NotNull Key key) {
+    public boolean isTrigger(Key key) {
 
         return isPressed(key) || isReleased(key);
     }
@@ -111,6 +119,7 @@ public final class Input implements IInput {
             // TODO: Data to Status
             case NetWorkClient:
             case NetworkServer: {
+                statuses.add((Status)evt.getData());
                 break;
             }
 
