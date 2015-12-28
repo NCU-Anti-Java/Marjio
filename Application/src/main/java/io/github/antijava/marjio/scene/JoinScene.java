@@ -4,6 +4,8 @@ import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.inputBox.IPAddressInputBox;
 
+import java.net.InetAddress;
+
 /**
  * Created by Zheng-Yuan on 12/24/2015.
  */
@@ -52,7 +54,8 @@ public class JoinScene extends SceneBase {
             case INPUT_IPADDRESS: {
                 try {
                     final IClient client = getApplication().getClient();
-                    client.start(mIPAddressInputBox.getText());
+                    final InetAddress inetAddress = InetAddress.getByName(mIPAddressInputBox.getText());
+                    client.start(inetAddress);
                     // TODO: Transate to room scene with client state.
                 }
                 catch (Exception ex) {

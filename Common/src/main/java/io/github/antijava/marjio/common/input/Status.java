@@ -20,7 +20,7 @@ public class Status {
         return obj;
     }
 
-    enum Type {
+    public enum Type {
         ServerMessage,
         ServerVerification,
         ClientMessage
