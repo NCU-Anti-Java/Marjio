@@ -28,7 +28,7 @@ import java.util.ArrayList;
  */
 public class Graphics implements IGraphics, GameConstant {
     private static final Viewport sDefaultViewport = new Viewport();
-    private static final Font sDefaultFont = new Font("MingLiu", 12, false, false);
+    private static final Font sDefaultFont = new Font("微軟正黑體", 16, false, false);
     private final IApplication mApplication;
     private final ArrayList<Font> mFonts;
     private final ArrayList<Viewport> mViewports;
