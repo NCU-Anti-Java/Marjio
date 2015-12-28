@@ -189,12 +189,12 @@ public class WindowBase extends SpriteBase {
 
         mBitmap.blt(0, 0, mBackgroundBitmap, mBackgroundBitmap.getRect(), 0);
 
-        if (mActive) {
+        if (isActive()) {
             mCursorAnimationIdx = (mCursorAnimationIdx + 1) % CURSOR_ANIMATION_SRC.length;
 
             // TODO: convert list to (255 - it)
             final int cursorOpacity = 255 - CURSOR_ANIMATION_SRC[mCursorAnimationIdx];
-            mBitmap.blt(mCursorRect.x + 16, mCursorRect.y + 16, mCursorBitmap, mCursorBitmap.getRect(), cursorOpacity);
+            mBitmap.blt(getCursorRect().x + 16, getCursorRect().y + 16, mCursorBitmap, mCursorBitmap.getRect(), cursorOpacity);
         }
     }
 
@@ -236,35 +236,37 @@ public class WindowBase extends SpriteBase {
             mCursorBitmap = mApplication.getGraphics().createBitmap(mCursorRect.width, mCursorRect.height);
         mCursorBitmap.clear();
 
+        final Rectangle cursorRect = getCursorRect();
+
         // Corner
-        final Rectangle cornerTop = new Rectangle(mCursorRect);
+        final Rectangle cornerTop = new Rectangle(cursorRect);
         mCursorBitmap.blt(cornerTop.x, cornerTop.y, mWindowskin, CURSOR_CORNER_SRC[0], 0);
-        cornerTop.x += mCursorRect.width - 4;
+        cornerTop.x += cursorRect.width - 4;
         mCursorBitmap.blt(cornerTop.x, cornerTop.y, mWindowskin, CURSOR_CORNER_SRC[1], 0);
-        final Rectangle cornerBottom = new Rectangle(mCursorRect);
-        cornerBottom.y += mCursorRect.height - 4;
+        final Rectangle cornerBottom = new Rectangle(cursorRect);
+        cornerBottom.y += cursorRect.height - 4;
         mCursorBitmap.blt(cornerBottom.x, cornerBottom.y, mWindowskin, CURSOR_CORNER_SRC[2], 0);
-        cornerBottom.x += mCursorRect.width - 4;
+        cornerBottom.x += cursorRect.width - 4;
         mCursorBitmap.blt(cornerBottom.x, cornerBottom.y, mWindowskin, CURSOR_CORNER_SRC[3], 0);
 
         // Side
-        final Rectangle sideTB = new Rectangle(mCursorRect);
+        final Rectangle sideTB = new Rectangle(cursorRect);
         sideTB.y += 4;
         sideTB.width = 4;
-        sideTB.height = mCursorRect.height - 8;
+        sideTB.height = cursorRect.height - 8;
         mCursorBitmap.stretchBlt(sideTB, mWindowskin, CURSOR_BORDER_SRC[0], 0);
-        sideTB.x += mCursorRect.width - 4;
+        sideTB.x += cursorRect.width - 4;
         mCursorBitmap.stretchBlt(sideTB, mWindowskin, CURSOR_BORDER_SRC[1], 0);
-        final Rectangle sideLR = new Rectangle(mCursorRect);
-        sideLR.width = mCursorRect.width - 8;
+        final Rectangle sideLR = new Rectangle(cursorRect);
+        sideLR.width = cursorRect.width - 8;
         sideLR.height = 4;
         sideLR.x += 4;
         mCursorBitmap.stretchBlt(sideLR, mWindowskin, CURSOR_BORDER_SRC[2], 0);
-        sideLR.y += mCursorRect.height - 4;
+        sideLR.y += cursorRect.height - 4;
         mCursorBitmap.stretchBlt(sideLR, mWindowskin, CURSOR_BORDER_SRC[3], 0);
 
         // Background
-        final Rectangle backgroundRect = new Rectangle(mCursorRect);
+        final Rectangle backgroundRect = new Rectangle(cursorRect);
         backgroundRect.x += 4;
         backgroundRect.y += 4;
         backgroundRect.width -= 8;
