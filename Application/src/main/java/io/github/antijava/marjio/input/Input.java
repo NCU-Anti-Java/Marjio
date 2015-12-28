@@ -39,7 +39,7 @@ public final class Input implements IInput {
     Vector<Status> statuses_cached;
 
 
-    Input() {
+    public Input() {
 
         pro_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));
         cur_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));

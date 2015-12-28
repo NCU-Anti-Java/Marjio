@@ -4,6 +4,8 @@ import io.github.antijava.marjio.SceneManager;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Graphics;
+import io.github.antijava.marjio.input.Input;
+import io.github.antijava.marjio.scene.MainScene;
 import io.github.antijava.marjio.scene.SceneBase;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,13 +29,12 @@ public class Application implements IApplication, Constant {
         mLogger.setLevel(Level.INFO);
         // TODO: Other components
         mSceneManager = new SceneManager(this);
-        mInput = null;
+        mInput = new Input();
         mServer = null;
         mClient = null;
         mGraphics = new Graphics(this);
         ((Graphics) mGraphics).touch();
-        mSceneManager.translationTo(new SceneBase(this) {
-        });
+        mSceneManager.translationTo(new MainScene(this));
     }
 
     /**

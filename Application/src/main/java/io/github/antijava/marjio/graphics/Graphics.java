@@ -4,6 +4,7 @@ import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IGraphics;
 import io.github.antijava.marjio.common.graphics.*;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.constant.GameConstant;
 import io.github.antijava.marjio.window.WindowBase;
 
 import javax.imageio.ImageIO;
@@ -19,27 +20,27 @@ import java.util.logging.Level;
 /**
  * Created by Davy on 2015/12/28.
  */
-public class Graphics implements IGraphics {
+public class Graphics implements IGraphics, GameConstant {
     private final Viewport mDefaultViewport = new Viewport();
     private final IApplication mApplication;
-    private final JFrame mFrame;
     private final JPanel mPanel;
     private WindowBase windowBase;
     private BufferedImage bufferedImage;
 
     public Graphics(IApplication application) {
         mApplication = application;
-        mFrame = new JFrame();
-        mFrame.setSize(800, 600);
-        mFrame.setResizable(false);
-        mFrame.setLocationRelativeTo(null);
-        bufferedImage = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
+        bufferedImage = new BufferedImage(GAME_WIDTH, GAME_HEIGHT, BufferedImage.TYPE_INT_ARGB);
         mPanel = new JPanel() {
             @Override
             public void paint(java.awt.Graphics g) {
                 g.drawImage(bufferedImage, 0, 0, null);
             }
         };
+
+        final JFrame mFrame = new JFrame();
+        mFrame.setSize(GAME_WIDTH, GAME_HEIGHT);
+        mFrame.setResizable(false);
+        mFrame.setLocationRelativeTo(null);
         mFrame.add(mPanel);
         mFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         new Thread(() -> {
@@ -65,7 +66,7 @@ public class Graphics implements IGraphics {
         windowBase.update();
         final java.awt.Graphics g = bufferedImage.getGraphics();
         g.setColor(Color.black);
-        g.fillRect(0, 0, mPanel.getWidth(), mPanel.getHeight());
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         g.drawImage(((Bitmap) windowBase.getBitmap()).mImage, 0, 0, null);
         mPanel.repaint();
     }
