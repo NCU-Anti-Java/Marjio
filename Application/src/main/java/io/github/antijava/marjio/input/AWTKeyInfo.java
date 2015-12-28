@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.input;
 
+import io.github.antijava.marjio.common.input.IKeyInfo;
 import io.github.antijava.marjio.common.input.Key;
 
 import java.awt.event.KeyEvent;
