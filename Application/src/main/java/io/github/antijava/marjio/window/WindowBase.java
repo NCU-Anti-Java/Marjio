@@ -267,7 +267,8 @@ public class WindowBase extends SpriteBase implements WindowConstant {
             mCursorBitmap = mApplication.getGraphics().createBitmap(mCursorRect.width, mCursorRect.height);
         mCursorBitmap.clear();
 
-        final Rectangle cursorRect = getCursorRect();
+        final Rectangle cursorRect = new Rectangle(getCursorRect());
+        cursorRect.x = cursorRect.y = 0;
 
         // Corner
         final Rectangle cornerTop = new Rectangle(cursorRect);
