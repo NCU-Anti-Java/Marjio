@@ -37,22 +37,17 @@ public class Bitmap implements IBitmap {
         mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         mAwtGraphics2D = mImage.createGraphics();
         mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        mAwtGraphics2D.setBackground(new java.awt.Color(255, 255, 255, 0));
 
         // Font properties
         setFont(mGraphics.getDefaultFont());
         mAwtFontRenderContext = new FontRenderContext(null, true, true);
     }
 
-    public Bitmap(IGraphics graphics, BufferedImage image) {
-        mGraphics = graphics;
-        mImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        mAwtGraphics2D = mImage.createGraphics();
-        mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        mAwtGraphics2D.drawImage(image, 0, 0, null);
+    public Bitmap(final IGraphics graphics, BufferedImage image) {
+        this(graphics, image.getWidth(), image.getHeight());
 
-        // Font properties
-        setFont(mGraphics.getDefaultFont());
-        mAwtFontRenderContext = new FontRenderContext(null, true, true);
+        mAwtGraphics2D.drawImage(image, 0, 0, null);
     }
 
     // region Drawing
@@ -67,9 +62,7 @@ public class Bitmap implements IBitmap {
     public void clearRect(int x, int y, int width, int height) {
         if (isDisposed())
             throw new ObjectDisposedException();
-
-        Color transparent = new Color(0, 0, 0, 0);
-        fillRect(x, y, width, height, transparent);
+        mAwtGraphics2D.clearRect(x, y, width, height);
     }
 
     @Override
