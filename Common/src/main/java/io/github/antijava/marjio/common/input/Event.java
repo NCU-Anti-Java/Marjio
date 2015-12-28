@@ -22,7 +22,7 @@ public class Event {
 
     public enum Type {
         Keyboard,
-        NetworkServer,
-        NetWorkClient
+        NetworkServer, //from client packet
+        NetWorkClient //from server input
     }
 }

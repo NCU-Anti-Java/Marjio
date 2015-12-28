@@ -119,7 +119,7 @@ public final class Input implements IInput {
             // TODO: Data to Status
             case NetWorkClient:
             case NetworkServer: {
-
+                statuses.add((Status)evt.getData());
                 break;
             }
 
