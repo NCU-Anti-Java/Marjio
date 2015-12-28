@@ -149,10 +149,12 @@ public class WindowBase extends SpriteBase implements WindowConstant {
     }
 
     public void setCursorRect(final Rectangle rect) {
-        if (rect.width < 16)
-            rect.width = 16;
-        if (rect.height < 16)
-            rect.height = 16;
+        if (rect != null) {
+            if (rect.width < 16)
+                rect.width = 16;
+            if (rect.height < 16)
+                rect.height = 16;
+        }
 
         // TODO: compare rectangle's x, y, w, h.
         if (mCursorRect == rect)

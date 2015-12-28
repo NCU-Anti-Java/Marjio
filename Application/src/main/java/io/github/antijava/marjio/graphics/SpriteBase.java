@@ -11,17 +11,14 @@ import java.util.ArrayList;
  *
  * @author Davy
  */
-public abstract class SpriteBase implements ISprite {
-    private static ArrayList<ISprite> mSprites = new ArrayList<>();
+public abstract class SpriteBase extends Sprite {
     private IBitmap mBitmap;
-    private Viewport mViewport;
     private int mX = 0, mY = 0, mZ = 0;
     private double mZoomX = 1.0, mZoomY = 1.0;
     private int mOpacity = 0;
 
     public SpriteBase(final Viewport viewport) {
-        mViewport = viewport;
-        mSprites.add(this);
+        setViewport(viewport);
     }
 
     @Override
@@ -29,18 +26,9 @@ public abstract class SpriteBase implements ISprite {
     }
 
     // region Getter
-    public static ArrayList<ISprite> getSprites(){
-        return mSprites;
-    }
-
     @Override
     public IBitmap getBitmap() {
         return mBitmap;
-    }
-
-    @Override
-    public Viewport getViewport() {
-        return mViewport;
     }
 
     @Override
@@ -78,11 +66,6 @@ public abstract class SpriteBase implements ISprite {
     @Override
     public void setBitmap(IBitmap bitmap) {
         mBitmap = bitmap;
-    }
-
-    @Override
-    public void setViewport(Viewport viewport) {
-        mViewport = viewport;
     }
 
     @Override

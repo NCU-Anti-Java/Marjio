@@ -5,8 +5,11 @@ import io.github.antijava.marjio.common.IGraphics;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.IFont;
 import io.github.antijava.marjio.common.graphics.ISprite;
-import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.constant.GameConstant;
+import rx.Observable;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.functions.Func2;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -20,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Davy
@@ -31,6 +36,7 @@ public class Graphics implements IGraphics, GameConstant {
     private final IApplication mApplication;
     private final ArrayList<Font> mFonts;
     private final ArrayList<Viewport> mViewports;
+    private final ArrayList<Sprite> mSpriteList;
     private final JPanel mSwingPanel;
     private final BufferedImage mCanvas;
     private final Graphics2D mCanvasGraphics;
@@ -49,6 +55,14 @@ public class Graphics implements IGraphics, GameConstant {
             }
         };
 
+        mFonts = new ArrayList<>();
+        mFonts.add(sDefaultFont);
+
+        mViewports = new ArrayList<>();
+        mViewports.add(sDefaultViewport);
+
+        mSpriteList = new ArrayList<>();
+
         // Java Window
         final JFrame mFrame = new JFrame();
         mFrame.setSize(GAME_WIDTH, GAME_HEIGHT);
@@ -59,12 +73,6 @@ public class Graphics implements IGraphics, GameConstant {
         new Thread(() -> {
             mFrame.setVisible(true); // Run window loop
         }).run();
-
-        mFonts = new ArrayList<>();
-        mFonts.add(sDefaultFont);
-
-        mViewports = new ArrayList<>();
-        mViewports.add(sDefaultViewport);
     }
 
     @Override
@@ -73,12 +81,35 @@ public class Graphics implements IGraphics, GameConstant {
         final java.awt.Graphics g = mCanvas.getGraphics();
         g.setColor(Color.black);
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
         // TODO: Finish implement
-        ArrayList<ISprite> sprites = SpriteBase.getSprites();
-        for (ISprite sprite : sprites) {
-            IBitmap bitmap = sprite.getBitmap();
-            Viewport viewport = sprite.getViewport();
-        }
+        Observable.from(mViewports)
+                .toSortedList()
+                .flatMap(Observable::from)
+                .toBlocking()
+                .forEach(viewport -> {
+                    Observable.from(viewport.getSprites())
+                            .toSortedList((sprite, sprite2) -> {
+                                if (sprite.getZ() == sprite.getZ())
+                                    if (sprite.getY() == sprite.getY())
+                                        return sprite.getX() < sprite2.getX() ? 1 : -1;
+                                    else
+                                        return sprite.getY() < sprite2.getY() ? 1 : -1;
+                                else
+                                    return sprite.getZ() < sprite2.getZ() ? 1 : -1;
+                            })
+                            .flatMap(Observable::from)
+                            .toBlocking()
+                            .forEach(sprite -> {
+                                final Bitmap bitmap = (Bitmap) sprite.getBitmap();
+                                mCanvasGraphics.drawImage(bitmap.mImage,
+                                        sprite.getX() - viewport.ox + viewport.x,
+                                        sprite.getY() - viewport.oy + viewport.y,
+                                        (int) (bitmap.getWidth() * sprite.getZoomX()),
+                                        (int) (bitmap.getHeight() * sprite.getZoomY()),
+                                        null);
+                            });
+                });
 
         mSwingPanel.repaint();
     }

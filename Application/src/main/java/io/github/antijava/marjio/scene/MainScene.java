@@ -3,6 +3,7 @@ package io.github.antijava.marjio.scene;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.exception.ObjectDisposedException;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.window.WindowSelectableBase;
 
 /**
  * Created by Zheng-Yuan on 12/24/2015.
@@ -13,19 +14,29 @@ public class MainScene extends SceneBase {
     private final int JOIN_GAME = 1;
     private final int EXIT = 2;
     private int mCurrentChoice;
+    private final WindowSelectableBase mWindowSelectable;
 
     public MainScene(IApplication application) {
         super(application);
 
         mCurrentChoice = 0;
+        mWindowSelectable = new WindowSelectableBase(application, 200, 300);
     }
 
     @Override
     public void update() throws ObjectDisposedException {
         super.update();
 
+        mWindowSelectable.update();
         checkKeyState();
         // TODO: draw menu background and text. select choice mark as other color.
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        // mWindowSelectable.dispose();
     }
 
     private void select() {
