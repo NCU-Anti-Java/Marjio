@@ -295,7 +295,7 @@ public class Bitmap implements IBitmap {
 
     // region Helper
     private java.awt.Color convertToAwtColor(Color color) {
-        return new java.awt.Color(color.toIntBits());
+        return new java.awt.Color(color.toIntBits(), true);
     }
     // endregion Helper
 }
