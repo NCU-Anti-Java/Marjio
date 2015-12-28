@@ -2,11 +2,12 @@ package io.github.antijava.marjio.graphics;
 
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IGraphics;
+import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.IFont;
-import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.constant.GameConstant;
-import io.github.antijava.marjio.window.WindowBase;
+import io.github.antijava.marjio.input.AWTKeyInfo;
 import rx.Observable;
 
 import javax.imageio.ImageIO;
@@ -16,6 +17,8 @@ import javax.swing.WindowConstants;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +69,29 @@ public class Graphics implements IGraphics, GameConstant {
         mFrame.setLocationRelativeTo(null);
         mFrame.add(mSwingPanel);
         mFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        mFrame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                final IInput input = mApplication.getInput();
+                if (input == null)
+                    return;
+
+                input.triggerEvent(new Event(new AWTKeyInfo(e), Event.Type.Keyboard));
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                final IInput input = mApplication.getInput();
+                if (input == null)
+                    return;
+
+                input.triggerEvent(new Event(new AWTKeyInfo(e), Event.Type.Keyboard));
+            }
+        });
         new Thread(() -> {
             mFrame.setVisible(true); // Run window loop
         }).run();

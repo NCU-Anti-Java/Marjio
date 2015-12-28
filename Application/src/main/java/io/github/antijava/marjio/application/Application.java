@@ -46,7 +46,7 @@ public class Application implements IApplication, Constant {
     public void run() {
         long lastUpdate = System.currentTimeMillis();
         while (true) {
-            // TODO: getInput().update
+            getInput().update();
             if (getSceneManager().update())
                 break;
             getGraphics().update();
@@ -80,7 +80,6 @@ public class Application implements IApplication, Constant {
     }
 
     @Override
-    @Nullable
     public IInput getInput() {
         return mInput;
     }
