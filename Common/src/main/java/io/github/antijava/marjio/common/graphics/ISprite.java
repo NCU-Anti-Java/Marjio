@@ -1,5 +1,7 @@
 package io.github.antijava.marjio.common.graphics;
 
+import java.util.ArrayList;
+
 /**
  * Created by fntsr on 2015/12/23.
  */
@@ -10,6 +12,12 @@ public interface ISprite {
     void update();
 
     // region Getter
+    /**
+     * Gets a list contains all sprites.
+     * @return A list contains sprites.
+     */
+    ArrayList<ISprite> getSprites();
+
     /**
      * Returns the image for the sprite.
      */
