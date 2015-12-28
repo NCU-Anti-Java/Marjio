@@ -1,5 +1,7 @@
 package io.github.antijava.marjio.common;
 
+import io.github.antijava.marjio.common.input.Status;
+
 import java.net.InetAddress;
 
 /**
@@ -9,21 +11,21 @@ public interface IClient {
     /**
      * Start connecting to a Server
      *
-     * @param hostIP Server address
+     * @param hostAddress Server address
      */
-    void start(InetAddress hostAddress);
+    void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException;
 
     /**
      * Stop the connection.
      */
-    void stop() throws InterruptedException;
+    void stop() throws InterruptedException, UnsupportedOperationException;
 
     /**
      * Send message to Server.
      *
-     * @param packableObject packable object
+     * @param status information package
      */
-    void send(Packable packableObject) throws Exception;
+    void send(Status status) throws Exception;
 
     /**
      * Specific if this client is trying to connect or is connected.
