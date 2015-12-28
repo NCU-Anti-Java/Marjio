@@ -62,9 +62,7 @@ public class Bitmap implements IBitmap {
     public void clearRect(int x, int y, int width, int height) {
         if (isDisposed())
             throw new ObjectDisposedException();
-
-        Color transparent = new Color(0, 0, 0, 0);
-        fillRect(x, y, width, height, transparent);
+        mAwtGraphics2D.clearRect(x, y, width, height);
     }
 
     @Override
