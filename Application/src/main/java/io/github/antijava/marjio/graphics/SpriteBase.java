@@ -4,12 +4,16 @@ import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.ISprite;
 import io.github.antijava.marjio.common.graphics.Viewport;
 
+import java.util.ArrayList;
+
 /**
  * This is a basic {@link ISprite} implement without {@link IBitmap} providing.
  *
  * @author Davy
  */
 public abstract class SpriteBase implements ISprite {
+    private static ArrayList<ISprite> mSprites = new ArrayList<>();
+    private IBitmap mBitmap;
     private Viewport mViewport;
     private int mX = 0, mY = 0, mZ = 0;
     private double mZoomX = 1.0, mZoomY = 1.0;
@@ -17,6 +21,7 @@ public abstract class SpriteBase implements ISprite {
 
     public SpriteBase(final Viewport viewport) {
         mViewport = viewport;
+        mSprites.add(this);
     }
 
     @Override
@@ -24,9 +29,13 @@ public abstract class SpriteBase implements ISprite {
     }
 
     // region Getter
+    public ArrayList<ISprite> getSprites(){
+        return mSprites;
+    }
+
     @Override
     public IBitmap getBitmap() {
-        throw new UnsupportedOperationException();
+        return mBitmap;
     }
 
     @Override
@@ -68,7 +77,7 @@ public abstract class SpriteBase implements ISprite {
     // region Setter
     @Override
     public void setBitmap(IBitmap bitmap) {
-        throw new UnsupportedOperationException();
+        mBitmap = bitmap;
     }
 
     @Override
