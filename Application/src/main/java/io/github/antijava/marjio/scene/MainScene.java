@@ -2,6 +2,7 @@ package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.exception.ObjectDisposedException;
+import io.github.antijava.marjio.common.input.Key;
 
 /**
  * Created by Zheng-Yuan on 12/24/2015.

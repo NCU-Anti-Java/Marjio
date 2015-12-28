@@ -1,4 +1,4 @@
-package io.github.antijava.marjio.common;
+package io.github.antijava.marjio.common.input;
 
 /**
  * Created by freyr on 2015/12/24.
