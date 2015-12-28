@@ -30,7 +30,7 @@ public class Client extends Connector implements IClient {
     }
 
     @Override
-    public void start(InetAddress hostAddress) throws Exception {
+    public void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException {
         mHostAddress = hostAddress;
         super.start();
     }

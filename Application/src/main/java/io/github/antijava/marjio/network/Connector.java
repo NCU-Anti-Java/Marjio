@@ -19,20 +19,20 @@ public abstract class Connector implements Runnable{
         mReceiver = receiver;
     }
 
-    public void start() throws Exception {
+    public void start() throws InterruptedException, UnsupportedOperationException {
         if (mRunningFlag) {
             // TODO: 改成比較合適且狹義的 Exception
-            throw new Exception();
+            throw new UnsupportedOperationException();
         }
         mRunningFlag = true;
         mServerThread = new Thread(this);
         mServerThread.start();
     }
 
-    public void stop() throws Exception {
+    public void stop() throws InterruptedException, UnsupportedOperationException {
         if (!mRunningFlag) {
             // TODO: 改成比較合適且狹義的 Exception
-            throw new Exception();
+            throw new UnsupportedOperationException();
         }
         mRunningFlag = false;
         mServerThread.join();

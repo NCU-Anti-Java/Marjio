@@ -12,12 +12,12 @@ public interface IServer {
     /**
      * Start to listen on socket.
      */
-    void start() throws Exception;
+    void start() throws InterruptedException, UnsupportedOperationException;
 
     /**
      * Stop listening.
      */
-    void stop() throws Exception;
+    void stop() throws InterruptedException, UnsupportedOperationException;
 
     /**
      * Broadcast message to all connected clients.
