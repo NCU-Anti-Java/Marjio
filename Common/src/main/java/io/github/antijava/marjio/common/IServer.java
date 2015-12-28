@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.common;
 
+import java.net.InetAddress;
 import java.util.List;
 
 /**
@@ -7,29 +8,41 @@ import java.util.List;
  */
 public interface IServer {
     /**
-     * 開啟伺服器
+     * Start to listen on socket.
      */
     void start();
 
     /**
-     * 關閉伺服器
+     * Stop listening.
      */
-    void stop();
+    void stop() throws InterruptedException;
 
     /**
-     * 廣播資訊
-     * @param packableObject
+     * Broadcast message to all connected clients.
+     *
+     * @param packableObject packable object to be sent
      */
     void broadcast(Packable packableObject);
 
     /**
-     * 取得連線玩家資訊
+     * Send message to specific client
+     *
+     * @param packableObject packable object to be sent
+     * @param address client's address which will received messages
+     */
+    void send(Packable packableObject, InetAddress address);
+
+    /**
+     * Return all connected clients' information.
+     *
      * @return IP 清單，暫定是 String List
      */
     List getClients();
 
     /**
-     * @return 伺服器是否已經啟動
+     * Specifics if is listening.
+     *
+     * @return  if is listening
      */
     boolean isRunning();
 }

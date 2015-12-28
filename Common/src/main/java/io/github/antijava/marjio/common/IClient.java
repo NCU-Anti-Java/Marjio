@@ -7,31 +7,35 @@ import java.net.InetAddress;
  */
 public interface IClient {
     /**
-     * 連線到指定 IP 的 Host。要做例外處理
-     * @param hostIP Host 的 IP Address
+     * Start connecting to a Server
+     *
+     * @param hostIP Server address
      */
-    void start(InetAddress hostIP);
+    void start(InetAddress hostAddress);
 
     /**
-     * 停止 Client 的收訊功能與發送功能。
+     * Stop the connection.
      */
-    void stop();
+    void stop() throws InterruptedException;
 
     /**
-     * 發送訊息給 Host
-     * @param packableObject 可以打包的物件
+     * Send message to Server.
+     *
+     * @param packableObject packable object
      */
-    void send(Packable packableObject);
+    void send(Packable packableObject) throws Exception;
 
     /**
-     * 檢查 Client 運行狀況
-     * @return 是否正在運行
+     * Specific if this client is trying to connect or is connected.
+     *
+     * @return if client is running
      */
     boolean isRunning();
 
     /**
-     * 檢查 Client 連線狀況
-     * @return 是否有連線成功過
+     * Specific if the connecting is connected.
+     *
+     * @return if client connected to server
      */
     boolean isConnected();
 }
