@@ -29,7 +29,7 @@ public abstract class SpriteBase implements ISprite {
     }
 
     // region Getter
-    public ArrayList<ISprite> getSprites(){
+    public static ArrayList<ISprite> getSprites(){
         return mSprites;
     }
 
