@@ -8,6 +8,7 @@ import io.github.antijava.marjio.constant.WindowConstant;
 import io.github.antijava.marjio.graphics.SpriteBase;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.image.BufferedImage;
 import java.nio.file.NoSuchFileException;
 
 /**
@@ -65,6 +66,7 @@ public class WindowBase extends SpriteBase implements WindowConstant {
     private final IApplication mApplication;
     private IBitmap mWindowskin;
     private IBitmap mBitmap;
+    private IBitmap mContentBitmap;
     private IBitmap mBackgroundBitmap;
     private IBitmap mCursorBitmap;
     private int mWidth, mHeight;
@@ -83,6 +85,7 @@ public class WindowBase extends SpriteBase implements WindowConstant {
         mApplication = application;
         mWindowskin = windowskin;
         mBitmap = graphics.createBitmap(width, height);
+        mContentBitmap = graphics.createBitmap(width - 32, height - 32);
         mBackgroundBitmap = graphics.createBitmap(width, height);
         setWidth(width);
         setHeight(height);
@@ -116,6 +119,10 @@ public class WindowBase extends SpriteBase implements WindowConstant {
     @Override
     public IBitmap getBitmap() {
         return mBitmap;
+    }
+
+    protected IBitmap getContent() {
+        return mContentBitmap;
     }
     // endregion Getter
 
@@ -167,6 +174,10 @@ public class WindowBase extends SpriteBase implements WindowConstant {
         mCursorRect = rect;
         mCursorDirty = true;
     }
+
+    protected void dirty() {
+        mDirty = true;
+    }
     // endregion Setter
 
     @Override
@@ -183,6 +194,12 @@ public class WindowBase extends SpriteBase implements WindowConstant {
             if (mBitmap != null) {
                 mBitmap.dispose();
                 mBitmap = null;
+            }
+
+            if (mContentBitmap != null) {
+                final IBitmap oldContent = mContentBitmap;
+                mContentBitmap = getApplication().getGraphics().createBitmap(getWidth() - 32, getHeight() - 32);
+                mContentBitmap.blt(0, 0, oldContent, oldContent.getRect(), 0);
             }
         }
 
@@ -201,6 +218,7 @@ public class WindowBase extends SpriteBase implements WindowConstant {
             return;
 
         mBitmap.blt(0, 0, mBackgroundBitmap, mBackgroundBitmap.getRect(), 0);
+        mBitmap.blt(16, 16, mContentBitmap, mContentBitmap.getRect(), 0);
 
         if (isActive()) {
             mCursorAnimationIdx = (mCursorAnimationIdx + 1) % CURSOR_ANIMATION_SRC.length;

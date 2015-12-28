@@ -83,6 +83,10 @@ public class WindowSelectableBase extends WindowBase {
     public void setBottomRow(final int row) {
         setTopRow(row - (getPageRowMax() - 1));
     }
+
+    protected void setItemMax(final int itemMax) {
+        mItemMax = itemMax;
+    }
     // endregion Setter
 
     // region Overrides
@@ -113,18 +117,18 @@ public class WindowSelectableBase extends WindowBase {
         setCursorRect(rect);
     }
 
-    private Rectangle getItemRect(final int index) {
+    protected Rectangle getItemRect(final int index) {
         final Rectangle rect = new Rectangle();
-        // TODO: content size
-        rect.width = (getWidth() - 16 + mSpacing) / mColumnMax - mSpacing;
+        rect.width = (getContent().getWidth() + mSpacing) / mColumnMax - mSpacing;
         rect.height = WINDOW_LINE_HEIGHT;
         rect.x = index % mColumnMax * (rect.width + mSpacing);
         rect.y = index / mColumnMax * WINDOW_LINE_HEIGHT;
         return rect;
     }
 
-    private boolean isCursorMovable() {
-        // TODO: if (isActive())
+    protected boolean isCursorMovable() {
+        if (!isActive())
+            return false;
         if (mIndex < 0 || mIndex > mItemMax || mItemMax == 0)
             return false;
         return true;
