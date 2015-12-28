@@ -2,8 +2,10 @@ package io.github.antijava.marjio.input;
 
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.input.IKeyInfo;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
 
 
 import java.util.Collections;
@@ -117,6 +119,7 @@ public final class Input implements IInput {
             // TODO: Data to Status
             case NetWorkClient:
             case NetworkServer: {
+
                 break;
             }
 
