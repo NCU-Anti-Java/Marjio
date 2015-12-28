@@ -5,9 +5,7 @@ import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.input.Input;
 import org.jetbrains.annotations.NotNull;
-
 /**
  * Created by Davy on 2015/12/28.
  */
@@ -98,6 +96,8 @@ public class WindowSelectableBase extends WindowBase {
             final IInput input = getApplication().getInput();
             if (input.isPressing(Key.DOWN))
                 moveCursorDown(input.isPressed(Key.DOWN));
+            if (input.isPressing(Key.UP))
+                moveCursorUp(input.isPressed(Key.UP));
             // TODO: other dirs
         }
         updateCursor();
@@ -139,6 +139,11 @@ public class WindowSelectableBase extends WindowBase {
     private void moveCursorDown(final boolean wrap) {
         if (mIndex < mItemMax - mColumnMax || (wrap && mColumnMax == 1))
             mIndex = (mIndex + mColumnMax) % mItemMax;
+    }
+
+    private void moveCursorUp(final boolean wrap) {
+        if (mIndex >= mColumnMax || (wrap && mColumnMax == 1))
+            mIndex = (mIndex - mColumnMax + mItemMax) % mItemMax;
     }
     // endregion Move Cursor
 }
