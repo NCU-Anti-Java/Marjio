@@ -3,6 +3,8 @@ package io.github.antijava.marjio.application;
 import io.github.antijava.marjio.SceneManager;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.constant.Constant;
+import io.github.antijava.marjio.graphics.Graphics;
+import io.github.antijava.marjio.scene.SceneBase;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.logging.Level;
@@ -28,7 +30,10 @@ public class Application implements IApplication, Constant {
         mInput = null;
         mServer = null;
         mClient = null;
-        mGraphics = null;
+        mGraphics = new Graphics(this);
+        ((Graphics) mGraphics).touch();
+        mSceneManager.translationTo(new SceneBase(this) {
+        });
     }
 
     /**
@@ -43,7 +48,7 @@ public class Application implements IApplication, Constant {
             // TODO: getInput().update
             if (getSceneManager().update())
                 break;
-            // TODO: getGraphics().update
+            getGraphics().update();
 
             final long elapsedTime = System.currentTimeMillis() - lastUpdate;
             try {
@@ -59,6 +64,7 @@ public class Application implements IApplication, Constant {
             getLogger().log(Level.INFO, "fps: " + Math.ceil(1000.0 / (System.currentTimeMillis() - lastUpdate)));
             lastUpdate = System.currentTimeMillis();
         }
+        System.exit(0);
     }
 
     // region Components
@@ -91,7 +97,6 @@ public class Application implements IApplication, Constant {
     }
 
     @Override
-    @Nullable
     public IGraphics getGraphics() {
         return mGraphics;
     }
