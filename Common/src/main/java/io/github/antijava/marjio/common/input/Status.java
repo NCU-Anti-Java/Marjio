@@ -7,7 +7,7 @@ public abstract class Status {
     public abstract Type getType();
     public abstract Object getData();
 
-    enum Type {
+    public enum Type {
         ServerMessage,
         ServerVerification,
         ClientMessage

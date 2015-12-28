@@ -1,5 +1,7 @@
 package io.github.antijava.marjio.common;
 
+import io.github.antijava.marjio.common.input.Status;
+
 import java.net.InetAddress;
 import java.util.List;
 
@@ -10,27 +12,27 @@ public interface IServer {
     /**
      * Start to listen on socket.
      */
-    void start();
+    void start() throws Exception;
 
     /**
      * Stop listening.
      */
-    void stop() throws InterruptedException;
+    void stop() throws Exception;
 
     /**
      * Broadcast message to all connected clients.
      *
-     * @param packableObject packable object to be sent
+     * @param status information package
      */
-    void broadcast(Packable packableObject);
+    void broadcast(Status status);
 
     /**
      * Send message to specific client
      *
-     * @param packableObject packable object to be sent
+     * @param status information package
      * @param address client's address which will received messages
      */
-    void send(Packable packableObject, InetAddress address);
+    void send(Status status, InetAddress address);
 
     /**
      * Return all connected clients' information.
