@@ -25,24 +25,38 @@ public class WindowBase extends SpriteBase {
             new Rectangle( 80,  0, 32, 16),
             new Rectangle( 80, 48, 32, 16)
     };
-    private static final Rectangle[] SCROLL_ARROW_SRC = new Rectangle[]{
+    private static final Rectangle[] SCROLL_ARROW_SRC = new Rectangle[] {
             new Rectangle( 80, 24, 8, 16),
             new Rectangle(104, 24, 8, 16),
             new Rectangle( 88, 16, 16, 8),
             new Rectangle( 88, 40, 16, 8)
     };
-    private static final Rectangle[] PAUSE_SRC = new Rectangle[]{
+    private static final Rectangle[] PAUSE_SRC = new Rectangle[] {
             new Rectangle( 96, 64, 16, 16),
             new Rectangle(112, 64, 16, 16),
             new Rectangle( 96, 80, 16, 16),
             new Rectangle(112, 80, 16, 16)
     };
+    private static final Rectangle[] CURSOR_CORNER_SRC = new Rectangle[] {
+            new Rectangle(64, 64, 4, 4),
+            new Rectangle(92, 64, 4, 4),
+            new Rectangle(64, 92, 4, 4),
+            new Rectangle(92, 92, 4, 4)
+    };
+    private static final Rectangle[] CURSOR_BORDER_SRC = new Rectangle[] {
+            new Rectangle(64, 68,  4, 24),
+            new Rectangle(92, 68,  4, 24),
+            new Rectangle(68, 64, 24,  4),
+            new Rectangle(68, 92, 24,  4)
+    };
+    private static final Rectangle CURSOR_BG_SRC = new Rectangle(68, 68, 24, 24);
 
     private final IApplication mApplication;
     private IBitmap mWindowskin;
     private final IBitmap mBitmap;
     private final IBitmap mBackgroundBitmap;
     private int mWidth, mHeight;
+    private Rectangle mCursorRect;
     private boolean mDirty = true, mSizeChanged = true;
 
     public WindowBase(@NotNull IApplication application, @NotNull IBitmap windowskin, int width, int height) {
@@ -64,6 +78,10 @@ public class WindowBase extends SpriteBase {
 
     public int getHeight() {
         return mHeight;
+    }
+
+    public Rectangle getCursorRect() {
+        return mCursorRect;
     }
 
     @Override
@@ -92,6 +110,11 @@ public class WindowBase extends SpriteBase {
             mSizeChanged = true;
         }
     }
+
+    public void setCursorRect(final Rectangle rect) {
+        mCursorRect = rect;
+        mDirty = true;
+    }
     // endregion Setter
 
     @Override
@@ -101,8 +124,55 @@ public class WindowBase extends SpriteBase {
         if (mSizeChanged)
             sizeChanged();
 
-        if (mDirty)
-            mBitmap.blt(0, 0, mBackgroundBitmap, mBackgroundBitmap.getRect(), 0);
+        if (!mDirty)
+            return;
+
+        mBitmap.blt(0, 0, mBackgroundBitmap, mBackgroundBitmap.getRect(), 0);
+
+        // Cursor
+        if (mCursorRect != null) {
+            // Cornor
+            {
+                final Rectangle cursorRect = new Rectangle(mCursorRect);
+                cursorRect.x += 16;
+                cursorRect.y += 16;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_CORNER_SRC[0], 0);
+                cursorRect.x += mCursorRect.width - 4;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_CORNER_SRC[1], 0);
+                cursorRect.x = mCursorRect.x + 16;
+                cursorRect.y += mCursorRect.height - 4;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_CORNER_SRC[2], 0);
+                cursorRect.x += mCursorRect.width - 4;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_CORNER_SRC[3], 0);
+            }
+
+            // Side
+            {
+                final Rectangle cursorRect = new Rectangle(mCursorRect);
+                cursorRect.x += 16;
+                cursorRect.y += 16;
+                cursorRect.y += 4;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_BORDER_SRC[0], 0);
+                cursorRect.x += mCursorRect.width - 4;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_BORDER_SRC[1], 0);
+                cursorRect.x = mCursorRect.x + 16;
+                cursorRect.y = mCursorRect.y + 16;
+                cursorRect.x += 4;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_BORDER_SRC[2], 0);
+                cursorRect.y += mCursorRect.height - 4;
+                mBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_BORDER_SRC[3], 0);
+            }
+
+            // Background
+            {
+                final Rectangle cursorRect = new Rectangle(mCursorRect);
+                cursorRect.x += 16;
+                cursorRect.y += 16;
+                cursorRect.width -= 8;
+                cursorRect.height -= 8;
+                mBackgroundBitmap.stretchBlt(cursorRect, mWindowskin, CURSOR_BG_SRC, 0);
+            }
+        }
     }
 
     private void rebuildBackground() {
