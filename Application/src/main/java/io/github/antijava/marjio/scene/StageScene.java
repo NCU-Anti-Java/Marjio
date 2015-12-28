@@ -4,6 +4,7 @@ import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.Player;
 
@@ -53,6 +54,7 @@ public class StageScene extends SceneBase {
         }
 
         checkKeyState();
+        checkStatus();
 
         mYourPlayer.preUpdate();
         for (Iterator it = mOtherPlayers.iterator(); it.hasNext(); ) {
@@ -65,6 +67,10 @@ public class StageScene extends SceneBase {
         // TODO: Load the true data from server.
 
         // TODO: Draw scene on the graphics.
+    }
+
+    public void checkStatus () {
+        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
     }
 
     private void checkKeyState() {
