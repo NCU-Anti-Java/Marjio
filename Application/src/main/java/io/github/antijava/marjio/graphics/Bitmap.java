@@ -82,9 +82,26 @@ public class Bitmap implements IBitmap {
         if (isDisposed())
             throw new ObjectDisposedException();
 
+        // Calculate clipping bounds
+        // Do when maxWidth != -1
+        if (maxWidth != -1) {
+            final Rectangle bounds = measureText(text, lineHeight);
+            bounds.width = maxWidth;
+
+            // Apply clipping bounds
+            mAwtGraphics2D.clipRect(x, y, bounds.width, bounds.height);
+        }
+
+        // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
         layout.draw(mAwtGraphics2D, x, y);
+
+        // Remove clipping bounds
+        // Do when maxWidth != -1
+        if (maxWidth != -1) {
+            mAwtGraphics2D.clipRect(0, 0, mImage.getWidth(), mImage.getHeight());
+        }
     }
 
     @Override
