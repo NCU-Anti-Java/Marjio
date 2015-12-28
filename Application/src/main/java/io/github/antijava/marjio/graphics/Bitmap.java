@@ -10,6 +10,7 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
@@ -17,7 +18,6 @@ import java.awt.RenderingHints;
 import java.awt.TexturePaint;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 /**
@@ -87,15 +87,21 @@ public class Bitmap implements IBitmap {
             mAwtGraphics2D.clipRect(x, y, bounds.width, bounds.height);
         }
 
+        final Rectangle bounds = measureText(text, lineHeight);
+        if (align == TextAlign.CENTER)
+            x += (maxWidth - bounds.width) / 2;
+        if (align == TextAlign.RIGHT)
+            x += maxWidth - bounds.width;
+
         // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
-        layout.draw(mAwtGraphics2D, x, y);
+        layout.draw(mAwtGraphics2D, x, y + layout.getAscent());
 
         // Remove clipping bounds
         // Do when maxWidth != -1
         if (maxWidth != -1) {
-            mAwtGraphics2D.clipRect(0, 0, mImage.getWidth(), mImage.getHeight());
+            mAwtGraphics2D.setClip(null);
         }
     }
 
@@ -115,13 +121,32 @@ public class Bitmap implements IBitmap {
     }
 
     @Override
+    public void drawText(CharSequence text, Rectangle rect, Color color, TextAlign align) {
+        drawText(text, rect.x, rect.y, rect.width, rect.height, color, align);
+    }
+
+    @Override
+    public void drawText(CharSequence text, Rectangle rect, TextAlign align) {
+        drawText(text, rect, Color.BLACK, align);
+    }
+
+    @Override
+    public void drawText(CharSequence text, Rectangle rect, Color color) {
+        drawText(text, rect, color, TextAlign.LEFT);
+    }
+
+    @Override
+    public void drawText(CharSequence text, Rectangle rect, int lineHeight) {
+        drawText(text, rect, Color.BLACK, TextAlign.LEFT);
+    }
+
+    @Override
     public Rectangle measureText(CharSequence text, int lineHeight) {
         if (isDisposed())
             throw new ObjectDisposedException();
 
-        final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
-        final Rectangle2D bounds = layout.getBounds();
-        return new Rectangle((int)bounds.getX(), (int)bounds.getY(), (int)bounds.getWidth(), (int)bounds.getHeight());
+        final FontMetrics metrics = mAwtGraphics2D.getFontMetrics(mAwtTextFont);
+        return new Rectangle(metrics.stringWidth(text.toString()), metrics.getHeight());
     }
 
     @Override
