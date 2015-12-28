@@ -33,7 +33,6 @@ public class Application implements IApplication, Constant {
         mServer = null;
         mClient = null;
         mGraphics = new Graphics(this);
-        ((Graphics) mGraphics).touch();
         mSceneManager.translationTo(new MainScene(this));
     }
 

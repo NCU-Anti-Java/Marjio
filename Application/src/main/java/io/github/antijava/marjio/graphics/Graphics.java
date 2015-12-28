@@ -1,21 +1,20 @@
 package io.github.antijava.marjio.graphics;
 
-
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IGraphics;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.IFont;
 import io.github.antijava.marjio.common.graphics.ISprite;
-import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.constant.GameConstant;
-import io.github.antijava.marjio.window.WindowBase;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -27,53 +26,53 @@ import java.util.ArrayList;
  * @author Jason
  */
 public class Graphics implements IGraphics, GameConstant {
-    private final Viewport mDefaultViewport = new Viewport();
+    private static final Viewport sDefaultViewport = new Viewport();
+    private static final Font sDefaultFont = new Font("MingLiu", 12, false, false);
     private final IApplication mApplication;
     private final ArrayList<Font> mFonts;
     private final ArrayList<Viewport> mViewports;
-    private final JPanel mPanel;
-    private WindowBase windowBase;
-    private BufferedImage bufferedImage;
+    private final JPanel mSwingPanel;
+    private final BufferedImage mCanvas;
+    private final Graphics2D mCanvasGraphics;
 
     public Graphics(IApplication application) {
         mApplication = application;
-        bufferedImage = new BufferedImage(GAME_WIDTH, GAME_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        mPanel = new JPanel() {
+        mCanvas = new BufferedImage(GAME_WIDTH, GAME_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        mCanvasGraphics = mCanvas.createGraphics();
+        mCanvasGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        mCanvasGraphics.setBackground(Color.BLACK);
+
+        mSwingPanel = new JPanel() {
             @Override
             public void paint(java.awt.Graphics g) {
-                g.drawImage(bufferedImage, 0, 0, null);
+                g.drawImage(mCanvas, 0, 0, null);
             }
         };
 
+        // Java Window
         final JFrame mFrame = new JFrame();
         mFrame.setSize(GAME_WIDTH, GAME_HEIGHT);
         mFrame.setResizable(false);
         mFrame.setLocationRelativeTo(null);
-        mFrame.add(mPanel);
+        mFrame.add(mSwingPanel);
         mFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         new Thread(() -> {
-            mFrame.setVisible(true);
+            mFrame.setVisible(true); // Run window loop
         }).run();
 
         mFonts = new ArrayList<>();
-        mFonts.add(new Font("MingLiu", 12, false, false));
+        mFonts.add(sDefaultFont);
 
         mViewports = new ArrayList<>();
-        mViewports.add(mDefaultViewport);
-    }
-
-    public void touch() {
-        try {
-            windowBase = new WindowBase(mApplication, loadBitmap("windowskin/default.png"), 200, 200);
-            windowBase.setActive(true);
-        } catch (NoSuchFileException e) {
-            windowBase = null;
-            System.exit(1);
-        }
+        mViewports.add(sDefaultViewport);
     }
 
     @Override
     public void update() {
+        // Clean up
+        final java.awt.Graphics g = mCanvas.getGraphics();
+        g.setColor(Color.black);
+        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         // TODO: Finish implement
         ArrayList<ISprite> sprites = SpriteBase.getSprites();
         for (ISprite sprite : sprites) {
@@ -81,25 +80,17 @@ public class Graphics implements IGraphics, GameConstant {
             Viewport viewport = sprite.getViewport();
         }
 
-        windowBase.setWidth((windowBase.getWidth() + 1) % 200 + 200);
-        windowBase.setHeight((windowBase.getHeight() + 3) % 200 + 200);
-        windowBase.setCursorRect(new Rectangle(0, 0, 100, 150));
-        windowBase.update();
-        final java.awt.Graphics g = bufferedImage.getGraphics();
-        g.setColor(Color.black);
-        g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        g.drawImage(((Bitmap) windowBase.getBitmap()).mImage, 0, 0, null);
-        mPanel.repaint();
+        mSwingPanel.repaint();
     }
 
     @Override
     public IFont getDefaultFont() {
-        return mFonts.get(0);
+        return sDefaultFont;
     }
 
     @Override
     public Viewport getDefaultViewport() {
-        return mDefaultViewport;
+        return sDefaultViewport;
     }
 
     @Override
