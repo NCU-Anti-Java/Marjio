@@ -9,6 +9,8 @@ import org.junit.Test;
 import java.awt.Button;
 import java.awt.event.KeyEvent;
 
+import static io.github.antijava.marjio.common.input.Event.Type.Keyboard;
+
 /**
  * Created by firejox on 2015/12/26.
  */
@@ -19,46 +21,25 @@ public class InputTest {
 
     @Before
     public void setup() throws Throwable {
-        pressed_evt = new Event() {
-            AWTKeyInfo info = new AWTKeyInfo(
-                    new KeyEvent(
-                            new Button(),
-                            KeyEvent.KEY_PRESSED,
-                            0,
-                            0,
-                            KeyEvent.VK_A,
-                            'a'));
+        final AWTKeyInfo infoPressed = new AWTKeyInfo(
+                new KeyEvent(
+                        new Button(),
+                        KeyEvent.KEY_PRESSED,
+                        0,
+                        0,
+                        KeyEvent.VK_A,
+                        'a'));
+        pressed_evt = new Event(infoPressed, Keyboard);
 
-            @Override
-            public Type getType() {
-                return Type.Keyboard;
-            }
-
-            @Override
-            public Object getData() {
-                return info;
-            }
-        };
-        released_evt = new Event() {
-            AWTKeyInfo info = new AWTKeyInfo(
-                    new KeyEvent(
-                            new Button(),
-                            KeyEvent.KEY_RELEASED,
-                            0,
-                            0,
-                            KeyEvent.VK_A,
-                            'a'));
-
-            @Override
-            public Type getType() {
-                return Type.Keyboard;
-            }
-
-            @Override
-            public Object getData() {
-                return info;
-            }
-        };
+        final AWTKeyInfo infoReleased = new AWTKeyInfo(
+                new KeyEvent(
+                        new Button(),
+                        KeyEvent.KEY_RELEASED,
+                        0,
+                        0,
+                        KeyEvent.VK_A,
+                        'a'));
+        released_evt = new Event(infoReleased, Keyboard);
 
         input = new Input();
     }
