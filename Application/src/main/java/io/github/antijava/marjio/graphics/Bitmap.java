@@ -83,7 +83,7 @@ public class Bitmap implements IBitmap {
             throw new ObjectDisposedException();
 
         // Calculate clipping bounds
-        Rectangle bounds = measureText(text, lineHeight);
+        final Rectangle bounds = measureText(text, lineHeight);
         bounds.width = maxWidth;
 
         // Apply clipping bounds
