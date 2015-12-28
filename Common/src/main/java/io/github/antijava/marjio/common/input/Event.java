@@ -7,7 +7,7 @@ public class Event {
     Object obj;
     Type type;
 
-    Event (Object obj, Type type) {
+    public Event(Object obj, Type type) {
         this.obj = obj;
         this.type = type;
     }

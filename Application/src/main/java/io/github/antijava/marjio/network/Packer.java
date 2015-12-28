@@ -2,7 +2,6 @@ package io.github.antijava.marjio.network;
 
 import java.io.IOException;
 import com.bluelinelabs.logansquare.LoganSquare;
-import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Status;
 
 /**
