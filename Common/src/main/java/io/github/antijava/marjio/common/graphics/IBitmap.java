@@ -155,6 +155,29 @@ public interface IBitmap extends Disposable {
     void stretchBlt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity);
 
     /**
+     * Performs a block tiled from the {@param src} box {@param srcRect} to destination rect.
+     *
+     * @param x The x coordinate for the left-top corner of destination rectangle.
+     * @param y The y coordinate for the left-top corner of destination rectangle.
+     * @param width The width of destination rectangle.
+     * @param height The height of destination rectangle.
+     * @param src The source bitmap.
+     * @param srcRect The source rectangle for the bitmap.
+     * @param opacity Opacity can be set from 0 to 255.
+     */
+    void tileBlt(int x, int y, int width, int height, IBitmap src, Rectangle srcRect, int opacity);
+
+    /**
+     * Performs a block tiled from the {@param src} box {@param srcRect} to destination rect.
+     *
+     * @param rect The destination rectangle.
+     * @param src The source bitmap.
+     * @param srcRect The source rectangle for the bitmap.
+     * @param opacity Opacity can be set from 0 to 255.
+     */
+    void tileBlt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity);
+
+    /**
      * Resizes the bitmap.
      *
      * @param width The new width of the bitmap.
