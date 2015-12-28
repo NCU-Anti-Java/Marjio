@@ -36,7 +36,7 @@ public class Client extends Connector implements IClient {
     }
 
     @Override
-    protected void onReceive(byte[] data) throws Exception {
+    protected void onReceive(byte[] data, InetAddress address) throws Exception {
         mConnectedFlag = true;
         // TODO: Decode and triggerEvent()
     }
