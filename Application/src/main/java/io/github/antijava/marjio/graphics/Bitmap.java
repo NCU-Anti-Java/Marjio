@@ -78,16 +78,11 @@ public class Bitmap implements IBitmap {
             throw new ObjectDisposedException();
 
         // Calculate clipping bounds
-        // Do when maxWidth != -1
-        if (maxWidth != -1) {
-            final Rectangle bounds = measureText(text, lineHeight);
-            bounds.width = maxWidth;
-
-            // Apply clipping bounds
-            mAwtGraphics2D.clipRect(x, y, bounds.width, bounds.height);
-        }
-
         final Rectangle bounds = measureText(text, lineHeight);
+        final int boxWidth = maxWidth != -1 ? maxWidth : bounds.width;
+        // Apply clipping bounds
+        mAwtGraphics2D.clipRect(x, y, boxWidth, lineHeight);
+
         if (align == TextAlign.CENTER)
             x += (maxWidth - bounds.width) / 2;
         if (align == TextAlign.RIGHT)
@@ -96,13 +91,10 @@ public class Bitmap implements IBitmap {
         // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
-        layout.draw(mAwtGraphics2D, x, y + layout.getAscent());
+        layout.draw(mAwtGraphics2D, x, y + (lineHeight + layout.getAscent()) / 2);
 
         // Remove clipping bounds
-        // Do when maxWidth != -1
-        if (maxWidth != -1) {
-            mAwtGraphics2D.setClip(null);
-        }
+        mAwtGraphics2D.setClip(null);
     }
 
     @Override
