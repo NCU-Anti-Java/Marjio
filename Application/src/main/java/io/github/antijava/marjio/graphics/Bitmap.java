@@ -24,10 +24,10 @@ import java.awt.image.BufferedImage;
  * Created by Jason on 2015/12/26.
  */
 public class Bitmap implements IBitmap {
-    private IFont mFont;
-
     private Graphics2D mAwtGraphics2D;
     BufferedImage mImage;
+
+    private IFont mFont;
     private Font mAwtTextFont;
     private final FontRenderContext mAwtFontRenderContext;
 
