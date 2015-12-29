@@ -1,7 +1,6 @@
 package io.github.antijava.marjio.scene.sceneObject;
 
 import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
 import io.github.antijava.marjio.scene.SceneBase;
@@ -16,6 +15,7 @@ import java.util.logging.Level;
  * Created by Zheng-Yuan on 12/29/2015.
  */
 public class SceneMap extends SceneBase implements SceneObjectConstant {
+    private final static
     private final static String MAPFILE = "map1.txt";
     private int mRow;
     private int mCol;
@@ -29,7 +29,7 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
             getApplication().getLogger().log(Level.INFO, "Attemp to load map level > 1");
     }
 
-    public List<Block> getAdjecentBlocks(Player player) {
+    public List<Block> getAdjacentBlocks(Player player) {
         final int x = player.getX() / BLOCK_SIZE;
         final int y = player.getY() / BLOCK_SIZE;
         List<Block> result = new ArrayList<>();
