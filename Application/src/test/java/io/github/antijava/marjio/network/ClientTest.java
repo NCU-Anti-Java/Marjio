@@ -49,10 +49,12 @@ public class ClientTest {
     public void testOnReceive() throws Exception {
         byte[] data = "SOMETHING".getBytes();
         when(mReceiver.recieve()).thenReturn(data);
+        when(mReceiver.getData()).thenReturn(data);
+        when(mReceiver.getSourceAddress()).thenReturn(mAddress);
 
         mClient.start(mAddress);
 
-        verify(mClient, atLeastOnce()).onReceive(data);
+        verify(mClient, atLeastOnce()).onReceive(data, mAddress);
     }
 
     /**
