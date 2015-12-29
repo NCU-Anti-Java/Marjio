@@ -32,6 +32,11 @@ public class Status {
         this.type = type;
     }
 
+    public Status(io.github.antijava.marjio.common.input.Status status) {
+        statusData = (StatusData)status.getData();
+        type = status.getType().getValue();
+    }
+
     public Object getData() {
 
         return statusData;
@@ -48,9 +53,9 @@ public class Status {
         return this;
     }
 
-    public Status AfterUnpack() {
+    public io.github.antijava.marjio.common.input.Status AfterUnpack() {
 
         statusData.AfterUnpack();
-        return this;
+        return new io.github.antijava.marjio.common.input.Status(statusData, io.github.antijava.marjio.common.input.Status.Type.TypeOfInt(type));
     }
 }
