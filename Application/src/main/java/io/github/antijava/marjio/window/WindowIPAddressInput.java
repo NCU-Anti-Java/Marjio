@@ -7,6 +7,7 @@ import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.IBitmap.TextAlign;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.utils.NumberUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -40,6 +41,30 @@ public class WindowIPAddressInput extends WindowBase {
                     mIndex += 1;
                 if (mIndex > 14)
                     mIndex = 14;
+            }
+            if (input.isRepeat(Key.UP)) {
+                final int part = mIndex / 4;
+                final int _10base = (int) Math.pow(10, 2 - mIndex % 4);
+                final int before = (mIP[part] / _10base / 10) * _10base * 10;
+                final int after = mIP[part] % _10base;
+                int val = (mIP[part] / _10base);
+                do {
+                    val = (val + 9) % 10;
+                    mIP[part] = before + val * _10base + after;
+                } while (0 > mIP[part] || mIP[part] > 255);
+                refresh();
+            }
+            if (input.isRepeat(Key.DOWN)) {
+                final int part = mIndex / 4;
+                final int _10base = (int) Math.pow(10, 2 - mIndex % 4);
+                final int before = (mIP[part] / _10base / 10) * _10base * 10;
+                final int after = mIP[part] % _10base;
+                int val = (mIP[part] / _10base);
+                do {
+                    val = (val + 1) % 10;
+                    mIP[part] = before + val * _10base + after;
+                } while (0 > mIP[part] || mIP[part] > 255);
+                refresh();
             }
         }
         updateCursor();
