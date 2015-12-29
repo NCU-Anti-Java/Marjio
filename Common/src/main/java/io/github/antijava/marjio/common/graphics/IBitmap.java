@@ -66,6 +66,38 @@ public interface IBitmap extends Disposable {
     void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight);
 
     /**
+     * Draws the outline text on the bitmap.
+     *
+     * @param text The text that will be drawn.
+     * @param color The color of the text.
+     * @param rect The box for the text.
+     * @param align The alignment of the text.
+     */
+    void drawText(CharSequence text, Rectangle rect, Color color, TextAlign align);
+
+    /**
+     * {@code color} defaults to {@link Color::BLACK}.
+     *
+     * @see #drawText(CharSequence, Rectangle, Color, TextAlign)
+     */
+    void drawText(CharSequence text, Rectangle rect, TextAlign align);
+
+    /**
+     * {@code align} defaults to {@link TextAlign#LEFT}.
+     *
+     * @see #drawText(CharSequence, Rectangle, Color, TextAlign)
+     */
+    void drawText(CharSequence text, Rectangle rect, Color color);
+
+    /**
+     * {@code color} defaults to {@link Color::BLACK}.
+     * {@code align} defaults to {@link TextAlign#LEFT}.
+     *
+     * @see #drawText(CharSequence, Rectangle, Color, TextAlign)
+     */
+    void drawText(CharSequence text, Rectangle rect, int lineHeight);
+
+    /**
      * Returns a rectangle contains the outline text.
      *
      * @param text The text.

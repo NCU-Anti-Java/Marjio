@@ -1,9 +1,11 @@
 package io.github.antijava.marjio.common.graphics;
 
+import io.github.antijava.marjio.common.Disposable;
+
 /**
  * Created by fntsr on 2015/12/23.
  */
-public interface ISprite {
+public interface ISprite extends Disposable {
     /**
      * Updates the sprite for each frame.
      */

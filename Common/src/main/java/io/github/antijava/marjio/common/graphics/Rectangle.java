@@ -10,6 +10,8 @@ public class Rectangle {
         this(0, 0, 0, 0);
     }
 
+    public Rectangle(final Rectangle rect) { this(rect.x, rect.y, rect.width, rect.height); }
+
     public Rectangle(int width, int height) {
         this(0, 0, width, height);
     }
