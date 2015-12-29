@@ -1,6 +1,6 @@
 package io.github.antijava.marjio.network;
 
-import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.Event;
 
 import java.io.IOException;
 
@@ -14,18 +14,22 @@ public class Packer {
         return StatusData__JsonHelper.serializeToJson(statusData);
     }
 
-    public static StatusData unpack(String string) throws IOException {
+    public static StatusData unpack(String JSONstring) throws IOException {
 
-        return StatusData__JsonHelper.parseFromJson(string);
+        return StatusData__JsonHelper.parseFromJson(JSONstring);
     }
 
-    public byte[] pack(Status status) throws IOException {
+    /*
+     * @Param statusData
+     * @Param type:
+     *             tag Type.NetworkServer:
+     *                 when Server recv packet from Client, and Server need pass Event to Input Module
+     *             tag Type.NetworkClient:
+     *                 when Client recv packet from Server, and need pass Event to Input Module
+     */
+    public static Event toEvent(StatusData statusData, Event.Type type) {
 
-        return null;
+        return new Event(statusData, type);
     }
 
-    public Status unpack2(byte[] bytes) throws IOException {
-
-        return null;
-    }
 }
