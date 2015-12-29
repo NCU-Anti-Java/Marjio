@@ -24,6 +24,8 @@ public abstract class SpriteBase extends Sprite {
 
     @Override
     public void update() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
     }
 
     @Override

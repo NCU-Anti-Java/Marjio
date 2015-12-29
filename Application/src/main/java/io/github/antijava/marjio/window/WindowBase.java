@@ -70,6 +70,7 @@ public class WindowBase extends SpriteBase implements WindowConstant {
     private IBitmap mBackgroundBitmap;
     private IBitmap mCursorBitmap;
     private int mWidth, mHeight;
+    private int mOpacity = 0, mBackgroundOpacity = 0;
     private Rectangle mCursorRect;
     private int mCursorAnimationIdx = 0;
     private boolean mActive = false;
@@ -119,6 +120,10 @@ public class WindowBase extends SpriteBase implements WindowConstant {
     @Override
     public IBitmap getBitmap() {
         return mBitmap;
+    }
+
+    public int getBackgroundOpacity() {
+        return mBackgroundOpacity;
     }
 
     protected IBitmap getContent() {
@@ -175,6 +180,11 @@ public class WindowBase extends SpriteBase implements WindowConstant {
         mCursorDirty = true;
     }
 
+    public void setBackgroundOpacity(final int opacity) {
+        mBackgroundOpacity = opacity;
+        dirty();
+    }
+
     protected void dirty() {
         mDirty = true;
     }
@@ -217,15 +227,16 @@ public class WindowBase extends SpriteBase implements WindowConstant {
         if (!mDirty)
             return;
 
-        mBitmap.blt(0, 0, mBackgroundBitmap, mBackgroundBitmap.getRect(), 0);
+        mBitmap.blt(0, 0, mBackgroundBitmap, mBackgroundBitmap.getRect(), mBackgroundOpacity);
         mBitmap.blt(16, 16, mContentBitmap, mContentBitmap.getRect(), 0);
 
-        if (isActive()) {
+        if (isActive() && getCursorRect() != null) {
             mCursorAnimationIdx = (mCursorAnimationIdx + 1) % CURSOR_ANIMATION_SRC.length;
 
             // TODO: convert list to (255 - it)
             final int cursorOpacity = 255 - CURSOR_ANIMATION_SRC[mCursorAnimationIdx];
-            mBitmap.blt(getCursorRect().x + 16, getCursorRect().y + 16, mCursorBitmap, mCursorBitmap.getRect(), cursorOpacity);
+            mBitmap.blt(getCursorRect().x + 16, getCursorRect().y + 16, mCursorBitmap, mCursorBitmap.getRect(),
+                    cursorOpacity);
         }
     }
 

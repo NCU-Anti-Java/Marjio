@@ -94,9 +94,9 @@ public class WindowSelectableBase extends WindowBase {
 
         if (isCursorMovable()) {
             final IInput input = getApplication().getInput();
-            if (input.isPressing(Key.DOWN))
+            if (input.isRepeat(Key.DOWN))
                 moveCursorDown(input.isPressed(Key.DOWN));
-            if (input.isPressing(Key.UP))
+            if (input.isRepeat(Key.UP))
                 moveCursorUp(input.isPressed(Key.UP));
             // TODO: other dirs
         }
