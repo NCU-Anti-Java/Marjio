@@ -16,125 +16,110 @@ import java.util.Vector;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-
 /**
  * Created by firejox on 2015/12/25.
  */
 public final class Input implements IInput {
-    static final Map<Key, Key> keymap;
+    static final Map<Key, Key> sKeymap = new EnumMap<>(Key.class);
 
     static {
-        keymap = new EnumMap<>(Key.class);
-
-        keymap.put(Key.JUMP, Key.UP);
-        keymap.put(Key.MOVE_RIGHT, Key.RIGHT);
-        keymap.put(Key.MOVE_LEFT, Key.LEFT);
-        keymap.put(Key.CROUCH, Key.DOWN);
+        sKeymap.put(Key.JUMP, Key.UP);
+        sKeymap.put(Key.MOVE_RIGHT, Key.RIGHT);
+        sKeymap.put(Key.MOVE_LEFT, Key.LEFT);
+        sKeymap.put(Key.CROUCH, Key.DOWN);
     }
 
-    Set<Key> pro_keys;
-    Set<Key> cur_keys;
-    Set<Key> pre_keys;
-    Map<Key, Integer> key_count;
+    private Set<Key> mNextKeys;
+    private Set<Key> mCurrentKeys;
+    private Set<Key> mPreviousKeys;
+    private Map<Key, Integer> mKeyRepeatCount;
 
-    Vector<Status> statuses;
-    Vector<Status> statuses_cached;
+    private Vector<Status> mStatuses;
+    private Vector<Status> mStatusesCached;
 
-    ReadWriteLock lock;
-
+    private ReadWriteLock mLock;
 
     public Input() {
+        mNextKeys = EnumSet.noneOf(Key.class);
+        mCurrentKeys = EnumSet.noneOf(Key.class);
+        mPreviousKeys = EnumSet.noneOf(Key.class);
 
-        pro_keys = EnumSet.noneOf(Key.class);
-        cur_keys = EnumSet.noneOf(Key.class);
-        pre_keys = EnumSet.noneOf(Key.class);
+        mKeyRepeatCount = new EnumMap<>(Key.class);
 
-        key_count = new EnumMap<>(Key.class);
+        mStatuses = new Vector<>();
+        mStatusesCached = new Vector<>();
 
-        statuses_cached = new Vector<>();
-        statuses = new Vector<>();
-
-        lock = new ReentrantReadWriteLock();
+        mLock = new ReentrantReadWriteLock();
     }
 
     @Override
     public void update() {
-        Set<Key> tmp_keys;
-        Vector<Status> tmp_statuses;
+        // Lock for swapping spaces
+        mLock.writeLock().lock();
 
+        mPreviousKeys.retainAll(mNextKeys);
+        mPreviousKeys.addAll(mNextKeys);
 
-        /**
-         * for cached current states
-         * */
-        lock.writeLock().lock();
+        // Rolling optimized
+        final Set<Key> tmpKeys = mPreviousKeys;
+        mPreviousKeys = mCurrentKeys;
+        mCurrentKeys = mNextKeys;
+        mNextKeys = tmpKeys;
 
-        pre_keys.retainAll(pro_keys);
-        pre_keys.addAll(pro_keys);
+        // Switching using Vector for optimization
+        final Vector<Status> tmpStatuses = mStatusesCached;
+        mStatusesCached = mStatuses;
+        mStatuses = tmpStatuses;
+        mStatuses.clear();
 
-        /* rolling optimized */
-        tmp_keys = pre_keys;
-        pre_keys = cur_keys;
-        cur_keys = pro_keys;
-        pro_keys = tmp_keys;
+        // Unlock
+        mLock.writeLock().unlock();
 
-        statuses_cached.clear();
+        // Reset released key's repeat count
+        mKeyRepeatCount.keySet().stream()
+                .filter(key -> !mCurrentKeys.contains(key))
+                .forEach(key -> mKeyRepeatCount.put(key, -1));
 
-        tmp_statuses = statuses_cached;
-        statuses_cached = statuses;
-        statuses = tmp_statuses;
-
-        lock.writeLock().unlock();
-
-
-        for (Key key : key_count.keySet())
-            if (!cur_keys.contains(key))
-                key_count.put(key, -1);
-
-        for (Key key : cur_keys)
-            key_count.put(key, key_count.getOrDefault(key, -1) + 1);
-
-
-
-    }
-
-
-    @Override
-    public boolean isPressing(Key key) {
-        key = keymap.getOrDefault(key, key);
-
-        return  key != Key.UNDEFINED &&
-                (pre_keys.contains(key) &&
-                cur_keys.contains(key));
+        for (final Key key : mCurrentKeys)
+            mKeyRepeatCount.put(key, mKeyRepeatCount.getOrDefault(key, -1) + 1);
     }
 
     @Override
-    public boolean isPressed(Key key) {
-        key = keymap.getOrDefault(key, key);
+    public boolean isPressing(final Key k) {
+        final Key key = getRealKey(k);
 
         return key != Key.UNDEFINED &&
-                (!pre_keys.contains(key) &&
-                cur_keys.contains(key));
+                (mPreviousKeys.contains(key) &&
+                mCurrentKeys.contains(key));
     }
 
     @Override
-    public boolean isReleased(Key key) {
-        key = keymap.getOrDefault(key, key);
+    public boolean isPressed(final Key k) {
+        final Key key = getRealKey(k);
 
-        return  key != Key.UNDEFINED &&
-                (pre_keys.contains(key) &&
-                !cur_keys.contains(key));
+        return key != Key.UNDEFINED &&
+                (!mPreviousKeys.contains(key) &&
+                mCurrentKeys.contains(key));
+    }
+
+    @Override
+    public boolean isReleased(final Key k) {
+        final Key key = getRealKey(k);
+
+        return key != Key.UNDEFINED &&
+                (mPreviousKeys.contains(key) &&
+                !mCurrentKeys.contains(key));
     }
 
     @Override
     public boolean isTrigger(Key key) {
-
         return isPressed(key) || isReleased(key);
     }
 
     @Override
-    public boolean isRepeat(Key key) {
-        key = keymap.getOrDefault(key, key);
-        final int count = key_count.getOrDefault(key, -1);
+    public boolean isRepeat(final Key k) {
+        final Key key = getRealKey(k);
+        final int count = mKeyRepeatCount.getOrDefault(key, -1);
 
         if (key == Key.UNDEFINED && count > -1) // Invalid key or not pressing
             return false;
@@ -148,22 +133,21 @@ public final class Input implements IInput {
 
     @Override
     public List<Status> getStatuses() {
-
-        return statuses_cached;
+        return mStatusesCached;
     }
 
     @Override
     public void triggerEvent(Event evt) {
-        lock.readLock().lock();
+        mLock.readLock().lock();
 
         switch (evt.getType()) {
             case Keyboard: {
-                IKeyInfo info = (IKeyInfo)evt.getData();
+                final IKeyInfo info = (IKeyInfo) evt.getData();
 
                 if (info.getKeyState() == KeyState.KEY_PRESSED)
-                    pro_keys.add(info.getKey());
+                    mNextKeys.add(info.getKey());
                 else if (info.getKeyState() == KeyState.KEY_RELEASED)
-                    pro_keys.remove(info.getKey());
+                    mNextKeys.remove(info.getKey());
 
                 break;
             }
@@ -171,14 +155,16 @@ public final class Input implements IInput {
             // TODO: Data to Status
             case NetWorkClient:
             case NetworkServer: {
-                statuses.add((Status)evt.getData());
+                mStatuses.add((Status) evt.getData());
                 break;
             }
 
         }
 
-        lock.readLock().unlock();
+        mLock.readLock().unlock();
+    }
+
+    private Key getRealKey(final Key k) {
+        return sKeymap.getOrDefault(k, k);
     }
 }
-
-
