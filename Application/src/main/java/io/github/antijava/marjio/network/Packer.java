@@ -1,22 +1,40 @@
 package io.github.antijava.marjio.network;
 
+import io.github.antijava.marjio.common.input.Event;
+
 import java.io.IOException;
-import com.bluelinelabs.logansquare.LoganSquare;
-import io.github.antijava.marjio.common.input.Status;
 
 /**
  * Created by Date on 2015/12/28.
  */
 public class Packer {
 
-    // 因為這部分還沒完成，若直接設置成 static 方法會導致測試無法通過，所以先去掉 static 修飾詞
-    public byte[] pack(Status status) throws IOException {
-        return LoganSquare.serialize(status).getBytes();
+    /*
+     * StatusData__JsonHelper need to use `gradle clean && gradle classes` to auto gen it
+     * It will locate to gen/main/java rather than src/main/java
+     */
+    public static String pack(StatusData statusData) throws IOException {
+
+        return StatusData__JsonHelper.serializeToJson(statusData.PreparePack());
     }
 
-    // 因為這部分還沒完成，若直接設置成 static 方法會導致測試無法通過，所以先去掉 static 修飾詞
-    public Status unpack(byte[] bytes) throws IOException {
+    public static StatusData unpack(String JSONstring) throws IOException {
 
-        return LoganSquare.parse(new String(bytes), Status.class);
+        return  StatusData__JsonHelper.parseFromJson(JSONstring).AfterUnpack();
+
     }
+
+    /*
+     * @Param statusData
+     * @Param type:
+     *             tag Type.NetworkServer:
+     *                 when Server recv packet from Client, and Server need pass Event to Input Module
+     *             tag Type.NetworkClient:
+     *                 when Client recv packet from Server, and need pass Event to Input Module
+     */
+    public static Event toEvent(StatusData statusData, Event.Type type) {
+
+        return new Event(statusData, type);
+    }
+
 }
