@@ -80,9 +80,11 @@ public class Bitmap implements IBitmap {
         // Calculate clipping bounds
         final Rectangle bounds = measureText(text, lineHeight);
         final int boxWidth = maxWidth != -1 ? maxWidth : bounds.width;
+
         // Apply clipping bounds
         mAwtGraphics2D.clipRect(x, y, boxWidth, lineHeight);
 
+        // Alignment
         if (align == TextAlign.CENTER)
             x += (maxWidth - bounds.width) / 2;
         if (align == TextAlign.RIGHT)
