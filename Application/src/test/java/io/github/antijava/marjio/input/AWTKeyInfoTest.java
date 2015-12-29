@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.input;
 
+import io.github.antijava.marjio.common.input.IKeyInfo;
 import io.github.antijava.marjio.common.input.Key;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,7 +30,7 @@ public class AWTKeyInfoTest {
     public void test_key_is_A() {
 
         Assert.assertTrue(key.getKey() == Key.A);
-        Assert.assertTrue(key.getKeyState() == KeyState.KEY_PRESSED);
+        Assert.assertTrue(key.getKeyState() == IKeyInfo.KeyState.KEY_PRESSED);
     }
 
 

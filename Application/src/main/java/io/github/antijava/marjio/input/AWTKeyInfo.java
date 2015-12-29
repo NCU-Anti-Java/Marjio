@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.input;
 
+import io.github.antijava.marjio.common.input.IKeyInfo;
 import io.github.antijava.marjio.common.input.Key;
 
 import java.awt.event.KeyEvent;
@@ -633,7 +634,7 @@ public class AWTKeyInfo implements IKeyInfo {
     Key key = Key.UNDEFINED;
     KeyState state = KeyState.KEY_UNKNOWN;
 
-    AWTKeyInfo(KeyEvent evt) {
+    public AWTKeyInfo(KeyEvent evt) {
         key = code_map.getOrDefault(evt.getKeyCode(), Key.UNDEFINED);
 
         switch (evt.getID()) {

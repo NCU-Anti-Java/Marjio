@@ -3,34 +3,52 @@ package io.github.antijava.marjio.scene;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.exception.ObjectDisposedException;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.constant.Constant;
+import io.github.antijava.marjio.window.WindowCommand;
+import io.github.antijava.marjio.window.WindowSelectableBase;
 
 /**
  * Created by Zheng-Yuan on 12/24/2015.
  */
-public class MainScene extends SceneBase {
+public class MainScene extends SceneBase implements Constant {
     private final String[] MENU_TEXT = {"Host Game", "Join Game", "Exit"};
     private final int HOST_GAME = 0;
     private final int JOIN_GAME = 1;
     private final int EXIT = 2;
     private int mCurrentChoice;
+    private final WindowCommand mWindowCommand;
 
     public MainScene(IApplication application) {
         super(application);
 
         mCurrentChoice = 0;
+        mWindowCommand = new WindowCommand(application, 200, MENU_TEXT);
+        mWindowCommand.setX((GAME_WIDTH - mWindowCommand.getWidth()) / 2);
+        mWindowCommand.setY(380);
+        mWindowCommand.setActive(true);
     }
 
     @Override
     public void update() throws ObjectDisposedException {
         super.update();
 
-        checkKeyState();
-        // TODO: draw menu background and text. select choice mark as other color.
+        mWindowCommand.update();
+
+        final IInput input = getApplication().getInput();
+        if (input.isPressed(Key.ENTER))
+            select();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        mWindowCommand.dispose();
     }
 
     private void select() {
         final ISceneManager sceneManager = getApplication().getSceneManager();
-        switch (mCurrentChoice) {
+        switch (mWindowCommand.getIndex()) {
             case HOST_GAME: {
                 sceneManager.translationTo(new RoomScene(getApplication(), true));
                 break;
@@ -43,22 +61,6 @@ public class MainScene extends SceneBase {
                 sceneManager.translationTo(null);
                 break;
             }
-        }
-    }
-
-    private void checkKeyState() {
-        final IInput input = getApplication().getInput();
-
-        if (input.isPressed(Key.UP) || input.isPressing(Key.DOWN)) {
-            if (--mCurrentChoice < 0)
-                mCurrentChoice = 0;
-        }
-        else if (input.isPressed(Key.DOWN) || input.isPressing(Key.DOWN)) {
-            if (++mCurrentChoice >= MENU_TEXT.length)
-                mCurrentChoice = MENU_TEXT.length - 1;
-        }
-        else if (input.isPressed(Key.ENTER) || input.isPressing(Key.ENTER)) {
-            select();
         }
     }
 }

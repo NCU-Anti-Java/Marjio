@@ -56,12 +56,25 @@ public class RoomScene extends SceneBase {
                 if (mIsServer) {
                     final IServer server = getApplication().getServer();
                     // TODO: Server should broadcast to clients that the room is canceled.
-                    server.stop();
+                    try {
+                        server.stop();
+                    } catch (InterruptedException e) {
+                        // TODO
+                    } catch (UnsupportedOperationException e) {
+                        // TODO
+                    }
                 }
                 else {
                     final IClient client = getApplication().getClient();
                     // TODO: Client should send message to server that I quit.
-                    client.stop();
+                    try {
+                        client.stop();
+                    } catch (InterruptedException e) {
+                        // TODO
+                    } catch (UnsupportedOperationException e) {
+                        // TODO
+                    }
+
                 }
                 sceneManager.translationTo(new MainScene(getApplication()));
                 break;

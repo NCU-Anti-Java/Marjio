@@ -3,11 +3,24 @@ package io.github.antijava.marjio.common.input;
 /**
  * Created by firejox on 2015/12/25.
  */
-public abstract class Status {
-    public abstract Type getType();
-    public abstract Object getData();
+public class Status {
+    Type type;
+    Object obj;
 
-    enum Type {
+    Status(Object obj, Type type) {
+        this.type = type;
+        this.obj = obj;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public Object getData() {
+        return obj;
+    }
+
+    public enum Type {
         ServerMessage,
         ServerVerification,
         ClientMessage

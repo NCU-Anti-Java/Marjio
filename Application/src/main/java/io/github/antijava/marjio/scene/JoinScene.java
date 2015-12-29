@@ -4,6 +4,8 @@ import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.inputBox.IPAddressInputBox;
 
+import java.net.InetAddress;
+
 /**
  * Created by Zheng-Yuan on 12/24/2015.
  */
