@@ -2,9 +2,7 @@ package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.inputBox.IPAddressInputBox;
-
-import java.net.InetAddress;
+import io.github.antijava.marjio.window.WindowIPAddressInput;
 
 /**
  * Created by Zheng-Yuan on 12/24/2015.
@@ -14,18 +12,20 @@ public class JoinScene extends SceneBase {
     private final int INPUT_IPADDRESS = 0;
     private final int GO_BACK = 1;
     private int mCurrentChoice;
-    private IPAddressInputBox mIPAddressInputBox;
+    private WindowIPAddressInput mWindowIPAddressInput;
 
     public JoinScene(IApplication application) {
         super(application);
         mCurrentChoice = 0;
-        mIPAddressInputBox = new IPAddressInputBox(application);
+        mWindowIPAddressInput = new WindowIPAddressInput(application);
+        mWindowIPAddressInput.setActive(true);
     }
 
     @Override
     public void update() {
         super.update();
-        
+
+        mWindowIPAddressInput.update();
         checkKeyState();
         // TODO: Draw view. Mark current choice as other color.
     }
@@ -41,11 +41,8 @@ public class JoinScene extends SceneBase {
             if (++mCurrentChoice >= MENU_TEXT.length)
                 mCurrentChoice = MENU_TEXT.length - 1;
         }
-        else if (input.isPressed(Key.ENTER) || input.isPressing(Key.ENTER)) {
-            select();
-        }
-        else if (mCurrentChoice == INPUT_IPADDRESS){
-            mIPAddressInputBox.update();
+        else if (input.isTrigger(Key.ENTER)) {
+            // select();
         }
     }
 

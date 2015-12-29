@@ -2,6 +2,8 @@ package io.github.antijava.marjio.network;
 
 import io.github.antijava.marjio.common.IApplication;
 
+import java.net.InetAddress;
+
 /**
  * Created by fntsr on 2015/12/27.
  */
@@ -44,8 +46,10 @@ public abstract class Connector implements Runnable{
         {
             while (mRunningFlag)
             {
-                byte[] data = mReceiver.recieve();
-                onReceive(data);
+                mReceiver.recieve();
+                byte[] data = mReceiver.getData();
+                InetAddress address = mReceiver.getSourceAddress();
+                onReceive(data, address);
             }
         }
         catch (Exception e)
@@ -58,5 +62,5 @@ public abstract class Connector implements Runnable{
         return mRunningFlag;
     }
 
-    protected abstract void onReceive(byte[] data) throws Exception;
+    protected abstract void onReceive(byte[] data, InetAddress address) throws Exception;
 }
