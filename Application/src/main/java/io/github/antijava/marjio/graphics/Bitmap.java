@@ -10,6 +10,7 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
@@ -17,30 +18,27 @@ import java.awt.RenderingHints;
 import java.awt.TexturePaint;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 /**
  * Created by Jason on 2015/12/26.
  */
 public class Bitmap implements IBitmap {
-    private final IGraphics mGraphics;
-    private IFont mFont;
-
     private Graphics2D mAwtGraphics2D;
     BufferedImage mImage;
+
+    private IFont mFont;
     private Font mAwtTextFont;
     private final FontRenderContext mAwtFontRenderContext;
 
     public Bitmap(IGraphics graphics, int width, int height) {
-        mGraphics = graphics;
         mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         mAwtGraphics2D = mImage.createGraphics();
         mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         mAwtGraphics2D.setBackground(new java.awt.Color(255, 255, 255, 0));
 
         // Font properties
-        setFont(mGraphics.getDefaultFont());
+        setFont(graphics.getDefaultFont());
         mAwtFontRenderContext = new FontRenderContext(null, true, true);
     }
 
@@ -78,25 +76,25 @@ public class Bitmap implements IBitmap {
             throw new ObjectDisposedException();
 
         // Calculate clipping bounds
-        // Do when maxWidth != -1
-        if (maxWidth != -1) {
-            final Rectangle bounds = measureText(text, lineHeight);
-            bounds.width = maxWidth;
+        final Rectangle bounds = measureText(text, lineHeight);
+        final int boxWidth = maxWidth != -1 ? maxWidth : bounds.width;
 
-            // Apply clipping bounds
-            mAwtGraphics2D.clipRect(x, y, bounds.width, bounds.height);
-        }
+        // Apply clipping bounds
+        mAwtGraphics2D.clipRect(x, y, boxWidth, lineHeight);
+
+        // Alignment
+        if (align == TextAlign.CENTER)
+            x += (maxWidth - bounds.width) / 2;
+        if (align == TextAlign.RIGHT)
+            x += maxWidth - bounds.width;
 
         // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
-        layout.draw(mAwtGraphics2D, x, y);
+        layout.draw(mAwtGraphics2D, x, y + (lineHeight + layout.getAscent()) / 2);
 
         // Remove clipping bounds
-        // Do when maxWidth != -1
-        if (maxWidth != -1) {
-            mAwtGraphics2D.clipRect(0, 0, mImage.getWidth(), mImage.getHeight());
-        }
+        mAwtGraphics2D.setClip(null);
     }
 
     @Override
@@ -115,13 +113,32 @@ public class Bitmap implements IBitmap {
     }
 
     @Override
+    public void drawText(CharSequence text, Rectangle rect, Color color, TextAlign align) {
+        drawText(text, rect.x, rect.y, rect.width, rect.height, color, align);
+    }
+
+    @Override
+    public void drawText(CharSequence text, Rectangle rect, TextAlign align) {
+        drawText(text, rect, Color.BLACK, align);
+    }
+
+    @Override
+    public void drawText(CharSequence text, Rectangle rect, Color color) {
+        drawText(text, rect, color, TextAlign.LEFT);
+    }
+
+    @Override
+    public void drawText(CharSequence text, Rectangle rect, int lineHeight) {
+        drawText(text, rect, Color.BLACK, TextAlign.LEFT);
+    }
+
+    @Override
     public Rectangle measureText(CharSequence text, int lineHeight) {
         if (isDisposed())
             throw new ObjectDisposedException();
 
-        final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
-        final Rectangle2D bounds = layout.getBounds();
-        return new Rectangle((int)bounds.getX(), (int)bounds.getY(), (int)bounds.getWidth(), (int)bounds.getHeight());
+        final FontMetrics metrics = mAwtGraphics2D.getFontMetrics(mAwtTextFont);
+        return new Rectangle(metrics.stringWidth(text.toString()), metrics.getHeight());
     }
 
     @Override

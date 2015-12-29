@@ -6,4 +6,6 @@ package io.github.antijava.marjio.constant;
 public interface GameConstant {
     int FPS = 60;
     int FRAMERATE = 1000 / FPS;
+    int GAME_WIDTH = 800;
+    int GAME_HEIGHT = 600;
 }
