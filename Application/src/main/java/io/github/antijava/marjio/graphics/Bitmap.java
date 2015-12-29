@@ -24,23 +24,21 @@ import java.awt.image.BufferedImage;
  * Created by Jason on 2015/12/26.
  */
 public class Bitmap implements IBitmap {
-    private final IGraphics mGraphics;
-    private IFont mFont;
-
     private Graphics2D mAwtGraphics2D;
     BufferedImage mImage;
+
+    private IFont mFont;
     private Font mAwtTextFont;
     private final FontRenderContext mAwtFontRenderContext;
 
     public Bitmap(IGraphics graphics, int width, int height) {
-        mGraphics = graphics;
         mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         mAwtGraphics2D = mImage.createGraphics();
         mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         mAwtGraphics2D.setBackground(new java.awt.Color(255, 255, 255, 0));
 
         // Font properties
-        setFont(mGraphics.getDefaultFont());
+        setFont(graphics.getDefaultFont());
         mAwtFontRenderContext = new FontRenderContext(null, true, true);
     }
 
@@ -80,9 +78,11 @@ public class Bitmap implements IBitmap {
         // Calculate clipping bounds
         final Rectangle bounds = measureText(text, lineHeight);
         final int boxWidth = maxWidth != -1 ? maxWidth : bounds.width;
+
         // Apply clipping bounds
         mAwtGraphics2D.clipRect(x, y, boxWidth, lineHeight);
 
+        // Alignment
         if (align == TextAlign.CENTER)
             x += (maxWidth - bounds.width) / 2;
         if (align == TextAlign.RIGHT)
