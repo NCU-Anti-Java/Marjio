@@ -15,10 +15,16 @@ public interface IInput {
      */
     void update();
 
+
     boolean isPressing(Key key);
     boolean isPressed(Key key);
     boolean isReleased(Key key);
     boolean isTrigger(Key key);
+
+    /**
+     * with key pressed for a while then key is repeat.
+     * */
+    boolean isRepeat(Key key);
 
     List<Status> getStatuses();
 

@@ -24,7 +24,7 @@ public final class Input implements IInput {
     static final Map<Key, Key> keymap;
 
     static {
-        keymap = new EnumMap(Key.class);
+        keymap = new EnumMap<>(Key.class);
 
         keymap.put(Key.JUMP, Key.UP);
         keymap.put(Key.MOVE_RIGHT, Key.RIGHT);
@@ -35,6 +35,8 @@ public final class Input implements IInput {
     Set<Key> pro_keys;
     Set<Key> cur_keys;
     Set<Key> pre_keys;
+    Map<Key, Integer> key_count;
+
     Vector<Status> statuses;
     Vector<Status> statuses_cached;
 
@@ -44,6 +46,8 @@ public final class Input implements IInput {
         pro_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));
         cur_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));
         pre_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));
+
+        key_count = Collections.synchronizedMap(new EnumMap<>(Key.class));
 
         statuses_cached = new Vector<>();
         statuses = new Vector<>();
@@ -56,6 +60,14 @@ public final class Input implements IInput {
 
         cur_keys.clear();
         cur_keys.addAll(pro_keys);
+
+        for (Key key : key_count.keySet())
+            if (!cur_keys.contains(key))
+                key_count.put(key, 0);
+
+        for (Key key : cur_keys)
+            key_count.put(key, key_count.getOrDefault(key, 0) + 1);
+
 
         statuses_cached.clear();
         statuses_cached.addAll(statuses);
@@ -94,6 +106,15 @@ public final class Input implements IInput {
     public boolean isTrigger(Key key) {
 
         return isPressed(key) || isReleased(key);
+    }
+
+    @Override
+    public boolean isRepeat(Key key) {
+        final int count = key_count.getOrDefault(key, 0);
+
+        return (key != Key.UNDEFINED) &&
+                ((count >= 24) &&
+                (0 == (count % 6)));
     }
 
     @Override
