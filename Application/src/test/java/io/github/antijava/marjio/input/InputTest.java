@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.input;
 
+import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Key;
 import org.junit.Assert;
@@ -9,7 +10,7 @@ import org.junit.Test;
 import java.awt.Button;
 import java.awt.event.KeyEvent;
 
-import static io.github.antijava.marjio.common.input.Event.Type.Keyboard;
+
 
 /**
  * Created by firejox on 2015/12/26.
@@ -29,7 +30,7 @@ public class InputTest {
                         0,
                         KeyEvent.VK_A,
                         'a'));
-        pressed_evt = new Event(infoPressed, Keyboard);
+        pressed_evt = new Event(infoPressed, Event.Type.Keyboard);
 
         final AWTKeyInfo infoReleased = new AWTKeyInfo(
                 new KeyEvent(
@@ -39,7 +40,7 @@ public class InputTest {
                         0,
                         KeyEvent.VK_A,
                         'a'));
-        released_evt = new Event(infoReleased, Keyboard);
+        released_evt = new Event(infoReleased, Event.Type.Keyboard);
 
         input = new Input();
     }
@@ -107,5 +108,27 @@ public class InputTest {
         }
     }
 
+    @Test
+    public void test_KeyRepeatCorrect() {
+        input.triggerEvent(pressed_evt);
+
+        for (int i = 1; i < IInput.key_start_ticks; i++) {
+            input.update();
+            Assert.assertFalse(input.isRepeat(Key.A));
+        }
+
+        input.update();
+        Assert.assertTrue(input.isRepeat(Key.A));
+
+        for (int i = 1; i < IInput.key_repeat_ticks; i++) {
+            input.update();
+            Assert.assertFalse(input.isRepeat(Key.A));
+        }
+
+        input.update();
+        Assert.assertTrue(input.isRepeat(Key.A));
+
+
+    }
 
 }

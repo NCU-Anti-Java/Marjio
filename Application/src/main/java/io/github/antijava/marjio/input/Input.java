@@ -1,20 +1,20 @@
 package io.github.antijava.marjio.input;
 
-import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.IKeyInfo;
+import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
 
-
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
@@ -40,26 +40,51 @@ public final class Input implements IInput {
     Vector<Status> statuses;
     Vector<Status> statuses_cached;
 
+    ReadWriteLock lock;
+
 
     public Input() {
 
-        pro_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));
-        cur_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));
-        pre_keys = Collections.synchronizedSet(EnumSet.noneOf(Key.class));
+        pro_keys = EnumSet.noneOf(Key.class);
+        cur_keys = EnumSet.noneOf(Key.class);
+        pre_keys = EnumSet.noneOf(Key.class);
 
-        key_count = Collections.synchronizedMap(new EnumMap<>(Key.class));
+        key_count = new EnumMap<>(Key.class);
 
         statuses_cached = new Vector<>();
         statuses = new Vector<>();
+
+        lock = new ReentrantReadWriteLock();
     }
 
     @Override
     public void update() {
-        pre_keys.clear();
-        pre_keys.addAll(cur_keys);
+        Set<Key> tmp_keys;
+        Vector<Status> tmp_statuses;
 
-        cur_keys.clear();
-        cur_keys.addAll(pro_keys);
+
+        /**
+         * for cached current states
+         * */
+        lock.writeLock().lock();
+
+        pre_keys.retainAll(pro_keys);
+        pre_keys.addAll(pro_keys);
+
+        /* rolling optimized */
+        tmp_keys = pre_keys;
+        pre_keys = cur_keys;
+        cur_keys = pro_keys;
+        pro_keys = tmp_keys;
+
+        statuses_cached.clear();
+
+        tmp_statuses = statuses_cached;
+        statuses_cached = statuses;
+        statuses = tmp_statuses;
+
+        lock.writeLock().unlock();
+
 
         for (Key key : key_count.keySet())
             if (!cur_keys.contains(key))
@@ -69,9 +94,7 @@ public final class Input implements IInput {
             key_count.put(key, key_count.getOrDefault(key, 0) + 1);
 
 
-        statuses_cached.clear();
-        statuses_cached.addAll(statuses);
-        statuses.clear();
+
     }
 
 
@@ -110,11 +133,12 @@ public final class Input implements IInput {
 
     @Override
     public boolean isRepeat(Key key) {
+        key = keymap.getOrDefault(key, key);
         final int count = key_count.getOrDefault(key, 0);
 
         return (key != Key.UNDEFINED) &&
-                ((count >= 24) &&
-                (0 == (count % 6)));
+                (count >= key_start_ticks) &&
+                (0 == ((count - key_start_ticks) % key_repeat_ticks));
     }
 
     @Override
@@ -125,6 +149,8 @@ public final class Input implements IInput {
 
     @Override
     public void triggerEvent(Event evt) {
+        lock.readLock().lock();
+
         switch (evt.getType()) {
             case Keyboard: {
                 IKeyInfo info = (IKeyInfo)evt.getData();
@@ -145,6 +171,8 @@ public final class Input implements IInput {
             }
 
         }
+
+        lock.readLock().unlock();
     }
 }
 

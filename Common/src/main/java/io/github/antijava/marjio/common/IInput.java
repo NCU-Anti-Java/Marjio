@@ -10,6 +10,9 @@ import java.util.List;
  * Created by fntsr on 2015/12/23.
  */
 public interface IInput {
+    int key_start_ticks = 24;
+    int key_repeat_ticks = 6;
+
     /**
      * Input polling.
      */
