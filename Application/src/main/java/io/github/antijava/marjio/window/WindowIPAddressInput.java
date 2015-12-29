@@ -27,14 +27,14 @@ public class WindowIPAddressInput extends WindowBase {
 
         if (isActive()) {
             final IInput input = getApplication().getInput();
-            if (input.isPressed(Key.LEFT)) {
+            if (input.isRepeat(Key.LEFT)) {
                 mIndex -= 1;
                 if (mIndex % 4 == 3)
                     mIndex -= 1;
                 if (mIndex < 0)
                     mIndex = 0;
             }
-            if (input.isPressed(Key.RIGHT)) {
+            if (input.isRepeat(Key.RIGHT)) {
                 mIndex += 1;
                 if (mIndex % 4 == 3)
                     mIndex += 1;
