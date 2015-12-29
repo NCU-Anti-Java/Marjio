@@ -88,10 +88,10 @@ public final class Input implements IInput {
 
         for (Key key : key_count.keySet())
             if (!cur_keys.contains(key))
-                key_count.put(key, 0);
+                key_count.put(key, -1);
 
         for (Key key : cur_keys)
-            key_count.put(key, key_count.getOrDefault(key, 0) + 1);
+            key_count.put(key, key_count.getOrDefault(key, -1) + 1);
 
 
 
@@ -134,10 +134,15 @@ public final class Input implements IInput {
     @Override
     public boolean isRepeat(Key key) {
         key = keymap.getOrDefault(key, key);
-        final int count = key_count.getOrDefault(key, 0);
+        final int count = key_count.getOrDefault(key, -1);
 
-        return (key != Key.UNDEFINED) &&
-                (count >= key_start_ticks) &&
+        if (key == Key.UNDEFINED && count > -1) // Invalid key or not pressing
+            return false;
+
+        if (count == 0) // Just pressed, give it a repeat.
+            return true;
+
+        return (count >= key_start_ticks) &&
                 (0 == ((count - key_start_ticks) % key_repeat_ticks));
     }
 
