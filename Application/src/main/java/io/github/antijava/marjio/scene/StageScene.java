@@ -10,8 +10,10 @@ import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
+import io.github.antijava.marjio.scene.sceneObject.SceneObjectObjectBase;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
@@ -45,17 +47,14 @@ public class StageScene extends SceneBase {
         checkKeyState();
         checkStatus();
 
-        mYourPlayer.preUpdate();
-        for (Iterator it = mOtherPlayers.iterator(); it.hasNext(); ) {
-            Player player = (Player)it.next();
-            player.preUpdate();
-        }
+        List<Player> players = new ArrayList<>();
+        players.add(mYourPlayer);
+        players.addAll(mOtherPlayers);
 
-        // TODO: Check players bump into blocks or other players.
-
-        // TODO: Load the true data from server.
-
-        // TODO: Draw scene on the graphics.
+        players.forEach(Player::preUpdate);
+        players.stream()
+                .filter(player -> !checkBump(player))
+                .forEach(Player::update);
     }
 
     public void checkStatus () {
@@ -89,6 +88,23 @@ public class StageScene extends SceneBase {
         else if (input.isReleased(Key.SPACE)) {
             mYourPlayer.setSpace(false);
         }
+    }
+
+    public boolean checkBump(Player player) {
+        List<Block> blocks = mMap.getAdjacentBlocks(player);
+
+        final List<SceneObjectObjectBase> objects = new ArrayList<>();
+        objects.addAll(blocks);
+        objects.add(mYourPlayer);
+        objects.addAll(mOtherPlayers);
+        objects.remove(player);
+
+        for (SceneObjectObjectBase object: objects) {
+            if (bumpTest(player.getOccupiedSpace(), object.getOccupiedSpace())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean bumpTest(Rectangle a, Rectangle b) {
