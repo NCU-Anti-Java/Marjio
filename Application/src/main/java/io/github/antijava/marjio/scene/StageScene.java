@@ -3,14 +3,18 @@ package io.github.antijava.marjio.scene;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.Player;
+import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.logging.Level;
 
 /**
@@ -19,29 +23,14 @@ import java.util.logging.Level;
 public class StageScene extends SceneBase {
     private final static int START_GAME_COUNTER = 5;
     private int mStartGameCounter;
-    private int mRow;
-    private int mCol;
-    private Block mMap[][];
+    private SceneMap mMap;
     private Player mYourPlayer;
     private List<Player> mOtherPlayers;
 
-    public StageScene(IApplication application, String filepath) {
+    public StageScene(IApplication application, int stage) {
         super(application);
-        loadStageFile(filepath);
+        mMap = new SceneMap(application, stage);
         mStartGameCounter = START_GAME_COUNTER;
-    }
-
-    private void loadStageFile(String filepath) {
-        try {
-            File file = new File(StageScene.class.getResource(filepath).toURI());
-            // TODO: Load the map information.
-        }
-        catch (NullPointerException ex) {
-            getApplication().getLogger().log(Level.INFO, filepath + "can not be found.");
-        }
-        catch (Exception ex) {
-            getApplication().getLogger().log(Level.INFO, ex.toString());
-        }
     }
 
     @Override
