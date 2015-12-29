@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.graphics;
 
+import io.github.antijava.marjio.common.exception.ObjectDisposedException;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.ISprite;
 import io.github.antijava.marjio.common.graphics.Viewport;
@@ -25,39 +26,60 @@ public abstract class SpriteBase extends Sprite {
     public void update() {
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        mBitmap = null;
+    }
+
     // region Getter
     @Override
     public IBitmap getBitmap() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         return mBitmap;
     }
 
     @Override
     public int getX() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         return mX;
     }
 
     @Override
     public int getY() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         return mY;
     }
 
     @Override
     public int getZ() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         return mZ;
     }
 
     @Override
     public double getZoomX() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         return mZoomX;
     }
 
     @Override
     public double getZoomY() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         return mZoomY;
     }
 
     @Override
     public int getOpacity() {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         return mOpacity;
     }
     // endregion Getter
@@ -65,36 +87,50 @@ public abstract class SpriteBase extends Sprite {
     // region Setter
     @Override
     public void setBitmap(IBitmap bitmap) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         mBitmap = bitmap;
     }
 
     @Override
     public void setX(int x) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         mX = x;
     }
 
     @Override
     public void setY(int y) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         mY = y;
     }
 
     @Override
     public void setZ(int z) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         mZ = z;
     }
 
     @Override
     public void setZoomX(double zoomX) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         mZoomX = zoomX;
     }
 
     @Override
     public void setZoomY(double zoomY) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         mZoomY = zoomY;
     }
 
     @Override
     public void setOpacity(int opacity) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
         mOpacity = opacity;
     }
     // endregion Setter

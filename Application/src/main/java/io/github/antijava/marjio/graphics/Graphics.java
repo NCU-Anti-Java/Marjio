@@ -124,6 +124,8 @@ public class Graphics implements IGraphics, GameConstant {
                             .toBlocking()
                             .forEach(sprite -> {
                                 final Bitmap bitmap = (Bitmap) sprite.getBitmap();
+                                if (bitmap == null)
+                                    return;
                                 mCanvasGraphics.drawImage(bitmap.mImage,
                                         sprite.getX() - viewport.ox + viewport.x,
                                         sprite.getY() - viewport.oy + viewport.y,

@@ -229,6 +229,22 @@ public class WindowBase extends SpriteBase implements WindowConstant {
         }
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        if (mBitmap != null)
+            mBitmap.dispose();
+        if (mContentBitmap != null)
+            mContentBitmap.dispose();
+        if (mBackgroundBitmap != null)
+            mBackgroundBitmap.dispose();
+        mWindowskin = null;
+        mBitmap = null;
+        mContentBitmap = null;
+        mBackgroundBitmap = null;
+    }
+
     private void rebuildBackground() {
         mBackgroundDirty = false;
 
