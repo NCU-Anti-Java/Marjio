@@ -2,19 +2,34 @@ package io.github.antijava.marjio.scene.sceneObject;
 
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
+import io.github.antijava.marjio.graphics.Bitmap;
 
 /**
  * Created by Zheng-Yuan on 12/28/2015.
  */
 public class Block extends SceneObjectObjectBase {
     // TODO: Different type, different block image.
+    public enum Type {
+        /**
+         * Not touchable
+         */
+        AIR,
+        /**
+         * Not breakable block
+         */
+        GROUND,
+        /**
+         * breakable block
+         */
+        WOOD
+    }
     private int mType;
 
-    public Block(int type, int row, int col, Viewport viewport) {
+    public Block(int type, int x, int y, Viewport viewport) {
         super(viewport);
         mType = type;
-        setX(row * BLOCK_SIZE);
-        setY(col * BLOCK_SIZE);
+        setX(x);
+        setY(y);
     }
 
     @Override
@@ -25,5 +40,9 @@ public class Block extends SceneObjectObjectBase {
     @Override
     public Rectangle getOccupiedSpace() {
         return new Rectangle(getX(), getY(), BLOCK_SIZE, BLOCK_SIZE);
+    }
+
+    public int getType() {
+        return mType;
     }
 }

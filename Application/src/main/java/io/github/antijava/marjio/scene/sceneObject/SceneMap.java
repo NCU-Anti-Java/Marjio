@@ -1,8 +1,10 @@
 package io.github.antijava.marjio.scene.sceneObject;
 
 import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
+import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.scene.SceneBase;
 
 import java.io.File;
@@ -15,7 +17,6 @@ import java.util.logging.Level;
  * Created by Zheng-Yuan on 12/29/2015.
  */
 public class SceneMap extends SceneBase implements SceneObjectConstant {
-    private final static
     private final static String MAPFILE = "map1.txt";
     private int mRow;
     private int mCol;
@@ -23,6 +24,7 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
 
     public SceneMap(IApplication application, int level) {
         super(application);
+
         if (level == 1)
             loadMapFile(MAPFILE);
         else
@@ -71,7 +73,7 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
                 for (int j = 0; j < mCol; j++) {
                     final int type = scanner.nextInt();
                     final Viewport viewport = getApplication().getGraphics().getDefaultViewport();
-                    mMap[i][j] = new Block(type, i, j, viewport);
+                    mMap[i][j] = new Block(type, i * BLOCK_SIZE, j * BLOCK_SIZE, viewport);
                 }
             }
         } catch (NullPointerException ex) {
