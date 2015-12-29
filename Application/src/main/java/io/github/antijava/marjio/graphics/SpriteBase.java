@@ -12,7 +12,7 @@ import java.util.ArrayList;
  *
  * @author Davy
  */
-public abstract class SpriteBase extends Sprite {
+public class SpriteBase extends Sprite {
     private IBitmap mBitmap;
     private int mX = 0, mY = 0, mZ = 0;
     private double mZoomX = 1.0, mZoomY = 1.0;
