@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
@@ -91,10 +92,12 @@ public class StageScene extends SceneBase {
     }
 
     public boolean checkBump(Player player) {
-        List<Block> blocks = mMap.getAdjacentBlocks(player);
+        List<Block> entityBlocks = mMap.getAdjacentBlocks(player).stream()
+                .filter(block -> block.getType() != Block.Type.AIR)
+                .collect(Collectors.toList());
 
         final List<SceneObjectObjectBase> objects = new ArrayList<>();
-        objects.addAll(blocks);
+        objects.addAll(entityBlocks);
         objects.add(mYourPlayer);
         objects.addAll(mOtherPlayers);
         objects.remove(player);
