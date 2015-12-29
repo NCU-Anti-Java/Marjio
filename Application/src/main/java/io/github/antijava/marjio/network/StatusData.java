@@ -2,7 +2,6 @@ package io.github.antijava.marjio.network;
 
 import com.instagram.common.json.annotation.JsonField;
 import com.instagram.common.json.annotation.JsonType;
-import io.github.antijava.marjio.common.input.Event;
 
 import java.util.UUID;
 
