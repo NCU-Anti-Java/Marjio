@@ -12,6 +12,7 @@ public class Packer {
     /*
      * StatusData__JsonHelper need to use `gradle clean && gradle classes` to auto gen it
      * It will locate to gen/main/java rather than src/main/java
+     * application:clean & application:classes
      */
     public static String pack(StatusData statusData) throws IOException {
 
