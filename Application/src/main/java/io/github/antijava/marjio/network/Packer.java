@@ -14,14 +14,16 @@ public class Packer {
      * It will locate to gen/main/java rather than src/main/java
      * application:clean & application:classes
      */
-    public static String pack(StatusData statusData) throws IOException {
+    public static byte[] pack(io.github.antijava.marjio.common.input.Status status) throws IOException {
 
-        return StatusData__JsonHelper.serializeToJson(statusData.PreparePack());
+        return Status__JsonHelper.serializeToJson(new Status(status).PreparePack()).getBytes("UTF-8");
     }
 
-    public static StatusData unpack(String JSONstring) throws IOException {
+    public static io.github.antijava.marjio.common.input.Status unpack(byte[] JSONstring) throws IOException {
 
-        return  StatusData__JsonHelper.parseFromJson(JSONstring).AfterUnpack();
+        return Status__JsonHelper.parseFromJson(
+                    new String(JSONstring)
+        ).AfterUnpack();
 
     }
 
@@ -33,9 +35,9 @@ public class Packer {
      *             tag Type.NetworkClient:
      *                 when Client recv packet from Server, and need pass Event to Input Module
      */
-    public static Event toEvent(StatusData statusData, Event.Type type) {
+    public static Event toEvent(io.github.antijava.marjio.common.input.Status status, Event.Type type) {
 
-        return new Event(statusData, type);
+        return new Event(status, type);
     }
 
 }
