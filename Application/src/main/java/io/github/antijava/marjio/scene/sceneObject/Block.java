@@ -8,26 +8,37 @@ import io.github.antijava.marjio.graphics.Bitmap;
  * Created by Zheng-Yuan on 12/28/2015.
  */
 public class Block extends SceneObjectObjectBase {
-    // TODO: Different type, different block image.
+    // TODO: Different type with different block image.
+    // TODO: Need images.
     public enum Type {
         /**
          * Not touchable
          */
-        AIR,
+        AIR(0),
         /**
          * Not breakable block
          */
-        GROUND,
+        GROUND(1),
         /**
          * breakable block
          */
-        WOOD
+        WOOD(2);
+
+        private final int mValue;
+        Type(int value) {
+            mValue = value;
+        }
+
+        public int getValue() {
+            return mValue;
+        }
     }
-    private int mType;
+
+    private Type mType;
 
     public Block(int type, int x, int y, Viewport viewport) {
         super(viewport);
-        mType = type;
+        setType(type);
         setX(x);
         setY(y);
     }
@@ -42,7 +53,21 @@ public class Block extends SceneObjectObjectBase {
         return new Rectangle(getX(), getY(), BLOCK_SIZE, BLOCK_SIZE);
     }
 
-    public int getType() {
+    public Type getType() {
         return mType;
+    }
+
+    private void setType(int type) {
+        switch (type) {
+            case 0:
+                mType = Type.AIR;
+                break;
+            case 1:
+                mType = Type.GROUND;
+                break;
+            case 2:
+                mType = Type.WOOD;
+                break;
+        }
     }
 }
