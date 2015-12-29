@@ -25,6 +25,8 @@ public class StageScene extends SceneBase {
     private Player mYourPlayer;
     private List<Player> mOtherPlayers;
 
+
+
     public StageScene(IApplication application, String filepath) {
         super(application);
         loadStageFile(filepath);
@@ -53,6 +55,7 @@ public class StageScene extends SceneBase {
             return ;
         }
 
+        // TODO: check State
         checkKeyState();
         checkStatus();
 
