@@ -15,9 +15,6 @@ public class PackerTest {
     private StatusData block;
     private StatusData item;
 
-    private final int PLAYER = 0;
-    private final int BLOCK = 1;
-    private final int ITEM = 2;
     private final int ID = 5;
     private final int ACTION_ID = 10;
     private final int TIMER_COUNTER = Integer.MAX_VALUE;
@@ -51,13 +48,13 @@ public class PackerTest {
     @Test
     public void testPack() throws Exception {
 
-        StatusData player = gen(PLAYER);
-        StatusData block = gen(BLOCK);
-        StatusData item = gen(ITEM);
+        StatusData player = gen(StatusData.Player);
+        StatusData block = gen(StatusData.Block);
+        StatusData item = gen(StatusData.Item);
 
-        StatusData player2 = gen(PLAYER);
-        StatusData block2 = gen(BLOCK);
-        StatusData item2 = gen(ITEM);
+        StatusData player2 = gen(StatusData.Player);
+        StatusData block2 = gen(StatusData.Block);
+        StatusData item2 = gen(StatusData.Item);
 
         // same data, but different instance need same result JSON
         String playerJSON = Packer.pack(player);
@@ -90,7 +87,7 @@ public class PackerTest {
                 = "{\"timer_counter\":2147483647,\"action_id\":10,\"id\":5,\"type\":2,\"st_x\":100,\"st_y\":1000}";
 
         StatusData player = Packer.unpack(playerJSON);
-        assertEquals(player.type, PLAYER);
+        assertEquals(player.type, StatusData.Player);
         assertEquals(player.id, ID);
         assertEquals(player.action_id, ACTION_ID);
         assertEquals(player.time_counter, TIMER_COUNTER);
@@ -98,7 +95,7 @@ public class PackerTest {
         assertEquals(player.st_y, ST_Y);
 
         StatusData block = Packer.unpack(blockJSON);
-        assertEquals(block.type, BLOCK);
+        assertEquals(block.type, StatusData.Block);
         assertEquals(block.id, ID);
         assertEquals(block.action_id, ACTION_ID);
         assertEquals(block.time_counter, TIMER_COUNTER);
@@ -106,7 +103,7 @@ public class PackerTest {
         assertEquals(block.st_y, ST_Y);
 
         StatusData item = Packer.unpack(itemJSON);
-        assertEquals(item.type, ITEM);
+        assertEquals(item.type, StatusData.Item);
         assertEquals(item.id, ID);
         assertEquals(item.action_id, ACTION_ID);
         assertEquals(item.time_counter, TIMER_COUNTER);
