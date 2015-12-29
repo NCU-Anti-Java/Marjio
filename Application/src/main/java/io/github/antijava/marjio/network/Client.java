@@ -14,7 +14,6 @@ public class Client extends Connector implements IClient {
     private InetAddress mHostAddress;
     private boolean mConnectedFlag;
     private UUID mClientId;
-    private Packer mPacker;
 
     /**
      * Constructor
@@ -22,11 +21,10 @@ public class Client extends Connector implements IClient {
      * @param sender Network output
      * @param receiver Network input
      */
-    public Client(IApplication application, Sender sender, Receiver receiver, Packer packer) {
+    public Client(IApplication application, Sender sender, Receiver receiver) {
         super(application, sender, receiver);
         mConnectedFlag = false;
         mClientId = UUID.randomUUID();
-        mPacker = packer;
     }
 
     @Override
@@ -44,7 +42,7 @@ public class Client extends Connector implements IClient {
     @Override
     public void send(Status status) throws Exception {
         // TODO: Add mClientId to data
-        byte[] data = mPacker.pack(status);
+        byte[] data = Packer.pack(status);
         mSender.send(mHostAddress, data);
     }
 
