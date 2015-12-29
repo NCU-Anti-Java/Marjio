@@ -2,6 +2,7 @@ package io.github.antijava.marjio.common;
 
 import io.github.antijava.marjio.common.input.Status;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public interface IServer {
      *
      * @param status information package
      */
-    void broadcast(Status status);
+    void broadcast(Status status) throws Exception;
 
     /**
      * Send message to specific client
@@ -32,7 +33,7 @@ public interface IServer {
      * @param status information package
      * @param address client's address which will received messages
      */
-    void send(Status status, InetAddress address);
+    void send(Status status, InetAddress address) throws Exception;
 
     /**
      * Return all connected clients' information.
