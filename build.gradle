@@ -11,8 +11,6 @@ subprojects {
         mavenCentral()
     }
 
-    apply plugin: "net.ltgt.apt"
-
     dependencies {
         testCompile 'junit:junit:4.11'
         testCompile 'org.hamcrest:hamcrest-core:1.3'
