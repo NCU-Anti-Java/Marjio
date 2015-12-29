@@ -1,5 +1,24 @@
+apply plugin: 'application'
+
 repositories {
+    jcenter()
     mavenCentral()
+}
+
+dependencies {
+    compile project(':common')
+
+    compile 'io.reactivex:rxjava:1.1.0'
+}
+
+mainClassName = 'Main'
+
+jar {
+    manifest {
+        attributes 'Manifest-Version': '1.0'
+        attributes 'Main-Class': mainClassName
+        attributes 'Class-Path': 'io.github.antijava.marjio'
+    }
 }
 
 ext {
