@@ -104,7 +104,6 @@ public class Graphics implements IGraphics, GameConstant {
         g.setColor(Color.black);
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // TODO: Finish implement
         Observable.from(mViewports)
                 .toSortedList()
                 .flatMap(Observable::from)
