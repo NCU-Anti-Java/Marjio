@@ -3,139 +3,96 @@ package io.github.antijava.marjio.scene.sceneObject;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Created by Zheng-Yuan on 12/28/2015.
+ * Created by firejox on 2015/12/28.
  */
 public class Player extends SceneObjectObjectBase {
-    /**
-     * TODO: Player should contain variety of action frames.
-     */
-    private final int VX = 5;
-    private final int VY = 10;
-    private final int AGAINST_GRAVITY_COUNTER = 5;
-    private int mAgainstGravityCounter;
-    private int mNextX;
-    private int mNextY;
+    static public final List<IAction> actions;
+    static public final List<Map<IInterruptable, IAction>> action_table;
 
-    private boolean mIsUp;
-    private boolean mIsLeft;
-    private boolean mIsRight;
-    private boolean mIsSpace;
+    static {
+        actions = new ArrayList<>();
+        action_table = new ArrayList<>();
 
-    private boolean mIsJumping;
-    private boolean mIsDroping;
-    private boolean mIsMovingLeft;
-    private boolean mIsMovingRight;
-    private boolean mIsDoingMagic;
+
+
+    }
+
+    int move_action_id;
+    int time_counter;
+
+    int st_x;
+    int st_y;
+
 
     public Player(Viewport viewport) {
         super(viewport);
-        mIsUp = false;
-        mIsLeft = false;
-        mIsRight = false;
-        mIsSpace = false;
-        mIsMovingLeft = false;
-        mIsMovingRight = false;
-        mIsJumping = false;
-        mIsDroping = false;
+        st_x = getX();
+        st_y = getY();
+        time_counter = 0;
+        move_action_id = 0;
     }
+
 
     @Override
     public void update() {
-        setX(mNextX);
-        setY(mNextY);
-        // TODO: Draw on graphics.
+        time_counter++;
+
+        setX(st_x + actions.get(move_action_id).getActionX(time_counter));
+        setY(st_y + actions.get(move_action_id).getActionY(time_counter));
     }
 
-    /**
-     * Pre-calculate the status and next position.
-     */
-    public void preUpdate() {
-        updateStatus();
-        updateNextPosition();
+    public int getMoveActionId() {
+        return move_action_id;
     }
 
-    private void updateStatus() {
-        mIsMovingLeft = mIsLeft;
-        mIsMovingRight = mIsRight;
-        mIsDoingMagic = mIsSpace;
-        if (mIsJumping || mIsDroping) {
-            if (mAgainstGravityCounter < 0) {
-                mIsJumping = false;
-                mIsDroping = true;
-            }
-        }
-        else {
-            mIsJumping = mIsUp;
-            if (mIsJumping)
-                mAgainstGravityCounter = AGAINST_GRAVITY_COUNTER;
-        }
+    public void setMoveActionId(int id) {
+        move_action_id = id;
     }
 
-    private void updateNextPosition() {
-        if (mIsMovingLeft) {
-            mNextX = getX() - VX;
-        }
-        else if (mIsMovingRight) {
-            mNextX = getX() + VX;
-        }
-        if (mIsJumping) {
-            mNextY = getY() + VY;
-            mAgainstGravityCounter--;
-        }
-        else if (mIsDroping) {
-            mNextY = getY() - VY;
-        }
+    public int getStartX() {
+        return st_x;
     }
 
-    public void setUp(boolean isUp) {
-        mIsUp = isUp;
+    public int getStartY() {
+        return st_y;
     }
 
-    public void setLeft(boolean isLeft) {
-        mIsLeft = isLeft;
+    public void setStartX(int x) {
+        st_x = x;
     }
 
-    public void setRight(boolean isRight) {
-        mIsRight = isRight;
+    public void setStartY(int y) {
+        st_y = y;
     }
 
-    public void setSpace(boolean isSpace) {
-        mIsSpace = isSpace;
+    public int getTimeCounter() {
+        return time_counter;
     }
 
-    public void setIsDroping(boolean isDroping) {
-        mIsDroping = isDroping;
+    public void setTimeCounter(int tick) {
+        time_counter = tick;
     }
 
-    public void setIsJumping(boolean isJumping) {
-        mIsJumping = isJumping;
+    public void updateNewAction(int action_id) {
+        st_x += actions.get(move_action_id).getActionX(time_counter);
+        st_y += actions.get(move_action_id).getActionY(time_counter);
+
+        move_action_id = action_id;
+        time_counter = 0;
     }
 
-    public void setIsMovingLeft(boolean isMovingLeft) {
-        mIsMovingLeft = isMovingLeft;
-    }
-
-    public void setIsMovingRight(boolean isMovingRight) {
-        mIsMovingRight = isMovingRight;
-    }
-
-    public void setNextX(int nextX) {
-        mNextX = nextX;
-    }
-
-    public void setNextY(int nextY) {
-        mNextY = nextY;
-    }
-
-    /**
-     *
-     * @return
-     */
     @Override
-    public Rectangle getOccupiedSpace() {
-        final int realX = getViewport().x + mNextX;
-        final int realY = getViewport().y + mNextY;
-        return new Rectangle(realX - PLAYER_SIZE / 2, realY + PLAYER_SIZE, PLAYER_SIZE, PLAYER_SIZE);
+    Rectangle getOccupiedSpace() {
+        final int real_x = getViewport().x + getX();
+        final int real_y = getViewport().y + getY();
+
+        return new Rectangle(real_x - PLAYER_SIZE / 2,
+                             real_y + PLAYER_SIZE,
+                             PLAYER_SIZE, PLAYER_SIZE);
     }
 }
