@@ -107,21 +107,20 @@ public class Graphics implements IGraphics, GameConstant {
                 .toBlocking()
                 .forEach(viewport -> {
                     Observable.from(viewport.getSprites())
+                            .filter(sprite -> sprite.getBitmap() != null)
                             .toSortedList((sprite, sprite2) -> {
-                                if (sprite.getZ() == sprite.getZ())
+                                if (sprite.getZ() == sprite2.getZ())
                                     if (sprite.getY() == sprite.getY())
-                                        return sprite.getX() < sprite2.getX() ? 1 : -1;
+                                        return sprite.getX() > sprite2.getX() ? 1 : -1;
                                     else
-                                        return sprite.getY() < sprite2.getY() ? 1 : -1;
+                                        return sprite.getY() > sprite2.getY() ? 1 : -1;
                                 else
-                                    return sprite.getZ() < sprite2.getZ() ? 1 : -1;
+                                    return sprite.getZ() > sprite2.getZ() ? 1 : -1;
                             })
                             .flatMap(Observable::from)
                             .toBlocking()
                             .forEach(sprite -> {
                                 final Bitmap bitmap = (Bitmap) sprite.getBitmap();
-                                if (bitmap == null)
-                                    return;
                                 mCanvasGraphics.drawImage(bitmap.mImage,
                                         sprite.getX() - viewport.ox + viewport.x,
                                         sprite.getY() - viewport.oy + viewport.y,
