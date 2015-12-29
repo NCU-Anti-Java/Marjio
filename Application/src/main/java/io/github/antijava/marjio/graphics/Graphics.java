@@ -35,7 +35,6 @@ public class Graphics implements IGraphics, GameConstant {
     private final IApplication mApplication;
     private final ArrayList<Font> mFonts;
     private final ArrayList<Viewport> mViewports;
-    private final ArrayList<Sprite> mSpriteList;
     private final JPanel mSwingPanel;
     private final BufferedImage mCanvas;
     private final Graphics2D mCanvasGraphics;
@@ -59,8 +58,6 @@ public class Graphics implements IGraphics, GameConstant {
 
         mViewports = new ArrayList<>();
         mViewports.add(sDefaultViewport);
-
-        mSpriteList = new ArrayList<>();
 
         // Java Window
         final JFrame mFrame = new JFrame();
