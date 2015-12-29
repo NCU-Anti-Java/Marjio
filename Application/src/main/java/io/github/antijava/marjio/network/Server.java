@@ -15,12 +15,10 @@ import java.util.List;
  */
 public class Server extends Connector implements IServer {
     private List<InetAddress> mClients;
-    private Packer mPacker;
 
-    public Server(IApplication application, Sender sender, Receiver receiver, Packer packer) {
+    public Server(IApplication application, Sender sender, Receiver receiver) {
         super(application, sender, receiver);
         mClients = new ArrayList<>();
-        mPacker = packer;
     }
 
     @Override
@@ -33,7 +31,7 @@ public class Server extends Connector implements IServer {
 
     @Override
     public void send(Status status, InetAddress address) throws Exception {
-        byte[] data = mPacker.pack(status);
+        byte[] data = Packer.pack(status);
         mSender.send(address, data);
     }
 
