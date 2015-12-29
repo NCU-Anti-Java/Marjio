@@ -136,6 +136,6 @@ public class Player extends SceneObjectObjectBase {
     public Rectangle getOccupiedSpace() {
         final int realX = getViewport().x + mNextX;
         final int realY = getViewport().y + mNextY;
-        return new Rectangle(realX - PLAYER_SIZE / 2, realY + PLAYER_SIZE, PLAYER_SIZE, PLAYER_SIZE);
+        return new Rectangle(realX - PLAYER_SIZE / 2, realY - PLAYER_SIZE, PLAYER_SIZE, PLAYER_SIZE);
     }
 }
