@@ -34,7 +34,7 @@ public class ServerTest {
         mPacker = mock(Packer.class);
 
         // Initialize
-        mServer = spy(new Server(mApplication, mSender, mReceiver, mPacker));
+        mServer = spy(new Server(mApplication, mSender, mReceiver));
     }
 
     /**
