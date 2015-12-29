@@ -4,6 +4,8 @@ import com.instagram.common.json.annotation.JsonField;
 import com.instagram.common.json.annotation.JsonType;
 import io.github.antijava.marjio.common.input.Event;
 
+import java.util.UUID;
+
 /**
  * Created by Date on 2015/12/29.
  */
@@ -19,6 +21,15 @@ public class StatusData {
     public static final int Block  = 1;
     public static final int Item   = 2;
 
+    public UUID uuid;
+
+    /*
+     * DO NOT use this field directly, Set value to `uuid`.
+     * When pack/unpack will fill `_uuid`/`uuid` field
+     */
+    @JsonField(fieldName = "uuid")
+    public String _uuid;
+
     @JsonField(fieldName = "type")
     public int type;
 
@@ -33,8 +44,18 @@ public class StatusData {
     @JsonField(fieldName = "st_y")
     public int st_y;
 
-    public Event packToEvent(Event.Type type){
 
-        return new Event(this, type);
+    public StatusData PreparePack(){
+
+        if(uuid != null)
+            _uuid = uuid.toString();
+        return this;
+    }
+
+    public StatusData AfterUnpack(){
+
+        if(_uuid != null)
+            uuid = UUID.fromString(_uuid);
+        return this;
     }
 }

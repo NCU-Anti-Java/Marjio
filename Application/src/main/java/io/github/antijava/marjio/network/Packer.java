@@ -9,14 +9,19 @@ import java.io.IOException;
  */
 public class Packer {
 
+    /*
+     * StatusData__JsonHelper need to use `gradle clean && gradle classes` to auto gen it
+     * It will locate to gen/main/java rather than src/main/java
+     */
     public static String pack(StatusData statusData) throws IOException {
 
-        return StatusData__JsonHelper.serializeToJson(statusData);
+        return StatusData__JsonHelper.serializeToJson(statusData.PreparePack());
     }
 
     public static StatusData unpack(String JSONstring) throws IOException {
 
-        return StatusData__JsonHelper.parseFromJson(JSONstring);
+        return  StatusData__JsonHelper.parseFromJson(JSONstring).AfterUnpack();
+
     }
 
     /*

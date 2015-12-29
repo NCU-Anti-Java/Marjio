@@ -11,10 +11,6 @@ import static org.junit.Assert.*;
  */
 public class PackerTest {
 
-    private StatusData player;
-    private StatusData block;
-    private StatusData item;
-
     private final int ID = 5;
     private final int ACTION_ID = 10;
     private final int TIMER_COUNTER = Integer.MAX_VALUE;
