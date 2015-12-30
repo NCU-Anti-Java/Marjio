@@ -42,4 +42,16 @@ public interface IGraphics {
      * @return The bitmap.
      */
     IBitmap loadBitmap(String path) throws NoSuchFileException;
+
+    /**
+     * Create a viewport.
+     *
+     * @return The viewport.
+     */
+    Viewport createViewport();
+
+    /**
+     * Remove the viewport.
+     */
+    void removeViewport(Viewport viewport);
 }
