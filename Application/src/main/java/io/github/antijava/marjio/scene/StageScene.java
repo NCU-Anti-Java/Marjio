@@ -46,13 +46,13 @@ public class StageScene extends SceneBase {
     @Override
     public void dispose() {
         super.dispose();
-        ba.dispose();
+        //ba.dispose();
     }
 
     @Override
     public void update() {
         super.update();
-        ba.update();
+        //ba.update();
 
         if (mStartGameCounter-- > 0) {
             // TODO: Draw counter on the graphics.
@@ -66,10 +66,10 @@ public class StageScene extends SceneBase {
         solveBumps();
 
         mPlayers.values().forEach(Player::update);
-        ba.setX(p.getX());
-        ba.setY(p.getY());
+        // ba.setX(p.getX());
+        // ba.setY(p.getY());
 
-        getApplication().getLogger().info(p.toString());
+        //getApplication().getLogger().info(p.toString());
 
         if (!mIsServer) {
             IClient client = getApplication().getClient();
