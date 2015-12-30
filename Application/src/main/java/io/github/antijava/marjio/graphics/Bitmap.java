@@ -17,7 +17,9 @@ import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.TexturePaint;
 import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 /**
@@ -88,10 +90,17 @@ public class Bitmap implements IBitmap {
         if (align == TextAlign.RIGHT)
             x += maxWidth - bounds.width;
 
+        // Calculate text height
+        final GlyphVector gv = mAwtTextFont.layoutGlyphVector(
+                mAwtFontRenderContext, text.toString().toCharArray(),
+                0, text.length(), Font.LAYOUT_LEFT_TO_RIGHT);
+        final Rectangle2D pixBounds = gv.getVisualBounds();
+        final float textHeight = (float) pixBounds.getHeight();
+
         // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
-        layout.draw(mAwtGraphics2D, x, y + (lineHeight + layout.getAscent()) / 2);
+        layout.draw(mAwtGraphics2D, x, y + (lineHeight + textHeight) / 2);
 
         // Remove clipping bounds
         mAwtGraphics2D.setClip(null);
