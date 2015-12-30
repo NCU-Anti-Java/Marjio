@@ -9,6 +9,9 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Created by Davy on 2015/12/29.
  */
@@ -71,6 +74,10 @@ public class WindowIPAddressInput extends WindowBase {
 
     public String getIPString() {
         return String.format("%3d.%3d.%3d.%3d", mIP[0], mIP[1], mIP[2], mIP[3]);
+    }
+
+    public InetAddress getAddress() throws UnknownHostException {
+        return InetAddress.getByName(getIPString());
     }
 
     public int getIndex() {

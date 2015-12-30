@@ -2,6 +2,7 @@ package io.github.antijava.marjio.network;
 
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.network.Packable;
 
 import java.io.IOException;
 
@@ -17,9 +18,9 @@ public class Packer {
      *             tag Type.NetworkClient:
      *                 when Client recv packet from Server, and need pass Event to Input Module
      */
-    public static Event toEvent(Status status, Event.Type type) {
+    public static Event toEvent(Packable packableObject , Event.Type type) {
 
-        return new Event(status, type);
+        return new Event(packableObject, type);
     }
 
 }

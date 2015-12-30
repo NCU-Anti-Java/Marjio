@@ -2,6 +2,7 @@ package io.github.antijava.marjio.common;
 
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.Status;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public interface IInput {
     boolean isRepeat(Key key);
 
     List<Status> getStatuses();
+    List<Request> getRequest();
 
     void triggerEvent(Event evt);
 }
