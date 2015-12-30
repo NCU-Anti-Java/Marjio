@@ -31,8 +31,8 @@ public class StageScene extends SceneBase implements GameConstant {
     private final Sprite mTimer;
     private int mCountDown;
     private final SceneMap mMap;
-    private final UUID mYourPlayerID;
-    private final Map<UUID, Player> mPlayers;
+    UUID mYourPlayerID;
+    Map<UUID, Player> mPlayers;
 
     boolean mIsServer;
 
@@ -46,9 +46,6 @@ public class StageScene extends SceneBase implements GameConstant {
         mForeground = graphics.createViewport();
         mTimer = new SpriteBase(mForeground);
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
-        mPlayers = new HashMap<>();
-        mYourPlayerID = UUID.randomUUID();
-        mPlayers.put(mYourPlayerID, new Player(mIntermediate, mYourPlayerID));
         mCountDown = COUNT_DOWN_SECOND * FRAMERATE;
     }
 
@@ -65,28 +62,21 @@ public class StageScene extends SceneBase implements GameConstant {
             mTimer.getBitmap().drawText(Integer.toString(mCountDown / FRAMERATE), 0, 0, GAME_WIDTH, GAME_HEIGHT, Color.WHITE, IBitmap.TextAlign.CENTER);
             mTimer.update();
 
-            return ;
-        }
-        else {
+            return;
+        } else {
             mTimer.dispose();
         }
 
-        try {
+        mPlayers.values().forEach(Player::preUpdate);
 
-            mPlayers.values().forEach(Player::preUpdate);
-
-            checkKeyState();
-            checkStatus();
+        checkKeyState();
+        checkStatus();
 
 
-            mPlayers.values().stream()
-                    .filter(player -> !mIsServer || !checkBump(player))
-                    .forEach(Player::update);
+        mPlayers.values().stream()
+                .filter(player -> !mIsServer || !checkBump(player))
+                .forEach(Player::update);
 
-        }
-        catch (Exception ex) {
-
-        }
     }
 
     public List<Status> getValidStatuses() {
@@ -217,7 +207,6 @@ public class StageScene extends SceneBase implements GameConstant {
     public void dispose() {
         super.dispose();
 
-        final IGraphics graphics = getApplication().getGraphics();
         mTimer.dispose();
     }
 }
