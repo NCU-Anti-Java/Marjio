@@ -17,7 +17,7 @@ import java.util.logging.Level;
  * Created by Zheng-Yuan on 12/29/2015.
  */
 public class SceneMap extends SceneBase implements SceneObjectConstant {
-    private final static String MAPFILE = "map1.txt";
+    private final static String MAPFILE = "map/map";
     private int mRow;
     private int mCol;
     private Block[][] mMap;
