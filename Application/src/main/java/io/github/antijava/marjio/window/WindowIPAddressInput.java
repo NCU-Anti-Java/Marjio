@@ -7,7 +7,6 @@ import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.IBitmap.TextAlign;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.utils.NumberUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -72,6 +71,22 @@ public class WindowIPAddressInput extends WindowBase {
 
     public String getIPString() {
         return String.format("%3d.%3d.%3d.%3d", mIP[0], mIP[1], mIP[2], mIP[3]);
+    }
+
+    public int getIndex() {
+        return mIndex;
+    }
+
+    public void setIndex(final int index) {
+        mIndex = index;
+        if (mIndex < 0)
+            mIndex = 0;
+        if (mIndex % 4 == 3)
+            mIndex += 1;
+        if (mIndex > 14)
+            mIndex = 14;
+
+        updateCursor();
     }
 
     private void updateCursor() {
