@@ -144,20 +144,20 @@ public class StageScene extends SceneBase {
         Player player = mPlayers.get(mYourPlayerID);
 
         if (input.isPressed(Key.MOVE_LEFT))
-            player.addAccelerationX(0.05);
+            player.addAccelerationX(-0.05);
 
         else if (input.isRepeat(Key.MOVE_LEFT))
-            player.addAccelerationX(PhysicsConstant.friction - 0.05);
+            player.addAccelerationX(-PhysicsConstant.friction + 0.05);
 
         else if (input.isReleased(Key.MOVE_LEFT))
             player.setAccelerationX(0.0);
 
 
         if (input.isPressed(Key.MOVE_RIGHT))
-            player.addAccelerationX(-0.05);
+            player.addAccelerationX(0.05);
 
         else if (input.isRepeat(Key.MOVE_RIGHT))
-            player.addAccelerationX(-PhysicsConstant.friction + 0.05);
+            player.addAccelerationX(PhysicsConstant.friction - 0.05);
 
         else if (input.isReleased(Key.MOVE_RIGHT))
             player.setAccelerationX(0.0);
