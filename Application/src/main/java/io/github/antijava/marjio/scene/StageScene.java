@@ -1,18 +1,17 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Rectangle;
-import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.constant.SceneObjectConstant;
 import io.github.antijava.marjio.network.StatusData;
 import io.github.antijava.marjio.scene.sceneObject.*;
-import io.github.antijava.marjio.window.WindowBase;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -22,37 +21,20 @@ public class StageScene extends SceneBase {
     private final static int START_GAME_COUNTER = 5;
     private int mStartGameCounter;
     private SceneMap mMap;
-    final UUID mYourPlayerID;
-    final Map<UUID, Player> mPlayers;
+    UUID mYourPlayerID;
+    Map<UUID, Player> mPlayers;
 
     boolean mIsServer;
-
-    WindowBase ba;
-    Player p;
 
     public StageScene(IApplication application, int stage) {
         super(application);
         mMap = new SceneMap(application, stage);
-
         mStartGameCounter = START_GAME_COUNTER;
-        /* TODO: Fake data
-        ba = new WindowBase(getApplication(), 33, 33);
-        mYourPlayerID = UUID.randomUUID();
-        p = new Player(application.getGraphics().getDefaultViewport(), mYourPlayerID);
-        mPlayers = new HashMap<>();
-        mPlayers.put(mYourPlayerID, p); */
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        ba.dispose();
     }
 
     @Override
     public void update() {
         super.update();
-        ba.update();
 
         if (mStartGameCounter-- > 0) {
             // TODO: Draw counter on the graphics.
@@ -63,23 +45,11 @@ public class StageScene extends SceneBase {
 
         checkKeyState();
         checkStatus();
-        solveBumps();
 
-        mPlayers.values().forEach(Player::update);
-        ba.setX(p.getX());
-        ba.setY(p.getY());
 
-        getApplication().getLogger().info(p.toString());
-
-        if (!mIsServer) {
-            IClient client = getApplication().getClient();
-            StatusData data = mPlayers.get(mYourPlayerID).getStatusData();
-
-            try {
-                client.send(new Status(data, Status.Type.ClientMessage));
-            } catch (Exception e) {
-            }
-        }
+        mPlayers.values().stream()
+                .filter(player -> !mIsServer || !checkBump(player))
+                .forEach(Player::update);
     }
 
     public List<Status> getValidStatuses() {
@@ -103,8 +73,9 @@ public class StageScene extends SceneBase {
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
-                        if (player.isValidData(data)) {
-                            player.preUpdateStatusData(data);
+                        if (player.isValidNextAction(data.action_id)) {
+                            player.preUpdateNewAction(data.action_id);
+                            data = player.getStatusData();
 
                             final Status new_st = new Status(data,
                                     Status.Type.ServerMessage);
@@ -160,118 +131,38 @@ public class StageScene extends SceneBase {
         IInput input = getApplication().getInput();
 
         Player player = mPlayers.get(mYourPlayerID);
+        int action_id = player.getMoveActionId();
 
-        if (input.isPressed(Key.MOVE_LEFT))
-            player.addAccelerationX(-0.5);
+        Map<IInterruptable, Integer> action_map = Player
+                                                    .action_table
+                                                        .get(action_id);
 
-        else if (input.isRepeat(Key.MOVE_LEFT) && !input.isPressed(Key.MOVE_RIGHT))
-            player.setAccelerationX(-PhysicsConstant.friction - 1e-5);
-
-        else if (input.isReleased(Key.MOVE_LEFT))
-            player.setAccelerationX(0.0);
-
-
-        if (input.isPressed(Key.MOVE_RIGHT))
-            player.addAccelerationX(0.5);
-
-        else if (input.isRepeat(Key.MOVE_RIGHT) && !input.isPressed(Key.MOVE_LEFT))
-            player.setAccelerationX(PhysicsConstant.friction + 1e-5);
-
-        else if (input.isReleased(Key.MOVE_RIGHT))
-            player.setAccelerationX(0.0);
-
-        if (input.isPressing(Key.MOVE_LEFT) && input.isPressing(Key.MOVE_RIGHT)) {
-            player.setAccelerationX(0.0);
-            player.setVelocityX(0.0);
-        }
-
-
-        if (input.isPressed(Key.JUMP)) {
-            try {
-
-                Block block = mMap.getBlock(
-                        player.getY() / SceneObjectConstant.BLOCK_SIZE + 1,
-                        player.getX() / SceneObjectConstant.BLOCK_SIZE);
-
-                // prevent gravity problem
-                if (block.getType() != Block.Type.AIR) {
-                    player.setVelocityY(-20.0);
-                }
-            } catch (Exception ex) {
-
-            }
-
-        }
+        action_map
+                .keySet()
+                .stream()
+                .filter(it -> it.check(input) &&
+                        IAction.time_counter_limit <= player.getTimeCounter())
+                .forEach(it -> player.preUpdateNewAction(action_map.get(it)));
 
     }
 
-    private void solveBumps() {
-        for (Player player : mPlayers.values()) {
-            try {
-                Block block = mMap.getBlock(
-                        player.getY() / SceneObjectConstant.BLOCK_SIZE + 1,
-                        player.getX() / SceneObjectConstant.BLOCK_SIZE);
-
-                // prevent gravity problem
-                if (block.getType() != Block.Type.AIR) {
-                    if (player.getVelocityY() > 0)
-                        player.setVelocityY(0.0);
-                }
-            } catch (Exception ex) {
-
-            }
-
-
-            solveBumpBlock(player);
-        }
-
-        //TODO: Elastic collision for each player
-
-        List<Player> players = new ArrayList<>(mPlayers.values());
-
-        for (int i = 0; i < players.size(); i++) {
-            for (int j = 0; j < players.size(); j++) {
-                Player pi = players.get(i);
-                Player pj = players.get(j);
-
-                if (bumpTest(pi.getOccupiedSpace(), pj.getOccupiedSpace())) {
-                    double tvx = pi.getVelocityX();
-                    double tvy = pi.getVelocityY();
-
-                    pi.setVelocityY(pj.getVelocityY());
-                    pi.setVelocityX(pj.getVelocityY());
-
-                    pj.setVelocityX(tvx);
-                    pj.setVelocityY(tvy);
-                }
-            }
-
-        }
-
-    }
-
-    private void solveBumpBlock (Player player) {
+    public boolean checkBump(Player player) {
         List<Block> entityBlocks = mMap.getAdjacentBlocks(player).stream()
                 .filter(block -> block.getType() != Block.Type.AIR)
                 .collect(Collectors.toList());
 
-        for (Block b : entityBlocks)
-            if (bumpTest(player.getOccupiedSpace(), b.getOccupiedSpace())) {
-                //TODO: setup reflect direction
+        final List<SceneObjectObjectBase> objects = new ArrayList<>();
+        objects.addAll(entityBlocks);
+        objects.addAll(mPlayers.values());
+        objects.remove(player);
 
-                if (b.getX() > player.getX())
-                    player.setVelocityX(- Math.abs(player.getVelocityX()));
-                else
-                    player.setVelocityX(Math.abs(player.getVelocityX()));
-
-                if (b.getY() > player.getY())
-                    player.setVelocityY(- Math.abs(player.getVelocityY()));
-                else
-                    player.setVelocityY(Math.abs(player.getVelocityY()));
+        for (SceneObjectObjectBase object: objects) {
+            if (bumpTest(player.getOccupiedSpace(), object.getOccupiedSpace())) {
+                return true;
             }
-
+        }
+        return false;
     }
-
 
     public static boolean bumpTest(Rectangle a, Rectangle b) {
         return isInsideRectangle(a.x, a.y, b) ||
