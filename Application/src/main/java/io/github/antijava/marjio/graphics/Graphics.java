@@ -167,10 +167,4 @@ public class Graphics implements IGraphics, GameConstant {
         mViewports.add(viewport);
         return viewport;
     }
-
-    @Override
-    public void removeViewport(io.github.antijava.marjio.common.graphics.Viewport viewport) {
-        if (viewport != null)
-            mViewports.remove(viewport);
-    }
 }

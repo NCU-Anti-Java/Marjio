@@ -49,9 +49,4 @@ public interface IGraphics {
      * @return The viewport.
      */
     Viewport createViewport();
-
-    /**
-     * Remove the viewport.
-     */
-    void removeViewport(Viewport viewport);
 }
