@@ -8,7 +8,7 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
-import io.github.antijava.marjio.network.StatusData;
+import io.github.antijava.marjio.common.input.StatusData;
 import io.github.antijava.marjio.scene.sceneObject.*;
 
 import java.util.ArrayList;

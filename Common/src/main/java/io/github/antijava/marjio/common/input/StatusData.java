@@ -1,4 +1,4 @@
-package io.github.antijava.marjio.network;
+package io.github.antijava.marjio.common.input;
 
 import java.util.UUID;
 
