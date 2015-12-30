@@ -2,22 +2,16 @@ package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Rectangle;
-import io.github.antijava.marjio.common.graphics.Viewport;
-import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.graphics.Bitmap;
-import io.github.antijava.marjio.scene.sceneObject.Block;
-import io.github.antijava.marjio.scene.sceneObject.Player;
-import io.github.antijava.marjio.scene.sceneObject.SceneMap;
-import io.github.antijava.marjio.scene.sceneObject.SceneObjectObjectBase;
+import io.github.antijava.marjio.network.StatusData;
+import io.github.antijava.marjio.scene.sceneObject.*;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
-import java.util.logging.Level;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -27,8 +21,10 @@ public class StageScene extends SceneBase {
     private final static int START_GAME_COUNTER = 5;
     private int mStartGameCounter;
     private SceneMap mMap;
-    private Player mYourPlayer;
-    private List<Player> mOtherPlayers;
+    UUID mYourPlayerID;
+    Map<UUID, Player> mPlayers;
+
+    boolean mIsServer;
 
     public StageScene(IApplication application, int stage) {
         super(application);
@@ -45,50 +41,109 @@ public class StageScene extends SceneBase {
             return ;
         }
 
+        mPlayers.values().forEach(Player::preUpdate);
+
         checkKeyState();
         checkStatus();
 
-        List<Player> players = new ArrayList<>();
-        players.add(mYourPlayer);
-        players.addAll(mOtherPlayers);
 
-        players.forEach(Player::preUpdate);
-        players.stream()
-                .filter(player -> !checkBump(player))
+        mPlayers.values().stream()
+                .filter(player -> !mIsServer || !checkBump(player))
                 .forEach(Player::update);
     }
 
+    public List<Status> getValidStatuses() {
+        return getApplication()
+                .getInput()
+                .getStatuses()
+                .stream()
+                .filter(st -> st.getData() instanceof StatusData &&
+                        mPlayers.containsKey(((StatusData)st.getData()).uuid))
+                .collect(Collectors.toList());
+    }
+
     public void checkStatus () {
-        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
+        List<Status> fetchedStatus = getValidStatuses();
+        final IServer server = getApplication().getServer();
+
+        for (Status st : fetchedStatus) {
+            StatusData data = (StatusData) st.getData();
+            Player player = mPlayers.get(data.uuid);
+
+            switch (st.getType()) {
+                case ClientMessage: {
+                    if (mIsServer) {
+                        if (player.isValidNextAction(data.action_id)) {
+                            player.preUpdateNewAction(data.action_id);
+                            data = player.getStatusData();
+
+                            final Status new_st = new Status(data,
+                                    Status.Type.ServerMessage);
+
+                            if (mIsServer) {
+                                try {
+                                    server.broadcast(new_st);
+
+                                } catch (Exception ex) {
+
+                                }
+                            }
+
+                        } else {
+                            data = player.getStatusData();
+                            data.query = false;
+                            final Status new_st = new Status(data,
+                                    Status.Type.ServerVerification);
+
+                            // TODO: Server send to client verify message
+
+                            /*try {
+                                server.send(new_st, player.getId());
+
+                            } case (Exception ex) {
+
+                            }*/
+                        }
+                    }
+                    break;
+                }
+
+                case ServerMessage: {
+                    if (data.uuid != mYourPlayerID)
+                        player.preUpdateStatusData(data);
+
+                    break;
+                }
+
+                case ServerVerification: {
+                    if (!data.query)
+                        player.preUpdateStatusData(data);
+
+                    break;
+                }
+
+            }
+
+        }
     }
 
     private void checkKeyState() {
-        final IInput input = getApplication().getInput();
+        IInput input = getApplication().getInput();
 
-        if (input.isPressed(Key.LEFT) || input.isPressing(Key.LEFT)) {
-            mYourPlayer.setLeft(true);
-        }
-        else if (input.isReleased(Key.LEFT)) {
-            mYourPlayer.setLeft(false);
-        }
-        if (input.isPressed(Key.RIGHT) || input.isPressing(Key.RIGHT)) {
-            mYourPlayer.setRight(true);
-        }
-        else if (input.isReleased(Key.RIGHT)) {
-            mYourPlayer.setRight(false);
-        }
-        if (input.isPressed(Key.UP) || input.isPressing(Key.UP)) {
-            mYourPlayer.setUp(true);
-        }
-        else if (input.isReleased(Key.UP)) {
-            mYourPlayer.setUp(false);
-        }
-        if (input.isPressed(Key.SPACE) || input.isPressing(Key.SPACE)) {
-            mYourPlayer.setSpace(true);
-        }
-        else if (input.isReleased(Key.SPACE)) {
-            mYourPlayer.setSpace(false);
-        }
+        Player player = mPlayers.get(mYourPlayerID);
+        int action_id = player.getMoveActionId();
+
+        Map<IInterruptable, Integer> action_map = Player
+                                                    .action_table
+                                                        .get(action_id);
+
+        action_map
+                .keySet()
+                .stream()
+                .filter(it -> it.check(input) &&
+                        IAction.time_counter_limit <= player.getTimeCounter())
+                .forEach(it -> player.preUpdateNewAction(action_map.get(it)));
+
     }
 
     public boolean checkBump(Player player) {
@@ -98,8 +153,7 @@ public class StageScene extends SceneBase {
 
         final List<SceneObjectObjectBase> objects = new ArrayList<>();
         objects.addAll(entityBlocks);
-        objects.add(mYourPlayer);
-        objects.addAll(mOtherPlayers);
+        objects.addAll(mPlayers.values());
         objects.remove(player);
 
         for (SceneObjectObjectBase object: objects) {
@@ -118,6 +172,7 @@ public class StageScene extends SceneBase {
     }
 
     public static boolean isInsideRectangle(int x, int y, Rectangle rect) {
-        return x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height;
+        return x > rect.x && x < rect.x + rect.width &&
+                y > rect.y && y < rect.y + rect.height;
     }
 }
