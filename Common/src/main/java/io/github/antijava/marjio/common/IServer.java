@@ -5,6 +5,7 @@ import io.github.antijava.marjio.common.input.Status;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by fntsr on 2015/12/23.
@@ -13,7 +14,7 @@ public interface IServer {
     /**
      * Start to listen on socket.
      */
-    void start() throws InterruptedException, UnsupportedOperationException;
+    void start() throws InterruptedException, UnsupportedOperationException, IOException;
 
     /**
      * Stop listening.
@@ -31,9 +32,9 @@ public interface IServer {
      * Send message to specific client
      *
      * @param status information package
-     * @param address client's address which will received messages
+     * @param clientID client's id
      */
-    void send(Status status, InetAddress address) throws Exception;
+    void send(Status status, UUID clientID) throws Exception;
 
     /**
      * Return all connected clients' information.

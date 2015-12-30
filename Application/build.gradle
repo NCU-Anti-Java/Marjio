@@ -37,6 +37,7 @@ dependencies {
     compile project(':common')
     compile group: 'com.instagram', name: 'ig-json-parser-processor', version: '0.0.6+'
     compile 'io.reactivex:rxjava:1.1.0'
+    compile 'com.esotericsoftware:kryonet:2.22.0-RC1'
 }
 
 mainClassName = 'Main'

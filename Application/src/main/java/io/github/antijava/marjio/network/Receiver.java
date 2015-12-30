@@ -5,33 +5,35 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.List;
 
 /**
  * Created by fntsr on 2015/12/27.
  */
 public class Receiver {
 
-    private final int SIZE = 1024;
     private DatagramSocket mServerSocket;
-    private InetAddress mSourceAddress;
     private byte[] mData;
-
-    public Receiver() throws SocketException {
-        mServerSocket = new DatagramSocket(9876);
-    }
+    private List<DatagramSocket> mSockets;
 
     public byte[] recieve() throws IOException {
+        final int PORT = 9876;
+        final int SIZE = 1024;
+
         byte[] receiveData = new byte[SIZE];
 
-        DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
-        mServerSocket.receive(packet);
-        mSourceAddress = mServerSocket.getInetAddress();
 
-        return packet.getData();
+        DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
+        mServerSocket = new DatagramSocket(PORT);
+        mServerSocket.receive(packet);
+        mData = packet.getData();
+        DatagramSocket socket = mServerSocket;
+//        socket.get
+        return mData;
     }
 
-    public InetAddress getSourceAddress() {
-        return mSourceAddress;
+    public DatagramSocket getSocket() {
+        return mServerSocket;
     }
 
     public byte[] getData() {

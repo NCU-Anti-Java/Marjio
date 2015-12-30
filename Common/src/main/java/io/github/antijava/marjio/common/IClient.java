@@ -2,6 +2,7 @@ package io.github.antijava.marjio.common;
 
 import io.github.antijava.marjio.common.input.Status;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
 /**
@@ -13,7 +14,7 @@ public interface IClient {
      *
      * @param hostAddress Server address
      */
-    void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException;
+    void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException, IOException;
 
     /**
      * Stop the connection.
