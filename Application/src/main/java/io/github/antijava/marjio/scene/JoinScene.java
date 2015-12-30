@@ -103,7 +103,7 @@ public class JoinScene extends SceneBase implements Constant {
                                 waitingFlag = false;
                             }
                             for (Request request : input.getRequest() ) {
-                                if (request.getType() == Request.Types.ClientWannaJoinRoom)
+                                if (request.getType() == Request.Types.ClientCanJoinRoom)
                                     sceneManager.translationTo(new RoomScene(getApplication(), false));
                             }
                         }
