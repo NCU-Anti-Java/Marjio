@@ -43,6 +43,9 @@ public class StatusData {
     @JsonField(fieldName = "st_y")
     public int st_y;
 
+    @JsonField(fieldName = "query")
+    public boolean query;
+
 
     public StatusData PreparePack(){
 
