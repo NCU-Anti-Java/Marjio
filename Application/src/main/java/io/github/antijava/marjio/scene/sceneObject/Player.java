@@ -2,7 +2,7 @@ package io.github.antijava.marjio.scene.sceneObject;
 
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
-import io.github.antijava.marjio.network.StatusData;
+import io.github.antijava.marjio.common.input.StatusData;
 
 import java.util.UUID;
 

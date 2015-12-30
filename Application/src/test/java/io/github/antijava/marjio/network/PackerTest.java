@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.network.StatusData;
+import io.github.antijava.marjio.common.input.StatusData;
 
 import java.util.UUID;
 
