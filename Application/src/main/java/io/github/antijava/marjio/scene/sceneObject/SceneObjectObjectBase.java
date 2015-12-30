@@ -13,5 +13,5 @@ abstract public class SceneObjectObjectBase extends SpriteBase implements SceneO
         super(viewport);
     }
 
-    abstract Rectangle getOccupiedSpace();
+    public abstract Rectangle getOccupiedSpace();
 }

@@ -36,8 +36,8 @@ public class Viewport extends io.github.antijava.marjio.common.graphics.Viewport
 
         final Viewport v = (Viewport) o;
         if (v.z == this.z)
-            return v.y < this.y ? 1 : -1;
-        return v.z < this.z ? 1 : -1;
+            return this.y > v.y ? 1 : -1;
+        return this.z > v.z ? 1 : -1;
     }
     // endregion Sprite List
 }

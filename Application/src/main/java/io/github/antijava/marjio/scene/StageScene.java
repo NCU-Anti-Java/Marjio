@@ -3,15 +3,22 @@ package io.github.antijava.marjio.scene;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.Player;
+import io.github.antijava.marjio.scene.sceneObject.SceneMap;
+import io.github.antijava.marjio.scene.sceneObject.SceneObjectObjectBase;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
@@ -19,31 +26,14 @@ import java.util.logging.Level;
 public class StageScene extends SceneBase {
     private final static int START_GAME_COUNTER = 5;
     private int mStartGameCounter;
-    private int mRow;
-    private int mCol;
-    private Block mMap[][];
+    private SceneMap mMap;
     private Player mYourPlayer;
     private List<Player> mOtherPlayers;
 
-
-
-    public StageScene(IApplication application, String filepath) {
+    public StageScene(IApplication application, int stage) {
         super(application);
-        loadStageFile(filepath);
+        mMap = new SceneMap(application, stage);
         mStartGameCounter = START_GAME_COUNTER;
-    }
-
-    private void loadStageFile(String filepath) {
-        try {
-            File file = new File(StageScene.class.getResource(filepath).toURI());
-            // TODO: Load the map information.
-        }
-        catch (NullPointerException ex) {
-            getApplication().getLogger().log(Level.INFO, filepath + "can not be found.");
-        }
-        catch (Exception ex) {
-            getApplication().getLogger().log(Level.INFO, ex.toString());
-        }
     }
 
     @Override
@@ -55,21 +45,17 @@ public class StageScene extends SceneBase {
             return ;
         }
 
-        // TODO: check State
         checkKeyState();
         checkStatus();
 
-        mYourPlayer.preUpdate();
-        for (Iterator it = mOtherPlayers.iterator(); it.hasNext(); ) {
-            Player player = (Player)it.next();
-            player.preUpdate();
-        }
+        List<Player> players = new ArrayList<>();
+        players.add(mYourPlayer);
+        players.addAll(mOtherPlayers);
 
-        // TODO: Check players bump into blocks or other players.
-
-        // TODO: Load the true data from server.
-
-        // TODO: Draw scene on the graphics.
+        players.forEach(Player::preUpdate);
+        players.stream()
+                .filter(player -> !checkBump(player))
+                .forEach(Player::update);
     }
 
     public void checkStatus () {
@@ -103,6 +89,25 @@ public class StageScene extends SceneBase {
         else if (input.isReleased(Key.SPACE)) {
             mYourPlayer.setSpace(false);
         }
+    }
+
+    public boolean checkBump(Player player) {
+        List<Block> entityBlocks = mMap.getAdjacentBlocks(player).stream()
+                .filter(block -> block.getType() != Block.Type.AIR)
+                .collect(Collectors.toList());
+
+        final List<SceneObjectObjectBase> objects = new ArrayList<>();
+        objects.addAll(entityBlocks);
+        objects.add(mYourPlayer);
+        objects.addAll(mOtherPlayers);
+        objects.remove(player);
+
+        for (SceneObjectObjectBase object: objects) {
+            if (bumpTest(player.getOccupiedSpace(), object.getOccupiedSpace())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean bumpTest(Rectangle a, Rectangle b) {

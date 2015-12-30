@@ -31,11 +31,10 @@ import java.util.ArrayList;
  */
 public class Graphics implements IGraphics, GameConstant {
     private static final Viewport sDefaultViewport = new Viewport();
-    private static final Font sDefaultFont = new Font("微軟正黑體", 16, false, false);
+    private static final Font sDefaultFont = new Font("Microsoft JhengHei", 16, false, false);
     private final IApplication mApplication;
     private final ArrayList<Font> mFonts;
     private final ArrayList<Viewport> mViewports;
-    private final ArrayList<Sprite> mSpriteList;
     private final JPanel mSwingPanel;
     private final BufferedImage mCanvas;
     private final Graphics2D mCanvasGraphics;
@@ -59,8 +58,6 @@ public class Graphics implements IGraphics, GameConstant {
 
         mViewports = new ArrayList<>();
         mViewports.add(sDefaultViewport);
-
-        mSpriteList = new ArrayList<>();
 
         // Java Window
         final JFrame mFrame = new JFrame();
@@ -104,28 +101,26 @@ public class Graphics implements IGraphics, GameConstant {
         g.setColor(Color.black);
         g.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-        // TODO: Finish implement
         Observable.from(mViewports)
                 .toSortedList()
                 .flatMap(Observable::from)
                 .toBlocking()
                 .forEach(viewport -> {
                     Observable.from(viewport.getSprites())
+                            .filter(sprite -> sprite.getBitmap() != null)
                             .toSortedList((sprite, sprite2) -> {
-                                if (sprite.getZ() == sprite.getZ())
+                                if (sprite.getZ() == sprite2.getZ())
                                     if (sprite.getY() == sprite.getY())
-                                        return sprite.getX() < sprite2.getX() ? 1 : -1;
+                                        return sprite.getX() > sprite2.getX() ? 1 : -1;
                                     else
-                                        return sprite.getY() < sprite2.getY() ? 1 : -1;
+                                        return sprite.getY() > sprite2.getY() ? 1 : -1;
                                 else
-                                    return sprite.getZ() < sprite2.getZ() ? 1 : -1;
+                                    return sprite.getZ() > sprite2.getZ() ? 1 : -1;
                             })
                             .flatMap(Observable::from)
                             .toBlocking()
                             .forEach(sprite -> {
                                 final Bitmap bitmap = (Bitmap) sprite.getBitmap();
-                                if (bitmap == null)
-                                    return;
                                 mCanvasGraphics.drawImage(bitmap.mImage,
                                         sprite.getX() - viewport.ox + viewport.x,
                                         sprite.getY() - viewport.oy + viewport.y,
