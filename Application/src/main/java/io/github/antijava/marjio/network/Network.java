@@ -40,6 +40,7 @@ public class Network implements IClient, IServer, Constant {
         mRunningFlag = false;
         mConnectedFlag = true;
         mServer = new Server();
+        mClient = new Client();
         mConnectionMap = new HashMap<>();
         mClientList = new ArrayList<>();
 
