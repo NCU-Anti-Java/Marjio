@@ -1,9 +1,11 @@
 package io.github.antijava.marjio.common.input;
 
+import io.github.antijava.marjio.common.network.Packable;
+
 /**
  * Created by firejox on 2015/12/25.
  */
-public class Status {
+public class Status implements Packable{
     Type type;
     Object obj;
 
