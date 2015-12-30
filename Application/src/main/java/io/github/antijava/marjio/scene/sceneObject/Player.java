@@ -148,4 +148,11 @@ public class Player extends SceneObjectObjectBase {
                              real_y + PLAYER_SIZE,
                              PLAYER_SIZE, PLAYER_SIZE);
     }
+
+    @Override
+    public String toString() {
+        return "player x:" + mX +" y:" + mY +
+                " vx: " + mVelocityX + " vy:" + mVelocityY +
+                " ax: " + mAccelerationX + " ay:" + mAccelerationY;
+    }
 }
