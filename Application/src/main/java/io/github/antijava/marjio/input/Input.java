@@ -1,11 +1,8 @@
 package io.github.antijava.marjio.input;
 
 import io.github.antijava.marjio.common.IInput;
-import io.github.antijava.marjio.common.input.Event;
-import io.github.antijava.marjio.common.input.IKeyInfo;
+import io.github.antijava.marjio.common.input.*;
 import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
-import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.Status;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -36,6 +33,8 @@ public final class Input implements IInput {
 
     private Vector<Status> mStatuses;
     private Vector<Status> mStatusesCached;
+    private Vector<Request> mRequests;
+    private Vector<Request> mRequestsCached;
 
     private ReadWriteLock mLock;
 
@@ -48,6 +47,8 @@ public final class Input implements IInput {
 
         mStatuses = new Vector<>();
         mStatusesCached = new Vector<>();
+        mRequests = new Vector<>();
+        mRequestsCached = new Vector<>();
 
         mLock = new ReentrantReadWriteLock();
     }
@@ -65,6 +66,12 @@ public final class Input implements IInput {
         mPreviousKeys = mCurrentKeys;
         mCurrentKeys = mNextKeys;
         mNextKeys = tmpKeys;
+
+        // Switching using Vector for optimization
+        final Vector<Request> tmpRequest = mRequestsCached;
+        mRequestsCached = mRequests;
+        mRequests = tmpRequest;
+        mRequests.clear();
 
         // Switching using Vector for optimization
         final Vector<Status> tmpStatuses = mStatusesCached;
@@ -137,6 +144,11 @@ public final class Input implements IInput {
     }
 
     @Override
+    public List<Request> getRequest() {
+        return mRequestsCached;
+    }
+
+    @Override
     public void triggerEvent(Event evt) {
         mLock.readLock().lock();
 
@@ -155,7 +167,12 @@ public final class Input implements IInput {
             // TODO: Data to Status
             case NetWorkClient:
             case NetworkServer: {
-                mStatuses.add((Status) evt.getData());
+                Object data = evt.getData();
+                if (data instanceof Status) {
+                    mStatuses.add((Status) data);
+                } else if (data instanceof Request) {
+                    mRequests.add((Request) data);
+                }
                 break;
             }
 

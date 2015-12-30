@@ -6,12 +6,13 @@ import com.esotericsoftware.kryonet.Server;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IServer;
+import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.ClientInfo;
+import io.github.antijava.marjio.common.network.Packable;
 import io.github.antijava.marjio.constant.Constant;
 
 import java.io.IOException;
-import java.lang.annotation.Inherited;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +46,9 @@ public class Network implements IClient, IServer, Constant {
         mClientList = new ArrayList<>();
 
         mServer.getKryo().register(Status.class);
+        mServer.getKryo().register(Request.class);
         mClient.getKryo().register(Status.class);
+        mClient.getKryo().register(Request.class);
     }
 
     @Override
@@ -96,19 +99,19 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void send(Status status) throws Exception {
-        mClient.sendUDP(status);
+    public void send(Packable packableObj) throws Exception {
+        mClient.sendUDP(packableObj);
     }
 
     @Override
-    public void send(Status status, UUID clientID) throws Exception {
+    public void send(Packable packableObj, UUID clientID) throws Exception {
         Connection connection = mConnectionMap.get(clientID);
-        connection.sendUDP(status);
+        connection.sendUDP(packableObj);
     }
 
     @Override
-    public void broadcast(Status status) throws Exception {
-        mServer.sendToAllUDP(status);
+    public void broadcast(Packable packableObj) throws Exception {
+        mServer.sendToAllUDP(packableObj);
     }
 
     @Override
