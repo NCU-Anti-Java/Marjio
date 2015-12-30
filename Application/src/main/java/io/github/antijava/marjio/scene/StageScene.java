@@ -1,10 +1,13 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IGraphics;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.graphics.Graphics;
 import io.github.antijava.marjio.network.StatusData;
 import io.github.antijava.marjio.scene.sceneObject.*;
 
@@ -19,6 +22,9 @@ import java.util.stream.Collectors;
  */
 public class StageScene extends SceneBase {
     private final static int START_GAME_COUNTER = 5;
+    private final Viewport mBackground;
+    private final Viewport mIntermediate;
+    private final Viewport mForeground;
     private int mStartGameCounter;
     private SceneMap mMap;
     UUID mYourPlayerID;
@@ -29,6 +35,9 @@ public class StageScene extends SceneBase {
     public StageScene(IApplication application, int stage) {
         super(application);
         mMap = new SceneMap(application, stage);
+        mBackground = getApplication().getGraphics().createViewport();
+        mIntermediate = getApplication().getGraphics().createViewport();
+        mForeground = getApplication().getGraphics().createViewport();
         mStartGameCounter = START_GAME_COUNTER;
     }
 
@@ -174,5 +183,15 @@ public class StageScene extends SceneBase {
     public static boolean isInsideRectangle(int x, int y, Rectangle rect) {
         return x > rect.x && x < rect.x + rect.width &&
                 y > rect.y && y < rect.y + rect.height;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        final IGraphics graphics = getApplication().getGraphics();
+        graphics.removeViewport(mBackground);
+        graphics.removeViewport(mIntermediate);
+        graphics.removeViewport(mForeground);
     }
 }
