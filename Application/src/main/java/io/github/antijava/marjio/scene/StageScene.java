@@ -7,6 +7,7 @@ import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
 import io.github.antijava.marjio.network.StatusData;
 import io.github.antijava.marjio.scene.sceneObject.*;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Zheng-Yuan on 12/27/2015.
  */
-public class StageScene extends SceneBase {
+public class StageScene extends SceneBase implements Constant {
     private final static int START_GAME_COUNTER = 5;
     private int mStartGameCounter;
     private SceneMap mMap;
@@ -36,11 +37,12 @@ public class StageScene extends SceneBase {
 
         mStartGameCounter = START_GAME_COUNTER;
         /* TODO: Fake data
-        ba = new WindowBase(getApplication(), 33, 33);
+         */
+        ba = new WindowBase(getApplication(), PLAYER_SIZE, PLAYER_SIZE);
         mYourPlayerID = UUID.randomUUID();
         p = new Player(application.getGraphics().getDefaultViewport(), mYourPlayerID);
         mPlayers = new HashMap<>();
-        mPlayers.put(mYourPlayerID, p); */
+        mPlayers.put(mYourPlayerID, p);
     }
 
     @Override

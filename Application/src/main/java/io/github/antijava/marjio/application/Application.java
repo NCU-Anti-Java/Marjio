@@ -7,6 +7,8 @@ import io.github.antijava.marjio.graphics.Graphics;
 import io.github.antijava.marjio.input.Input;
 import io.github.antijava.marjio.scene.MainScene;
 import io.github.antijava.marjio.scene.SceneBase;
+import io.github.antijava.marjio.resourcemanager.ResourcesManager;
+import io.github.antijava.marjio.scene.StageScene;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.logging.Level;
@@ -23,6 +25,7 @@ public class Application implements IApplication, Constant {
     private final IServer mServer;
     private final IClient mClient;
     private final IGraphics mGraphics;
+    private final ResourcesManager mResourcesManager;
 
     public Application() {
         mLogger = Logger.getLogger(LOGGER_NAME);
@@ -33,7 +36,7 @@ public class Application implements IApplication, Constant {
         mServer = null;
         mClient = null;
         mGraphics = new Graphics(this);
-
+        mResourcesManager = new ResourcesManager(this);
         mSceneManager.translationTo(new MainScene(this));
     }
 
@@ -99,6 +102,10 @@ public class Application implements IApplication, Constant {
     @Override
     public IGraphics getGraphics() {
         return mGraphics;
+    }
+
+    public ResourcesManager getResourcesManager() {
+        return mResourcesManager;
     }
     // endregion Components
 }
