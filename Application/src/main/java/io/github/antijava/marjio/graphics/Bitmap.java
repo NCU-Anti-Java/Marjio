@@ -91,16 +91,16 @@ public class Bitmap implements IBitmap {
             x += maxWidth - bounds.width;
 
         // Calculate text height
-        GlyphVector gv = mAwtTextFont.layoutGlyphVector(
+        final GlyphVector gv = mAwtTextFont.layoutGlyphVector(
                 mAwtFontRenderContext, text.toString().toCharArray(),
                 0, text.length(), Font.LAYOUT_LEFT_TO_RIGHT);
-        Rectangle2D pixBounds = gv.getVisualBounds();
+        final Rectangle2D pixBounds = gv.getVisualBounds();
         final float textHeight = (float) pixBounds.getHeight();
 
         // Draw
         final TextLayout layout = new TextLayout(text.toString(), mAwtTextFont, mAwtFontRenderContext);
         mAwtGraphics2D.setColor(convertToAwtColor(color));
-        layout.draw(mAwtGraphics2D, x, y + (lineHeight - textHeight) / 2 + textHeight);
+        layout.draw(mAwtGraphics2D, x, y + (lineHeight + textHeight) / 2);
 
         // Remove clipping bounds
         mAwtGraphics2D.setClip(null);
