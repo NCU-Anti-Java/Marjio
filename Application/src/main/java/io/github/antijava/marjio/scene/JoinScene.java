@@ -104,7 +104,7 @@ public class JoinScene extends SceneBase implements Constant {
         final IApplication application = getApplication();
 
         mWindowIPAddressInput = new WindowIPAddressInput(application);
-        mWindowCommand = new WindowCommand(application, 140, new String[] {"ç¢ºå®š", "è¿”å›"});
+        mWindowCommand = new WindowCommand(application, 140, new String[] {"½T©w", "ªğ¦^"});
         mWindowBack = new WindowBase(application,
                 mWindowIPAddressInput.getWidth() + mWindowCommand.getWidth(),
                 mWindowCommand.getHeight()) {
@@ -114,7 +114,7 @@ public class JoinScene extends SceneBase implements Constant {
 
                 final IBitmap readmeContent = getContent();
                 readmeContent.clear();
-                readmeContent.drawText("è¼¸å…¥ä¼ºæœå™¨ IP: ", 0, 0, -1, 24, Color.WHITE);
+                readmeContent.drawText("¿é¤J¦øªA¾¹ IP: ", 0, 0, -1, 24, Color.WHITE);
             }
         };
 
