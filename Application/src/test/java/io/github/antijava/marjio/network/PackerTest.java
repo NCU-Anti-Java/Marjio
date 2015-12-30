@@ -30,22 +30,6 @@ public class PackerTest {
     public void tearDown() throws Exception {
 
     }
-
-    @Test
-    public void testPack() throws Exception {
-        System.out.print(new String(Packer.pack(st)));
-    }
-
-    @Test
-    public void testUnpack() throws Exception {
-        Status new_st = Packer.unpack(Packer.pack(st));
-        StatusData n_data = (StatusData)new_st.getData();
-
-        Assert.assertTrue(st.getType() == new_st.getType());
-        Assert.assertTrue(n_data.uuid.equals(data.uuid));
-        Assert.assertTrue(n_data.id == data.id);
-    }
-
     @Test
     public void testToEvent() throws Exception {
 
