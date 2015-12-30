@@ -32,8 +32,12 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
     }
 
     public List<Block> getAdjacentBlocks(Player player) {
-        final int x = player.getX() / BLOCK_SIZE;
-        final int y = player.getY() / BLOCK_SIZE;
+        return getAdjacentBlocks(player.getX(), player.getY());
+    }
+
+    public List<Block> getAdjacentBlocks(final int srcX, final int srcY) {
+        final int x = srcX / BLOCK_SIZE;
+        final int y = srcY / BLOCK_SIZE;
         List<Block> result = new ArrayList<>();
         for (int ox = -1; ox <= 1; ox++) {
             for (int oy = -1; oy <= 1; oy++) {
