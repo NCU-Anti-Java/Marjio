@@ -37,11 +37,12 @@ public class RoomScene extends SceneBase implements Constant {
     private void initWindows() {
         final IApplication application = getApplication();
 
-        mWindowCommand = new WindowCommand(application, 180, new String[]{"Start", "Cancel"});
+        mWindowCommand = new WindowCommand(application, 180, MENU_TEXT);
         mWindowCommand.setActive(true);
-        mWindowPlayerList = new WindowPlayerList(application, 600, GAME_HEIGHT);
+        mWindowPlayerList = new WindowPlayerList(application, 600, 570);
 
         mWindowCommand.setX(600);
+        mWindowCommand.setY(490);
     }
 
     @Override
@@ -69,6 +70,7 @@ public class RoomScene extends SceneBase implements Constant {
             mWindowPlayerList.setActive(false);
         }
         else if(input.isPressed(Key.ENTER) || input.isPressing(Key.ENTER)) {
+            mCurrentChoice = mWindowCommand.getIndex();
             select();
         }
     }
@@ -81,6 +83,7 @@ public class RoomScene extends SceneBase implements Constant {
         switch(mCurrentChoice) {
             case EXIT_ROOM: {
                 final ISceneManager sceneManager = getApplication().getSceneManager();
+
                 if (mIsServer) {
                     final IServer server = getApplication().getServer();
                     // TODO: Server should broadcast to clients that the room is canceled.
@@ -109,6 +112,9 @@ public class RoomScene extends SceneBase implements Constant {
             }
             case START_GAME: {
                 // TODO: Only server can start game, then server broadcast to clients to start game.
+                if(mIsServer) {
+
+                }
                 break;
             }
         }
