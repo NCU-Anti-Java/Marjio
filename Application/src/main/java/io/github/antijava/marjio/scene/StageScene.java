@@ -1,11 +1,14 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.graphics.Color;
+import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.constant.Constant;
+import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
 import io.github.antijava.marjio.graphics.SpriteBase;
 import io.github.antijava.marjio.network.StatusData;
@@ -43,11 +46,13 @@ public class StageScene extends SceneBase implements Constant {
 
         mMap = new SceneMap(application, stage);
 
-        mCountDown = START_GAME_COUNTER;
+        mCountDown = START_GAME_COUNTER * FPS;
         GameViewPort = graphics.createViewport();
 
-        mTimer = new SpriteBase(GameViewPort);
+        mTimer = new SpriteBase(application.getGraphics().getDefaultViewport());
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
+        mTimer.setZ(99);
+
 
 /*
          //TODO: Fake data
@@ -57,10 +62,10 @@ public class StageScene extends SceneBase implements Constant {
 
         p = new Player(application.getGraphics()
                 .getDefaultViewport(), mYourPlayerID);
+
         mPlayers = new HashMap<>();
         mPlayers.put(mYourPlayerID, p);
-        */
-
+*/
     }
 
     @Override
@@ -81,11 +86,16 @@ public class StageScene extends SceneBase implements Constant {
             mTimer.getBitmap().clear();
             mTimer.getBitmap().setFont(new Font("Consolas", 48, false, true));
             mTimer.getBitmap().drawText(
-                    Integer.toString(mCountDown / FRAMERATE), 0, 0,
+                    Integer.toString(mCountDown / FPS), 0, 0,
                     GAME_WIDTH, GAME_HEIGHT, Color.WHITE, IBitmap.TextAlign.CENTER);
             mTimer.update();
 
             return ;
+        } else if (mCountDown == 0) {
+            mTimer.getBitmap().clear();
+            mTimer.update();
+
+            mCountDown--;
         }
 
         mPlayers.values().forEach(Player::preUpdate);
@@ -96,12 +106,12 @@ public class StageScene extends SceneBase implements Constant {
 
         mPlayers.values().forEach(Player::update);
 
-        /*
+/*
         //TODO: fake
          ba.setX(p.getX());
          ba.setY(p.getY());
          ba.update();
-         */
+*/
 
         //getApplication().getLogger().info(p.toString());
 
