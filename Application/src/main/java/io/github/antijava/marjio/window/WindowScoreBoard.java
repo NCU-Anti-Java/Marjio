@@ -1,8 +1,11 @@
 package io.github.antijava.marjio.window;
 
+import io.github.antijava.marjio.application.Application;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
+import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -36,8 +39,10 @@ public class WindowScoreBoard extends WindowBase {
      * Draw at most 4 mario including yourself racing result on the scoreboard.
      */
     private void refresh() {
-        // TODO: use ResourceManager get mario images and draw.
-        // final ResourcesManager resourcesManager = getApplication().getResoucesManager
+        // TODO: Replace image to mario!
+        final ResourcesManager resourcesManager = ((Application)getApplication()).getResourcesManager();
+        final IBitmap yourMario = resourcesManager.tile("default.png", 1, 2);
+        final IBitmap opMario = resourcesManager.tile("default.png", 1, 8);
         final IBitmap content = getContent();
         boolean youAreDrawn = false;
         content.clear();
@@ -53,7 +58,11 @@ public class WindowScoreBoard extends WindowBase {
             if (mRankTable[i] == mYourPlayerUUID) {
                 String text = "Me";
                 youAreDrawn = true;
+                content.blt(40, 30 + i * 75, yourMario, yourMario.getRect(), 0);
                 content.drawText(text, 100, i * 75, 50, 75, Color.WHITE, IBitmap.TextAlign.CENTER);
+            }
+            else {
+                content.blt(40, 30 + i * 75, opMario, opMario.getRect(), 0);
             }
             content.drawText(getRankText(i + 1), 175,  i * 75, 125, 75, Color.WHITE, IBitmap.TextAlign.CENTER);
         }
@@ -64,6 +73,7 @@ public class WindowScoreBoard extends WindowBase {
                     break;
             String text = "Me";
             content.drawText(text, 100, 3 * 75, 50, 75, Color.WHITE);
+            content.blt(40, 30 + 3 * 75, yourMario, yourMario.getRect(), 0);
             content.drawText(getRankText(yourPlayerRank + 1), 175,  3 * 75, 125, 75, Color.WHITE, IBitmap.TextAlign.CENTER);
         }
         content.drawText("Press any key to continue", 0, HEIGHT - 100, WIDTH, 75, Color.WHITE, IBitmap.TextAlign.CENTER);
