@@ -7,11 +7,11 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.StatusData;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
 import io.github.antijava.marjio.graphics.SpriteBase;
-import io.github.antijava.marjio.network.StatusData;
 import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
 import io.github.antijava.marjio.scene.sceneObject.Player;
@@ -120,7 +120,7 @@ public class StageScene extends SceneBase implements Constant {
             StatusData data = mPlayers.get(mYourPlayerID).getStatusData();
 
             try {
-                client.send(new Status(data, Status.Type.ClientMessage));
+                client.send(new Status(data, Status.Types.ClientMessage));
             } catch (Exception e) {
             }
         }
@@ -151,7 +151,7 @@ public class StageScene extends SceneBase implements Constant {
                             player.preUpdateStatusData(data);
 
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerMessage);
+                                    Status.Types.ServerMessage);
 
                             if (mIsServer) {
                                 try {
@@ -166,7 +166,7 @@ public class StageScene extends SceneBase implements Constant {
                             data = player.getStatusData();
                             data.query = false;
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerVerification);
+                                    Status.Types.ServerVerification);
 
                             // TODO: Server send to client verify message
 
