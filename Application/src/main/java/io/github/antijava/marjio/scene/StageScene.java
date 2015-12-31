@@ -1,19 +1,28 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.IClient;
-import io.github.antijava.marjio.common.IInput;
-import io.github.antijava.marjio.common.IServer;
+import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.graphics.Color;
+import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
+import io.github.antijava.marjio.graphics.Font;
+import io.github.antijava.marjio.graphics.Sprite;
+import io.github.antijava.marjio.graphics.SpriteBase;
 import io.github.antijava.marjio.network.StatusData;
-import io.github.antijava.marjio.scene.sceneObject.*;
+import io.github.antijava.marjio.scene.sceneObject.Block;
+import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
+import io.github.antijava.marjio.scene.sceneObject.Player;
+import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 import io.github.antijava.marjio.window.WindowBase;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -21,10 +30,14 @@ import java.util.stream.Collectors;
  */
 public class StageScene extends SceneBase implements Constant {
     private final static int START_GAME_COUNTER = 5;
-    private int mStartGameCounter;
+    private final Viewport GameViewPort;
     private SceneMap mMap;
-    final UUID mYourPlayerID;
-    final Map<UUID, Player> mPlayers;
+    UUID mYourPlayerID;
+    Map<UUID, Player> mPlayers;
+
+    private final Sprite mTimer;
+    private int mCountDown;
+
 
     boolean mIsServer;
 
@@ -33,16 +46,27 @@ public class StageScene extends SceneBase implements Constant {
 
     public StageScene(IApplication application, int stage) {
         super(application);
+        final IGraphics graphics = application.getGraphics();
+
         mMap = new SceneMap(application, stage);
 
-        mStartGameCounter = START_GAME_COUNTER;
-        /* TODO: Fake data
-         */
+        mCountDown = START_GAME_COUNTER;
+        GameViewPort = graphics.createViewport();
+
+        mTimer = new SpriteBase(GameViewPort);
+        mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
+
+
+        /* //TODO: Fake data
+
         ba = new WindowBase(getApplication(), PLAYER_SIZE, PLAYER_SIZE);
         mYourPlayerID = UUID.randomUUID();
-        p = new Player(application.getGraphics().getDefaultViewport(), mYourPlayerID);
+
+        p = new Player(application.getGraphics()
+                .getDefaultViewport(), mYourPlayerID);
         mPlayers = new HashMap<>();
         mPlayers.put(mYourPlayerID, p);
+        */
     }
 
     @Override
@@ -56,11 +80,19 @@ public class StageScene extends SceneBase implements Constant {
         super.update();
         //ba.update();
 
-        if (mStartGameCounter-- > 0) {
-            // TODO: Draw counter on the graphics.
+        if (mCountDown > 0) {
+
+            // TODO: If you are client, you should receive server's count down time.
+            mCountDown--;
+            mTimer.getBitmap().clear();
+            mTimer.getBitmap().setFont(new Font("Consolas", 48, false, true));
+            mTimer.getBitmap().drawText(
+                    Integer.toString(mCountDown / FRAMERATE), 0, 0,
+                    GAME_WIDTH, GAME_HEIGHT, Color.WHITE, IBitmap.TextAlign.CENTER);
+            mTimer.update();
+
             return ;
         }
-
         mPlayers.values().forEach(Player::preUpdate);
 
         checkKeyState();
