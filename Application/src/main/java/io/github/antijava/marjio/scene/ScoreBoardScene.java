@@ -5,6 +5,7 @@ import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.ISceneManager;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.graphics.SpriteBase;
 import io.github.antijava.marjio.window.WindowScoreBoard;
 
 import java.util.UUID;
@@ -14,11 +15,21 @@ import java.util.UUID;
  */
 public class ScoreBoardScene extends SceneBase {
     private final WindowScoreBoard mWindowScoreBoard;
-    private final IBitmap mBackground;
+    private final SpriteBase mBackground;
 
+    /**
+     * Constructor
+     *
+     * @param application The application.
+     * @param yourPlayerUUID Your player's UUID.
+     * @param rankTable As an array, the index i is rank i + 1, and the content
+     *                  is the UUID of the i th rank.
+     * @param background The background image.
+     */
     public ScoreBoardScene(IApplication application, UUID yourPlayerUUID, UUID[] rankTable, IBitmap background) {
         super(application);
-        mBackground = background;
+        mBackground = new SpriteBase(application.getGraphics().getDefaultViewport());
+        mBackground.setBitmap(background);
         mWindowScoreBoard = new WindowScoreBoard(application, yourPlayerUUID, rankTable);
     }
 
@@ -28,9 +39,9 @@ public class ScoreBoardScene extends SceneBase {
 
         final IInput input = getApplication().getInput();
 
+        mBackground.update();
         mWindowScoreBoard.update();
 
-        // TODO: Draw background image.
         // TODO: Need IInput press ANY KEY.
         if (input.isPressed(Key.ENTER)) {
             final ISceneManager sceneManager = getApplication().getSceneManager();
@@ -44,6 +55,7 @@ public class ScoreBoardScene extends SceneBase {
         super.dispose();
 
         mWindowScoreBoard.dispose();
+        mBackground.dispose();
     }
 
 }
