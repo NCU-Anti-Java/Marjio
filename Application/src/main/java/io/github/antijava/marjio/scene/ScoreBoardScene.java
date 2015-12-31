@@ -43,7 +43,7 @@ public class ScoreBoardScene extends SceneBase {
         mWindowScoreBoard.update();
 
         // TODO: Need IInput press ANY KEY.
-        if (input.isPressed(Key.ENTER)) {
+        if (input.isPressed(Key.ANY)) {
             final ISceneManager sceneManager = getApplication().getSceneManager();
             sceneManager.translationTo(new MainScene(getApplication()));
         }
