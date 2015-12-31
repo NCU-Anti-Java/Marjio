@@ -5,6 +5,7 @@ import com.esotericsoftware.kryonet.Listener;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.network.Packable;
 
 /**
  * Created by fntsr on 2015/12/30.
@@ -18,9 +19,9 @@ public class ClientReceiver extends Listener {
 
     @Override
     public void received (Connection connection, Object object) {
-        if (object instanceof Status) {
-            Status status = (Status) object;
-            Event event = Packer.toEvent(status, Event.Type.NetWorkClient);
+        if (object instanceof Packable) {
+            Packable packableObj = (Packable) object;
+            Event event = Packer.toEvent(packableObj, Event.Type.NetWorkClient);
             mApplication.getInput().triggerEvent(event);
         }
     }
