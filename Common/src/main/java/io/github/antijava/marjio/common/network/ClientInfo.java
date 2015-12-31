@@ -6,22 +6,16 @@ import java.util.UUID;
 /**
  * Created by fntsr on 2015/12/28.
  */
-public class Player {
-    private InetAddress mAddress;
+public class ClientInfo {
     private UUID mClientID;
     private Object mTag;
 
-    public Player(InetAddress address, UUID uuid) {
-        mAddress = address;
+    public ClientInfo(UUID uuid) {
         mClientID = uuid;
     }
     
     public UUID getClientID() {
         return mClientID;
-    }
-
-    public InetAddress getAddress() {
-        return mAddress;
     }
 
     public Object getTag() {

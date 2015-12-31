@@ -1,11 +1,13 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.ISceneManager;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
@@ -81,9 +83,31 @@ public class JoinScene extends SceneBase implements Constant {
         switch (mWindowCommand.getIndex()) {
             case 0: {
                 try {
-                    // TODO: Transate to room scene with client state.
                     final ISceneManager sceneManager = getApplication().getSceneManager();
-                    sceneManager.translationTo(new RoomScene(getApplication(), false));
+                    final IInput input = getApplication().getInput();
+                    final IClient client = getApplication().getClient();
+                    final Request joinRequest = new Request(Request.Types.ClientWannaJoinRoom);
+                    client.send(joinRequest);
+                    // TODO: Let user know we are waiting response
+
+                    Thread thread = new Thread(() -> {
+                        boolean waitingFlag = true;
+                        final int timeOut = 1000;
+                        long startTime = System.currentTimeMillis();
+
+                        while (waitingFlag) {
+                            if (System.currentTimeMillis() - startTime > timeOut) {
+                                waitingFlag = false;
+                            }
+                            for (Request request : input.getRequest() ) {
+                                if (request.getType() == Request.Types.ClientCanJoinRoom)
+                                    sceneManager.translationTo(new RoomScene(getApplication(), false));
+                            }
+                        }
+                        // TODO: Let user know we are timeout, can keep do something
+                    });
+                    thread.start();
+
                     return true;
                 }
                 catch (Exception ex) {
