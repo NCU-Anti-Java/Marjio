@@ -61,8 +61,9 @@ public final class Input implements IInput {
     public void update() {
         // Lock for swapping spaces
         mLock.writeLock().lock();
+        mNextKeys.remove(Key.UNDEFINED);
 
-        mPreviousKeys.clear();
+        mPreviousKeys.retainAll(mNextKeys);
         mPreviousKeys.addAll(mNextKeys);
 
         // Rolling optimized
@@ -96,8 +97,6 @@ public final class Input implements IInput {
 
         for (final Key key : mCurrentKeys)
             mKeyRepeatCount.put(key, mKeyRepeatCount.getOrDefault(key, -1) + 1);
-
-
     }
 
     @Override
@@ -113,13 +112,11 @@ public final class Input implements IInput {
     public boolean isPressed(final Key k) {
         final Key key = getRealKey(k);
 
-        if (key == Key.UNDEFINED)
-            return false;
-
         if (key == Key.ANY)
             return mAnyKeyPressed;
 
-        return (!mPreviousKeys.contains(key) &&
+        return key != Key.UNDEFINED &&
+                (!mPreviousKeys.contains(key) &&
                 mCurrentKeys.contains(key));
     }
 
@@ -142,7 +139,7 @@ public final class Input implements IInput {
         final Key key = getRealKey(k);
         final int count = mKeyRepeatCount.getOrDefault(key, -1);
 
-        if (key == Key.UNDEFINED || count < 0) // Invalid key or not pressing
+        if (key == Key.UNDEFINED && count > -1) // Invalid key or not pressing
             return false;
 
         if (count == 0) // Just pressed, give it a repeat.
