@@ -1,7 +1,14 @@
 package io.github.antijava.marjio.graphics;
 
-import io.github.antijava.marjio.common.*;
-import io.github.antijava.marjio.common.graphics.*;
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
+import io.github.antijava.marjio.common.IGraphics;
+import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.ISceneManager;
+import io.github.antijava.marjio.common.IServer;
+import io.github.antijava.marjio.common.graphics.Color;
+import io.github.antijava.marjio.common.graphics.IBitmap;
+import io.github.antijava.marjio.common.graphics.IFont;
 import org.junit.Before;
 import org.junit.Test;
 
