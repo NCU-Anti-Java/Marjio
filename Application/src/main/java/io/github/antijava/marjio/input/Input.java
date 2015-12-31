@@ -26,6 +26,7 @@ public final class Input implements IInput {
         sKeymap.put(Key.CROUCH, Key.DOWN);
     }
 
+    private boolean  mAnyKeyPressed;
     private Set<Key> mNextKeys;
     private Set<Key> mCurrentKeys;
     private Set<Key> mPreviousKeys;
@@ -33,12 +34,15 @@ public final class Input implements IInput {
 
     private Vector<Status> mStatuses;
     private Vector<Status> mStatusesCached;
+
     private Vector<Request> mRequests;
     private Vector<Request> mRequestsCached;
 
     private ReadWriteLock mLock;
 
     public Input() {
+        mAnyKeyPressed = false;
+
         mNextKeys = EnumSet.noneOf(Key.class);
         mCurrentKeys = EnumSet.noneOf(Key.class);
         mPreviousKeys = EnumSet.noneOf(Key.class);
@@ -57,6 +61,7 @@ public final class Input implements IInput {
     public void update() {
         // Lock for swapping spaces
         mLock.writeLock().lock();
+        mNextKeys.remove(Key.UNDEFINED);
 
         mPreviousKeys.retainAll(mNextKeys);
         mPreviousKeys.addAll(mNextKeys);
@@ -82,6 +87,9 @@ public final class Input implements IInput {
         // Unlock
         mLock.writeLock().unlock();
 
+        // If Any key Pressed then Exists some key not contain in PreviousKeys
+        mAnyKeyPressed = !mPreviousKeys.containsAll(mCurrentKeys);
+
         // Reset released key's repeat count
         mKeyRepeatCount.keySet().stream()
                 .filter(key -> !mCurrentKeys.contains(key))
@@ -103,6 +111,9 @@ public final class Input implements IInput {
     @Override
     public boolean isPressed(final Key k) {
         final Key key = getRealKey(k);
+
+        if (key == Key.ANY)
+            return mAnyKeyPressed;
 
         return key != Key.UNDEFINED &&
                 (!mPreviousKeys.contains(key) &&
