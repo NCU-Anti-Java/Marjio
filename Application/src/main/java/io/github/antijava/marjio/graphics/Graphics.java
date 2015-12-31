@@ -143,6 +143,10 @@ public class Graphics implements IGraphics, GameConstant {
         return sDefaultViewport;
     }
 
+    public BufferedImage getBufferedImage() {
+        return mCanvas;
+    }
+
     @Override
     public IBitmap createBitmap(int width, int height) {
         return new Bitmap(this, width, height);
