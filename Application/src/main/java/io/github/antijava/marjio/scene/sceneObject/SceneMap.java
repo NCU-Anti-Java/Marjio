@@ -4,6 +4,7 @@ import io.github.antijava.marjio.application.Application;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
+import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 import io.github.antijava.marjio.scene.SceneBase;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +13,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.logging.Level;
-import io.github.antijava.marjio.graphics.Bitmap;
 /**
  * Created by Zheng-Yuan on 12/29/2015.
  */
@@ -37,12 +37,8 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
     }
 
     public List<Block> getAdjacentBlocks(Player player) {
-        return getAdjacentBlocks(player.getX(), player.getY());
-    }
-
-    public List<Block> getAdjacentBlocks(final int srcX, final int srcY) {
-        final int x = srcX / BLOCK_SIZE;
-        final int y = srcY / BLOCK_SIZE;
+        final int x = player.getX() / BLOCK_SIZE;
+        final int y = player.getY() / BLOCK_SIZE;
         List<Block> result = new ArrayList<>();
         for (int ox = -1; ox <= 1; ox++) {
             for (int oy = -1; oy <= 1; oy++) {

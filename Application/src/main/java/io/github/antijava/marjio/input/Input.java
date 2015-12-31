@@ -1,11 +1,8 @@
 package io.github.antijava.marjio.input;
 
 import io.github.antijava.marjio.common.IInput;
-import io.github.antijava.marjio.common.input.Event;
-import io.github.antijava.marjio.common.input.IKeyInfo;
+import io.github.antijava.marjio.common.input.*;
 import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
-import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.Status;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -29,6 +26,7 @@ public final class Input implements IInput {
         sKeymap.put(Key.CROUCH, Key.DOWN);
     }
 
+    private boolean  mAnyKeyPressed;
     private Set<Key> mNextKeys;
     private Set<Key> mCurrentKeys;
     private Set<Key> mPreviousKeys;
@@ -37,9 +35,14 @@ public final class Input implements IInput {
     private Vector<Status> mStatuses;
     private Vector<Status> mStatusesCached;
 
+    private Vector<Request> mRequests;
+    private Vector<Request> mRequestsCached;
+
     private ReadWriteLock mLock;
 
     public Input() {
+        mAnyKeyPressed = false;
+
         mNextKeys = EnumSet.noneOf(Key.class);
         mCurrentKeys = EnumSet.noneOf(Key.class);
         mPreviousKeys = EnumSet.noneOf(Key.class);
@@ -48,6 +51,8 @@ public final class Input implements IInput {
 
         mStatuses = new Vector<>();
         mStatusesCached = new Vector<>();
+        mRequests = new Vector<>();
+        mRequestsCached = new Vector<>();
 
         mLock = new ReentrantReadWriteLock();
     }
@@ -57,7 +62,7 @@ public final class Input implements IInput {
         // Lock for swapping spaces
         mLock.writeLock().lock();
 
-        mPreviousKeys.retainAll(mNextKeys);
+        mPreviousKeys.clear();
         mPreviousKeys.addAll(mNextKeys);
 
         // Rolling optimized
@@ -65,6 +70,12 @@ public final class Input implements IInput {
         mPreviousKeys = mCurrentKeys;
         mCurrentKeys = mNextKeys;
         mNextKeys = tmpKeys;
+
+        // Switching using Vector for optimization
+        final Vector<Request> tmpRequest = mRequestsCached;
+        mRequestsCached = mRequests;
+        mRequests = tmpRequest;
+        mRequests.clear();
 
         // Switching using Vector for optimization
         final Vector<Status> tmpStatuses = mStatusesCached;
@@ -75,6 +86,9 @@ public final class Input implements IInput {
         // Unlock
         mLock.writeLock().unlock();
 
+        // If Any key Pressed then Exists some key not contain in PreviousKeys
+        mAnyKeyPressed = !mPreviousKeys.containsAll(mCurrentKeys);
+
         // Reset released key's repeat count
         mKeyRepeatCount.keySet().stream()
                 .filter(key -> !mCurrentKeys.contains(key))
@@ -82,6 +96,8 @@ public final class Input implements IInput {
 
         for (final Key key : mCurrentKeys)
             mKeyRepeatCount.put(key, mKeyRepeatCount.getOrDefault(key, -1) + 1);
+
+
     }
 
     @Override
@@ -97,8 +113,13 @@ public final class Input implements IInput {
     public boolean isPressed(final Key k) {
         final Key key = getRealKey(k);
 
-        return key != Key.UNDEFINED &&
-                (!mPreviousKeys.contains(key) &&
+        if (key == Key.UNDEFINED)
+            return false;
+
+        if (key == Key.ANY)
+            return mAnyKeyPressed;
+
+        return (!mPreviousKeys.contains(key) &&
                 mCurrentKeys.contains(key));
     }
 
@@ -121,7 +142,7 @@ public final class Input implements IInput {
         final Key key = getRealKey(k);
         final int count = mKeyRepeatCount.getOrDefault(key, -1);
 
-        if (key == Key.UNDEFINED && count > -1) // Invalid key or not pressing
+        if (key == Key.UNDEFINED || count < 0) // Invalid key or not pressing
             return false;
 
         if (count == 0) // Just pressed, give it a repeat.
@@ -134,6 +155,11 @@ public final class Input implements IInput {
     @Override
     public List<Status> getStatuses() {
         return mStatusesCached;
+    }
+
+    @Override
+    public List<Request> getRequest() {
+        return mRequestsCached;
     }
 
     @Override
@@ -155,7 +181,12 @@ public final class Input implements IInput {
             // TODO: Data to Status
             case NetWorkClient:
             case NetworkServer: {
-                mStatuses.add((Status) evt.getData());
+                Object data = evt.getData();
+                if (data instanceof Status) {
+                    mStatuses.add((Status) data);
+                } else if (data instanceof Request) {
+                    mRequests.add((Request) data);
+                }
                 break;
             }
 

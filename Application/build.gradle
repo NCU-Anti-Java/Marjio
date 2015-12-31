@@ -5,38 +5,11 @@ repositories {
     mavenCentral()
 }
 
-ext {
-    generatedSourcesDir = file("gen/main/java")
-}
-
-sourceSets {
-    gen {
-        java {
-            srcDir generatedSourcesDir
-        }
-    }
-}
-
-tasks.withType(JavaCompile) {
-    doFirst {
-        // regenerate all files
-        if (generatedSourcesDir.exists()) {
-            generatedSourcesDir.deleteDir()
-        }
-        generatedSourcesDir.mkdirs()
-    }
-    options.compilerArgs += [
-            '-processor',
-            'com.instagram.common.json.annotation.processor.JsonAnnotationProcessor',
-            '-s',
-            generatedSourcesDir
-    ]
-}
-
 dependencies {
     compile project(':common')
-    compile group: 'com.instagram', name: 'ig-json-parser-processor', version: '0.0.6+'
     compile 'io.reactivex:rxjava:1.1.0'
+    compile 'org.apache.commons:commons-lang3:3.4'
+    compile 'com.esotericsoftware:kryonet:2.22.0-RC1'
 }
 
 mainClassName = 'Main'
@@ -47,33 +20,4 @@ jar {
         attributes 'Main-Class': mainClassName
         attributes 'Class-Path': 'io.github.antijava.marjio'
     }
-}
-
-ext {
-    generatedSourcesDir = file("gen/main/java")
-}
-
-sourceSets {
-    gen {
-        java {
-            srcDir generatedSourcesDir
-        }
-    }
-}
-
-
-tasks.withType(JavaCompile) {
-    doFirst {
-        // regenerate all files
-        if (generatedSourcesDir.exists()) {
-            generatedSourcesDir.deleteDir()
-        }
-        generatedSourcesDir.mkdirs()
-    }
-    options.compilerArgs += [
-            '-processor',
-            'com.instagram.common.json.annotation.processor.JsonAnnotationProcessor',
-            '-s',
-            generatedSourcesDir
-    ]
 }

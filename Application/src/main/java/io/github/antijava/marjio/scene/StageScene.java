@@ -1,16 +1,21 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.IClient;
-import io.github.antijava.marjio.common.IInput;
-import io.github.antijava.marjio.common.IServer;
+import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.graphics.Color;
+import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.StatusData;
 import io.github.antijava.marjio.constant.Constant;
-import io.github.antijava.marjio.constant.SceneObjectConstant;
-import io.github.antijava.marjio.network.StatusData;
-import io.github.antijava.marjio.scene.sceneObject.*;
+import io.github.antijava.marjio.graphics.Font;
+import io.github.antijava.marjio.graphics.Sprite;
+import io.github.antijava.marjio.graphics.SpriteBase;
+import io.github.antijava.marjio.scene.sceneObject.Block;
+import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
+import io.github.antijava.marjio.scene.sceneObject.Player;
+import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 import io.github.antijava.marjio.window.WindowBase;
 
 import java.util.*;
@@ -21,28 +26,46 @@ import java.util.stream.Collectors;
  */
 public class StageScene extends SceneBase implements Constant {
     private final static int START_GAME_COUNTER = 5;
-    private int mStartGameCounter;
+    private final Viewport GameViewPort;
     private SceneMap mMap;
-    final UUID mYourPlayerID;
-    final Map<UUID, Player> mPlayers;
+    UUID mYourPlayerID;
+    Map<UUID, Player> mPlayers;
+
+    private final Sprite mTimer;
+    private int mCountDown;
+
 
     boolean mIsServer;
 
-    WindowBase ba;
-    Player p;
+    final WindowBase ba;
+    final Player p;
 
     public StageScene(IApplication application, int stage) {
         super(application);
+        final IGraphics graphics = application.getGraphics();
+
         mMap = new SceneMap(application, stage);
 
-        mStartGameCounter = START_GAME_COUNTER;
-        /* TODO: Fake data
-         */
+        mCountDown = START_GAME_COUNTER * FPS;
+        GameViewPort = graphics.createViewport();
+
+        mTimer = new SpriteBase(application.getGraphics().getDefaultViewport());
+        mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
+        mTimer.setZ(99);
+
+
+/*
+         //TODO: Fake data
+
         ba = new WindowBase(getApplication(), PLAYER_SIZE, PLAYER_SIZE);
         mYourPlayerID = UUID.randomUUID();
-        p = new Player(application.getGraphics().getDefaultViewport(), mYourPlayerID);
+
+        p = new Player(application.getGraphics()
+                .getDefaultViewport(), mYourPlayerID);
+
         mPlayers = new HashMap<>();
         mPlayers.put(mYourPlayerID, p);
+*/
     }
 
     @Override
@@ -54,11 +77,25 @@ public class StageScene extends SceneBase implements Constant {
     @Override
     public void update() {
         super.update();
-        //ba.update();
 
-        if (mStartGameCounter-- > 0) {
-            // TODO: Draw counter on the graphics.
+
+        if (mCountDown > 0) {
+
+            // TODO: If you are client, you should receive server's count down time.
+            mCountDown--;
+            mTimer.getBitmap().clear();
+            mTimer.getBitmap().setFont(new Font("Consolas", 48, false, true));
+            mTimer.getBitmap().drawText(
+                    Integer.toString(mCountDown / FPS), 0, 0,
+                    GAME_WIDTH, GAME_HEIGHT, Color.WHITE, IBitmap.TextAlign.CENTER);
+            mTimer.update();
+
             return ;
+        } else if (mCountDown == 0) {
+            mTimer.getBitmap().clear();
+            mTimer.update();
+
+            mCountDown--;
         }
 
         mPlayers.values().forEach(Player::preUpdate);
@@ -68,8 +105,13 @@ public class StageScene extends SceneBase implements Constant {
         solveBumps();
 
         mPlayers.values().forEach(Player::update);
-        // ba.setX(p.getX());
-        // ba.setY(p.getY());
+
+/*
+        //TODO: fake
+         ba.setX(p.getX());
+         ba.setY(p.getY());
+         ba.update();
+*/
 
         //getApplication().getLogger().info(p.toString());
 
@@ -78,7 +120,7 @@ public class StageScene extends SceneBase implements Constant {
             StatusData data = mPlayers.get(mYourPlayerID).getStatusData();
 
             try {
-                client.send(new Status(data, Status.Type.ClientMessage));
+                client.send(new Status(data, Status.Types.ClientMessage));
             } catch (Exception e) {
             }
         }
@@ -109,7 +151,7 @@ public class StageScene extends SceneBase implements Constant {
                             player.preUpdateStatusData(data);
 
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerMessage);
+                                    Status.Types.ServerMessage);
 
                             if (mIsServer) {
                                 try {
@@ -124,7 +166,7 @@ public class StageScene extends SceneBase implements Constant {
                             data = player.getStatusData();
                             data.query = false;
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerVerification);
+                                    Status.Types.ServerVerification);
 
                             // TODO: Server send to client verify message
 
@@ -163,24 +205,27 @@ public class StageScene extends SceneBase implements Constant {
 
         Player player = mPlayers.get(mYourPlayerID);
 
-        if (input.isPressed(Key.MOVE_LEFT))
+        if (input.isPressed(Key.MOVE_LEFT)) {
             player.addAccelerationX(-0.5);
-
-        else if (input.isRepeat(Key.MOVE_LEFT) && !input.isPressed(Key.MOVE_RIGHT))
+        }
+        else if (input.isRepeat(Key.MOVE_LEFT) && !input.isPressed(Key.MOVE_RIGHT)) {
+            player.setVelocityX(-6.0);
             player.setAccelerationX(-PhysicsConstant.friction - 1e-5);
-
-        else if (input.isReleased(Key.MOVE_LEFT))
+        }
+        else if (input.isReleased(Key.MOVE_LEFT)) {
             player.setAccelerationX(0.0);
+        }
 
-
-        if (input.isPressed(Key.MOVE_RIGHT))
+        if (input.isPressed(Key.MOVE_RIGHT)) {
             player.addAccelerationX(0.5);
-
-        else if (input.isRepeat(Key.MOVE_RIGHT) && !input.isPressed(Key.MOVE_LEFT))
+        }
+        else if (input.isRepeat(Key.MOVE_RIGHT) && !input.isPressed(Key.MOVE_LEFT)) {
+            player.setVelocityX(6.0);
             player.setAccelerationX(PhysicsConstant.friction + 1e-5);
-
-        else if (input.isReleased(Key.MOVE_RIGHT))
+        }
+        else if (input.isReleased(Key.MOVE_RIGHT)) {
             player.setAccelerationX(0.0);
+        }
 
         if (input.isPressing(Key.MOVE_LEFT) && input.isPressing(Key.MOVE_RIGHT)) {
             player.setAccelerationX(0.0);
@@ -188,16 +233,18 @@ public class StageScene extends SceneBase implements Constant {
         }
 
 
-        if (input.isPressed(Key.JUMP)) {
+        if (input.isRepeat(Key.JUMP)) {
             try {
 
                 Block block = mMap.getBlock(
-                        player.getY() / SceneObjectConstant.BLOCK_SIZE + 1,
-                        player.getX() / SceneObjectConstant.BLOCK_SIZE);
+                        (int)Math.round(
+                                (double) player.getY() / BLOCK_SIZE) + 1,
+                        (int)Math.round((double)player.getX() / BLOCK_SIZE));
 
                 // prevent gravity problem
                 if (block.getType() != Block.Type.AIR) {
                     player.setVelocityY(-20.0);
+                    player.addAccelerationY(0.0);
                 }
             } catch (Exception ex) {
 
@@ -208,35 +255,26 @@ public class StageScene extends SceneBase implements Constant {
     }
 
     private void solveBumps() {
-        for (Player player : mPlayers.values()) {
-            try {
-                Block block = mMap.getBlock(
-                        player.getY() / SceneObjectConstant.BLOCK_SIZE + 1,
-                        player.getX() / SceneObjectConstant.BLOCK_SIZE);
-
-                // prevent gravity problem
-                if (block.getType() != Block.Type.AIR) {
-                    if (player.getVelocityY() > 0)
-                        player.setVelocityY(0.0);
-                }
-            } catch (Exception ex) {
-
-            }
-
-
-            solveBumpBlock(player);
-        }
 
         //TODO: Elastic collision for each player
 
         List<Player> players = new ArrayList<>(mPlayers.values());
 
+        for (Player p : players)
+            p.normalizeVelocity((double)BLOCK_SIZE/2.0 - 1.0);
+
         for (int i = 0; i < players.size(); i++) {
-            for (int j = 0; j < players.size(); j++) {
+            for (int j = i+1; j < players.size(); j++) {
                 Player pi = players.get(i);
                 Player pj = players.get(j);
 
-                if (bumpTest(pi.getOccupiedSpace(), pj.getOccupiedSpace())) {
+                final double dx =
+                        (double)(pi.getNextX() - pj.getNextY()) / PLAYER_SIZE;
+                final double dy =
+                        (double)(pi.getNextY() - pj.getNextY()) / PLAYER_SIZE;
+
+
+                if (magicbumpTest(dx, dy)) {
                     double tvx = pi.getVelocityX();
                     double tvy = pi.getVelocityY();
 
@@ -250,6 +288,11 @@ public class StageScene extends SceneBase implements Constant {
 
         }
 
+        for (Player player : mPlayers.values()) {
+
+            solveBumpBlock(player);
+        }
+
     }
 
     private void solveBumpBlock (Player player) {
@@ -257,25 +300,88 @@ public class StageScene extends SceneBase implements Constant {
                 .filter(block -> block.getType() != Block.Type.AIR)
                 .collect(Collectors.toList());
 
-        for (Block b : entityBlocks)
-            if (bumpTest(player.getOccupiedSpace(), b.getOccupiedSpace())) {
+        for (Block b : entityBlocks) {
+            final double dx =
+                    (double)(b.getX() - player.getNextX()) / BLOCK_SIZE;
+            final double dy =
+                    (double)(b.getY() - player.getNextY()) / BLOCK_SIZE;
+
+
+
+            if (magicbumpTest(dx, dy)) {
+
                 //TODO: setup reflect direction
+                final double vx = player.getVelocityX();
+                final double vy = player.getVelocityY();
 
-                if (b.getX() > player.getX())
-                    player.setVelocityX(- Math.abs(player.getVelocityX()));
-                else
-                    player.setVelocityX(Math.abs(player.getVelocityX()));
+                //getApplication().getLogger().info(player.toString());
+                //getApplication().getLogger().info(b.toString());
 
-                if (b.getY() > player.getY())
-                    player.setVelocityY(- Math.abs(player.getVelocityY()));
-                else
-                    player.setVelocityY(Math.abs(player.getVelocityY()));
+
+                if (Math.abs(b.getY() - player.getY()) <= BLOCK_SIZE/2) {
+                    if (b.getX() >= player.getX() + BLOCK_SIZE) {
+                        final double nvx = b.getX() - player.getX() - BLOCK_SIZE;
+
+                        player.setVelocityX(nvx);
+
+                        player.setAccelerationX(-nvx);
+
+                    } else if (b.getX() <= player.getX() - BLOCK_SIZE) {
+                        final double nvx = b.getX() - player.getX() + BLOCK_SIZE;
+
+                        player.setVelocityX(nvx);
+
+                        player.setAccelerationX(-nvx);
+                    } else {
+                        player.setVelocityX(-vx);
+                        player.setX((int) Math
+                                .round((double) player.getX() / BLOCK_SIZE)
+                                * BLOCK_SIZE);
+                    }
+                }
+
+                if (Math.abs(b.getX() - player.getX()) <= BLOCK_SIZE/2) {
+                    if (b.getY() > player.getY() + BLOCK_SIZE) {
+                        final double nvy = b.getY() - player.getY() - BLOCK_SIZE;
+
+                        player.setVelocityY(nvy);
+
+                        player.setAccelerationY(-PhysicsConstant.gravity - 0.5);
+
+                    } else if (b.getY() < player.getY() - BLOCK_SIZE) {
+                        final double nvy = b.getY() - player.getY() + BLOCK_SIZE;
+
+                        player.setVelocityY(nvy);
+
+                        player.setAccelerationY(0.0);
+                    } else if (b.getY() < player.getY()) {
+                        player.setVelocityY(0.0);
+
+                        player.setY(b.getY() + BLOCK_SIZE);
+                        player.setAccelerationY(0.0);
+                    } else {
+                        player.setVelocityY(0.0);
+                        player.setY(b.getY() - BLOCK_SIZE);
+                        player.setAccelerationY(0.0);
+                    }
+                }
+
+                //getApplication().getLogger().info(player.toString());
             }
+        }
+    }
 
+    public static boolean magicbumpTest(double dx, double dy) {
+
+
+        return ((dx*dx*dx*dx) + (dy*dy*dy*dy)) <= 1.0D;
     }
 
 
+
     public static boolean bumpTest(Rectangle a, Rectangle b) {
+
+
         return isInsideRectangle(a.x, a.y, b) ||
                 isInsideRectangle(a.x, a.y - a.height, b) ||
                 isInsideRectangle(a.x + a.width, a.y, b) ||

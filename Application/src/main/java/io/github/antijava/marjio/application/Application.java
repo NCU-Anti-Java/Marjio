@@ -5,6 +5,7 @@ import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Graphics;
 import io.github.antijava.marjio.input.Input;
+import io.github.antijava.marjio.network.Network;
 import io.github.antijava.marjio.scene.MainScene;
 import io.github.antijava.marjio.scene.SceneBase;
 import io.github.antijava.marjio.resourcemanager.ResourcesManager;
@@ -33,8 +34,8 @@ public class Application implements IApplication, Constant {
         // TODO: Other components
         mSceneManager = new SceneManager(this);
         mInput = new Input();
-        mServer = null;
-        mClient = null;
+        mServer = new Network(this);
+        mClient = new Network(this);
         mGraphics = new Graphics(this);
         mResourcesManager = new ResourcesManager(this);
         mSceneManager.translationTo(new MainScene(this));
