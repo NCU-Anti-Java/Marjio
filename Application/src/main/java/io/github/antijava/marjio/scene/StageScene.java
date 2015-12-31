@@ -1,17 +1,21 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.scene.sceneObject.Block;
-import io.github.antijava.marjio.scene.sceneObject.Player;
+import io.github.antijava.marjio.constant.SceneObjectConstant;
+import io.github.antijava.marjio.common.input.StatusData;
+import io.github.antijava.marjio.scene.sceneObject.*;
 
-import java.io.File;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
@@ -19,29 +23,16 @@ import java.util.logging.Level;
 public class StageScene extends SceneBase {
     private final static int START_GAME_COUNTER = 5;
     private int mStartGameCounter;
-    private int mRow;
-    private int mCol;
-    private Block mMap[][];
-    private Player mYourPlayer;
-    private List<Player> mOtherPlayers;
+    private SceneMap mMap;
+    UUID mYourPlayerID;
+    Map<UUID, Player> mPlayers;
 
-    public StageScene(IApplication application, String filepath) {
+    boolean mIsServer;
+
+    public StageScene(IApplication application, int stage) {
         super(application);
-        loadStageFile(filepath);
+        mMap = new SceneMap(application, stage);
         mStartGameCounter = START_GAME_COUNTER;
-    }
-
-    private void loadStageFile(String filepath) {
-        try {
-            File file = new File(StageScene.class.getResource(filepath).toURI());
-            // TODO: Load the map information.
-        }
-        catch (NullPointerException ex) {
-            getApplication().getLogger().log(Level.INFO, filepath + "can not be found.");
-        }
-        catch (Exception ex) {
-            getApplication().getLogger().log(Level.INFO, ex.toString());
-        }
     }
 
     @Override
@@ -53,53 +44,178 @@ public class StageScene extends SceneBase {
             return ;
         }
 
+        mPlayers.values().forEach(Player::preUpdate);
+
         checkKeyState();
         checkStatus();
+        solveBumps();
 
-        mYourPlayer.preUpdate();
-        for (Iterator it = mOtherPlayers.iterator(); it.hasNext(); ) {
-            Player player = (Player)it.next();
-            player.preUpdate();
+        mPlayers.values().forEach(Player::update);
+
+        if (!mIsServer) {
+            IClient client = getApplication().getClient();
+            StatusData data = mPlayers.get(mYourPlayerID).getStatusData();
+
+            try {
+                client.send(new Status(data, Status.Types.ClientMessage));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+    }
 
-        // TODO: Check players bump into blocks or other players.
-
-        // TODO: Load the true data from server.
-
-        // TODO: Draw scene on the graphics.
+    public List<Status> getValidStatuses() {
+        return getApplication()
+                .getInput()
+                .getStatuses()
+                .stream()
+                .filter(st -> st.getData() instanceof StatusData &&
+                        mPlayers.containsKey(((StatusData)st.getData()).uuid))
+                .collect(Collectors.toList());
     }
 
     public void checkStatus () {
-        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
+        List<Status> fetchedStatus = getValidStatuses();
+        final IServer server = getApplication().getServer();
+
+        for (Status st : fetchedStatus) {
+            StatusData data = (StatusData) st.getData();
+            Player player = mPlayers.get(data.uuid);
+
+            switch (st.getType()) {
+                case ClientMessage: {
+                    if (mIsServer) {
+                        if (player.isValidData(data)) {
+                            player.preUpdateStatusData(data);
+
+                            final Status new_st = new Status(data,
+                                    Status.Types.ServerMessage);
+
+                            if (mIsServer) {
+                                try {
+                                    server.broadcast(new_st);
+
+                                } catch (Exception ex) {
+
+                                }
+                            }
+
+                        } else {
+                            data = player.getStatusData();
+                            data.query = false;
+                            final Status new_st = new Status(data,
+                                    Status.Types.ServerVerification);
+
+                            // TODO: Server send to client verify message
+
+                            /*try {
+                                server.send(new_st, player.getId());
+
+                            } case (Exception ex) {
+
+                            }*/
+                        }
+                    }
+                    break;
+                }
+
+                case ServerMessage: {
+                    if (data.uuid != mYourPlayerID)
+                        player.preUpdateStatusData(data);
+
+                    break;
+                }
+
+                case ServerVerification: {
+                    if (!data.query)
+                        player.preUpdateStatusData(data);
+
+                    break;
+                }
+
+            }
+
+        }
     }
 
     private void checkKeyState() {
-        final IInput input = getApplication().getInput();
+        IInput input = getApplication().getInput();
 
-        if (input.isPressed(Key.LEFT) || input.isPressing(Key.LEFT)) {
-            mYourPlayer.setLeft(true);
+        Player player = mPlayers.get(mYourPlayerID);
+
+        if (input.isPressed(Key.MOVE_LEFT))
+            player.addAccelerationX(-0.05);
+
+        else if (input.isRepeat(Key.MOVE_LEFT))
+            player.addAccelerationX(-PhysicsConstant.friction + 0.05);
+
+        else if (input.isReleased(Key.MOVE_LEFT))
+            player.setAccelerationX(0.0);
+
+
+        if (input.isPressed(Key.MOVE_RIGHT))
+            player.addAccelerationX(0.05);
+
+        else if (input.isRepeat(Key.MOVE_RIGHT))
+            player.addAccelerationX(PhysicsConstant.friction - 0.05);
+
+        else if (input.isReleased(Key.MOVE_RIGHT))
+            player.setAccelerationX(0.0);
+
+
+        if (input.isPressed(Key.JUMP))
+            player.setVelocityY(-5.0);
+
+
+    }
+
+    private void solveBumps() {
+        for (Player player : mPlayers.values()) {
+            Block block = mMap.getBlock(
+                    player.getY() / SceneObjectConstant.BLOCK_SIZE + 1,
+                    player.getX() / SceneObjectConstant.BLOCK_SIZE);
+
+            // prevent gravity problem
+            if (block.getType() != Block.Type.AIR)
+                player.setVelocityY(0.0);
+
+            solveBumpBlock(player);
         }
-        else if (input.isReleased(Key.LEFT)) {
-            mYourPlayer.setLeft(false);
+
+        //TODO: Elastic collision for each player
+        
+
+
+    }
+
+    private void solveBumpBlock (Player player) {
+        List<Block> entityBlocks = mMap.getAdjacentBlocks(player).stream()
+                .filter(block -> block.getType() != Block.Type.AIR)
+                .collect(Collectors.toList());
+
+        for (Block b : entityBlocks)
+            if (bumpTest(player.getOccupiedSpace(), b.getOccupiedSpace())) {
+                //TODO: setup reflect direction
+            }
+
+    }
+
+    public boolean checkBump(Player player) {
+        List<Block> entityBlocks = mMap.getAdjacentBlocks(player).stream()
+                .filter(block -> block.getType() != Block.Type.AIR)
+                .collect(Collectors.toList());
+
+        final List<SceneObjectObjectBase> objects = new ArrayList<>();
+        objects.addAll(entityBlocks);
+        objects.addAll(mPlayers.values());
+        objects.remove(player);
+
+        for (SceneObjectObjectBase object: objects) {
+            if (bumpTest(player.getOccupiedSpace(), object.getOccupiedSpace())) {
+                return true;
+            }
         }
-        if (input.isPressed(Key.RIGHT) || input.isPressing(Key.RIGHT)) {
-            mYourPlayer.setRight(true);
-        }
-        else if (input.isReleased(Key.RIGHT)) {
-            mYourPlayer.setRight(false);
-        }
-        if (input.isPressed(Key.UP) || input.isPressing(Key.UP)) {
-            mYourPlayer.setUp(true);
-        }
-        else if (input.isReleased(Key.UP)) {
-            mYourPlayer.setUp(false);
-        }
-        if (input.isPressed(Key.SPACE) || input.isPressing(Key.SPACE)) {
-            mYourPlayer.setSpace(true);
-        }
-        else if (input.isReleased(Key.SPACE)) {
-            mYourPlayer.setSpace(false);
-        }
+        return false;
     }
 
     public static boolean bumpTest(Rectangle a, Rectangle b) {
@@ -110,6 +226,7 @@ public class StageScene extends SceneBase {
     }
 
     public static boolean isInsideRectangle(int x, int y, Rectangle rect) {
-        return x > rect.x && x < rect.x + rect.width && y > rect.y && y < rect.y + rect.height;
+        return x > rect.x && x < rect.x + rect.width &&
+                y > rect.y && y < rect.y + rect.height;
     }
 }

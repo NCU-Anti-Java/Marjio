@@ -1,28 +1,43 @@
 package io.github.antijava.marjio.common.input;
 
+import io.github.antijava.marjio.common.network.Packable;
+
+import java.util.UUID;
+
 /**
  * Created by firejox on 2015/12/25.
  */
-public class Status {
-    Type type;
-    Object obj;
+public class Status implements Packable{
+    Types mType;
+    Object mObject;
+    UUID mId;
 
-    Status(Object obj, Type type) {
-        this.type = type;
-        this.obj = obj;
+    public Status(Object obj, Types type) {
+        mType = type;
+        mObject = obj;
     }
 
-    public Type getType() {
-        return type;
+    @Override
+    public UUID getClientID() {
+        return mId;
+    }
+
+    @Override
+    public void setClientID(UUID id) {
+        mId = id;
+    }
+
+    public enum Types {
+        ServerMessage,
+        ServerVerification,
+        ClientMessage;
+    }
+
+    public Types getType() {
+        return mType;
     }
 
     public Object getData() {
-        return obj;
-    }
-
-    public enum Type {
-        ServerMessage,
-        ServerVerification,
-        ClientMessage
+        return mObject;
     }
 }
