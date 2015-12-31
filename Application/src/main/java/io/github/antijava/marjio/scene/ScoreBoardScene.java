@@ -33,7 +33,6 @@ public class ScoreBoardScene extends SceneBase {
         mBackground.update();
         mWindowScoreBoard.update();
 
-        // TODO: Draw background image.
         // TODO: Need IInput press ANY KEY.
         if (input.isPressed(Key.ENTER)) {
             final ISceneManager sceneManager = getApplication().getSceneManager();
