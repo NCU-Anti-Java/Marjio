@@ -4,6 +4,7 @@ import io.github.antijava.marjio.application.Application;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
+import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 import io.github.antijava.marjio.scene.SceneBase;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +13,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.logging.Level;
-import io.github.antijava.marjio.graphics.Bitmap;
 /**
  * Created by Zheng-Yuan on 12/29/2015.
  */
