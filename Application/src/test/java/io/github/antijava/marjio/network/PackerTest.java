@@ -1,14 +1,11 @@
 package io.github.antijava.marjio.network;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.network.StatusData;
+import io.github.antijava.marjio.common.input.StatusData;
 
 import java.util.UUID;
 
@@ -23,7 +20,7 @@ public class PackerTest {
     public void setUp() throws Exception {
         data = new StatusData();
         data.uuid = UUID.randomUUID();
-        st = new Status(data, Status.Type.ClientMessage);
+        st = new Status(data, Status.Types.ClientMessage);
     }
 
     @After

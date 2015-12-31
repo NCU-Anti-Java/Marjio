@@ -13,9 +13,6 @@ import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowIPAddressInput;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 /**
  * Created by Zheng-Yuan on 12/24/2015.
  */

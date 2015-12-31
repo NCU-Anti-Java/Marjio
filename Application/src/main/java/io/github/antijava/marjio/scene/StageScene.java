@@ -8,7 +8,7 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.constant.SceneObjectConstant;
-import io.github.antijava.marjio.network.StatusData;
+import io.github.antijava.marjio.common.input.StatusData;
 import io.github.antijava.marjio.scene.sceneObject.*;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public class StageScene extends SceneBase {
             StatusData data = mPlayers.get(mYourPlayerID).getStatusData();
 
             try {
-                client.send(new Status(data, Status.Type.ClientMessage));
+                client.send(new Status(data, Status.Types.ClientMessage));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -89,7 +89,7 @@ public class StageScene extends SceneBase {
                             player.preUpdateStatusData(data);
 
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerMessage);
+                                    Status.Types.ServerMessage);
 
                             if (mIsServer) {
                                 try {
@@ -104,7 +104,7 @@ public class StageScene extends SceneBase {
                             data = player.getStatusData();
                             data.query = false;
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerVerification);
+                                    Status.Types.ServerVerification);
 
                             // TODO: Server send to client verify message
 
