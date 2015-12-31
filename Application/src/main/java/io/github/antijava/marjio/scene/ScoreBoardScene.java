@@ -17,6 +17,15 @@ public class ScoreBoardScene extends SceneBase {
     private final WindowScoreBoard mWindowScoreBoard;
     private final SpriteBase mBackground;
 
+    /**
+     * Constructor
+     *
+     * @param application The application.
+     * @param yourPlayerUUID Your player's UUID.
+     * @param rankTable As an array, the index i is rank i + 1, and the content
+     *                  is the UUID of the i th rank.
+     * @param background The background image.
+     */
     public ScoreBoardScene(IApplication application, UUID yourPlayerUUID, UUID[] rankTable, IBitmap background) {
         super(application);
         mBackground = new SpriteBase(application.getGraphics().getDefaultViewport());
