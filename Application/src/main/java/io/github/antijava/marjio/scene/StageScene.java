@@ -110,7 +110,7 @@ public class StageScene extends SceneBase implements Constant {
             StatusData data = mPlayers.get(mYourPlayerID).getStatusData();
 
             try {
-                client.send(new Status(data, Status.Type.ClientMessage));
+                client.send(new Status(data, Status.Types.ClientMessage));
             } catch (Exception e) {
             }
         }
@@ -141,7 +141,7 @@ public class StageScene extends SceneBase implements Constant {
                             player.preUpdateStatusData(data);
 
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerMessage);
+                                    Status.Types.ServerMessage);
 
                             if (mIsServer) {
                                 try {
@@ -156,7 +156,7 @@ public class StageScene extends SceneBase implements Constant {
                             data = player.getStatusData();
                             data.query = false;
                             final Status new_st = new Status(data,
-                                    Status.Type.ServerVerification);
+                                    Status.Types.ServerVerification);
 
                             // TODO: Server send to client verify message
 

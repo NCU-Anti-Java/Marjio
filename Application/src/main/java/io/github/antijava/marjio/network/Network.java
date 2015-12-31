@@ -33,6 +33,7 @@ public class Network implements IClient, IServer, Constant {
     private Client mClient;
 
     // Server Fields
+    private UUID mHostId;
     private List<ClientInfo> mClientList;
     private HashMap<UUID, Connection> mConnectionMap;
 
@@ -56,6 +57,7 @@ public class Network implements IClient, IServer, Constant {
         if (mRunningFlag) {
             throw new UnsupportedOperationException();
         }
+        mHostId = UUID.randomUUID();
         mRunningFlag = true;
         mServer.start();
         mServer.bind(NET_TCP_PORT, NET_UDP_PORT);

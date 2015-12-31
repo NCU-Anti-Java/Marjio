@@ -13,9 +13,9 @@ public class Packer {
     /*
      * @Param statusData
      * @Param type:
-     *             tag Type.NetworkServer:
+     *             tag Types.NetworkServer:
      *                 when Server recv packet from Client, and Server need pass Event to Input Module
-     *             tag Type.NetworkClient:
+     *             tag Types.NetworkClient:
      *                 when Client recv packet from Server, and need pass Event to Input Module
      */
     public static Event toEvent(Packable packableObject , Event.Type type) {
