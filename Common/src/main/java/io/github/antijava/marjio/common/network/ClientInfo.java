@@ -9,6 +9,7 @@ import java.util.UUID;
 public class ClientInfo {
     private UUID mClientID;
     private Object mTag;
+    private boolean mIsJoined;
 
     public ClientInfo(UUID uuid) {
         mClientID = uuid;
@@ -16,6 +17,14 @@ public class ClientInfo {
     
     public UUID getClientID() {
         return mClientID;
+    }
+
+    public void setIsJoined(boolean mIsJoined) {
+        this.mIsJoined = mIsJoined;
+    }
+
+    public boolean getIsJoined() {
+        return mIsJoined;
     }
 
     public Object getTag() {

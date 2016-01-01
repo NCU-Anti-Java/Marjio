@@ -1,17 +1,16 @@
 package io.github.antijava.marjio.scene;
 
 import io.github.antijava.marjio.common.*;
-import io.github.antijava.marjio.common.graphics.Color;
-import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.constant.Constant;
-import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
-import io.github.antijava.marjio.window.WindowIPAddressInput;
 import io.github.antijava.marjio.window.WindowPlayerList;
+import io.github.antijava.marjio.common.network.ClientInfo;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
@@ -48,10 +47,52 @@ public class RoomScene extends SceneBase implements Constant {
     @Override
     public void update() {
         super.update();
-        mWindowCommand.update();
-        mWindowPlayerList.update();
-        checkKeyState();
-        checkStatus();
+        try {
+            mWindowCommand.update();
+            mWindowPlayerList.update();
+            checkKeyState();
+            checkClientRequest();
+            checkStatus();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Check if there has client wanna join or exit
+     * @throws Exception
+     */
+    private void checkClientRequest() throws Exception {
+        final IInput input = getApplication().getInput();
+        final IServer server = getApplication().getServer();
+
+        List<Request> requests = input.getRequest();
+        List<ClientInfo> clients = server.getClients();
+
+        for (Request request : requests) {
+
+            // Find request is asked from which client
+            ClientInfo client = null;
+            for (ClientInfo clientInfo : clients) {
+                if (clientInfo.getClientID() == request.getClientID()) {
+                    client = clientInfo;
+                }
+            }
+            if (client == null) {
+                return;
+            }
+
+            // Client Join
+            if (request.getType() == Request.Types.ClientWannaJoinRoom) {
+                server.sendTCP(new Request(Request.Types.ClientCanJoinRoom), client.getClientID());
+                client.setIsJoined(true);
+            }
+
+            // Client Exit
+            else if (request.getType() == Request.Types.ClientWannaExitRoom) {
+                client.setIsJoined(false);
+            }
+        }
     }
 
     private void checkKeyState() {
@@ -99,11 +140,16 @@ public class RoomScene extends SceneBase implements Constant {
                     final IClient client = getApplication().getClient();
                     // TODO: Client should send message to server that I quit.
                     try {
+                        final Request joinRequest = new Request(Request.Types.ClientWannaJoinRoom);
+                        client.sendTCP(joinRequest);
+                        // TODO: check if TCP not timeout and server really receive
                         client.stop();
                     } catch (InterruptedException e) {
                         // TODO
                     } catch (UnsupportedOperationException e) {
                         // TODO
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
                 }

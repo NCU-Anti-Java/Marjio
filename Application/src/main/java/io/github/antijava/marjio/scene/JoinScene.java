@@ -83,31 +83,12 @@ public class JoinScene extends SceneBase implements Constant {
         switch (mWindowCommand.getIndex()) {
             case 0: {
                 try {
-                    final ISceneManager sceneManager = getApplication().getSceneManager();
-                    final IInput input = getApplication().getInput();
                     final IClient client = getApplication().getClient();
                     final Request joinRequest = new Request(Request.Types.ClientWannaJoinRoom);
-                    client.send(joinRequest);
+                    client.sendTCP(joinRequest);
                     // TODO: Let user know we are waiting response
-
-                    Thread thread = new Thread(() -> {
-                        boolean waitingFlag = true;
-                        final int timeOut = 1000;
-                        long startTime = System.currentTimeMillis();
-
-                        while (waitingFlag) {
-                            if (System.currentTimeMillis() - startTime > timeOut) {
-                                waitingFlag = false;
-                            }
-                            for (Request request : input.getRequest() ) {
-                                if (request.getType() == Request.Types.ClientCanJoinRoom)
-                                    sceneManager.translationTo(new RoomScene(getApplication(), false));
-                            }
-                        }
-                        // TODO: Let user know we are timeout, can keep do something
-                    });
+                    Thread thread = new JoinThread();
                     thread.start();
-
                     return true;
                 }
                 catch (Exception ex) {
@@ -158,5 +139,27 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowIPAddressInput.setY(y + 24);
         mWindowCommand.setX(mWindowIPAddressInput.getWidth() + x);
         mWindowCommand.setY(y);
+    }
+
+    private class JoinThread extends Thread {
+        final ISceneManager sceneManager = getApplication().getSceneManager();
+        final IInput input = getApplication().getInput();
+        boolean waitingFlag = true;
+        final int timeOut = 1000;
+        long startTime = System.currentTimeMillis();
+
+        @Override
+        public void run() {
+            while (waitingFlag) {
+                if (System.currentTimeMillis() - startTime > timeOut) {
+                    waitingFlag = false;
+                }
+                for (Request request : input.getRequest() ) {
+                    if (request.getType() == Request.Types.ClientCanJoinRoom)
+                        sceneManager.translationTo(new RoomScene(getApplication(), false));
+                }
+            }
+            // TODO: Let user know we are timeout, can keep do something
+        }
     }
 }
