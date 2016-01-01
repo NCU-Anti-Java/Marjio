@@ -8,6 +8,7 @@ import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.TickRequest;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.common.network.Packable;
 import io.github.antijava.marjio.constant.Constant;
@@ -48,8 +49,12 @@ public class Network implements IClient, IServer, Constant {
 
         mServer.getKryo().register(Status.class);
         mServer.getKryo().register(Request.class);
+        mServer.getKryo().register(TickRequest.class);
+
         mClient.getKryo().register(Status.class);
         mClient.getKryo().register(Request.class);
+        mClient.getKryo().register(TickRequest.class);
+
     }
 
     @Override

@@ -12,6 +12,7 @@ public class Status implements Packable{
     Object mObject;
     UUID mId;
 
+
     public Status(Object obj, Types type) {
         mType = type;
         mObject = obj;

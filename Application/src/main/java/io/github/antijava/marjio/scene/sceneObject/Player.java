@@ -2,6 +2,7 @@ package io.github.antijava.marjio.scene.sceneObject;
 
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
+import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.StatusData;
 
 import java.util.UUID;
@@ -10,6 +11,9 @@ import java.util.UUID;
  * Created by firejox on 2015/12/28.
  */
 public class Player extends SceneObjectObjectBase {
+    public static final Key[] action_keys = {
+       Key.MOVE_LEFT, Key.MOVE_RIGHT, Key.JUMP, Key.CAST
+    };
 
     UUID id;
 
@@ -41,6 +45,18 @@ public class Player extends SceneObjectObjectBase {
         Jet = false;
     }
 
+    public void reset() {
+        mX = 0;
+        mY = 0;
+
+        mVelocityX = 0;
+        mVelocityY = 0;
+
+        mAccelerationX = 0;
+        mAccelerationY = 0;
+
+        Jet = false;
+    }
 
     @Override
     public void update() {
@@ -165,7 +181,7 @@ public class Player extends SceneObjectObjectBase {
         if (data.type != StatusData.Player)
             return false;
 
-        return false;
+        return data.isValidKeySets();
     }
 
     public void normalizeVelocity(double lim) {
@@ -173,6 +189,7 @@ public class Player extends SceneObjectObjectBase {
             mVelocityX = Math.max(mVelocityX, -lim);
         else
             mVelocityX = Math.min(mVelocityX, lim);
+
         mVelocityY = Math.min(mVelocityY, lim);
 
     }

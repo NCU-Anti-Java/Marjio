@@ -1,11 +1,15 @@
 package io.github.antijava.marjio.common.input;
 
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Created by Date on 2015/12/29.
  */
-public class StatusData {
+public class StatusData implements IKeyInput {
 
     /*
      * Player 0
@@ -30,4 +34,49 @@ public class StatusData {
     public double ax;
     public double ay;
     public boolean query;
+
+    public EnumSet<Key> pressed = EnumSet.noneOf(Key.class);
+    public EnumSet<Key> pressing = EnumSet.noneOf(Key.class);
+    public EnumSet<Key> released = EnumSet.noneOf(Key.class);
+    public EnumSet<Key> repeat = EnumSet.noneOf(Key.class);
+
+
+    public boolean isValidKeySets() {
+
+        return Collections.disjoint(pressed, pressing) &&
+                Collections.disjoint(pressing, released) &&
+                Collections.disjoint(released, pressed);
+    }
+
+    @Override
+    public boolean isPressing(final Key key) {
+        return pressed.contains(key);
+    }
+
+    @Override
+    public boolean isPressed(final Key key) {
+        return pressing.contains(key);
+    }
+
+    @Override
+    public boolean isReleased(final Key key) {
+        return released.contains(key);
+    }
+
+    @Override
+    public boolean isRepeat(final Key key) {
+        return repeat.contains(key);
+    }
+
+    @Override
+    public boolean isKeyUp(final Key key) {
+        return !pressed.contains(key) && !pressing.contains(key);
+    }
+
+    @Override
+    public boolean isKeyDown(Key key) {
+        return pressed.contains(key) ||  pressing.contains(key);
+    }
+
+
 }
