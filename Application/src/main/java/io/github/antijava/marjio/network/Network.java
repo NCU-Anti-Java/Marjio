@@ -62,7 +62,6 @@ public class Network implements IClient, IServer, Constant {
         mServer.start();
         mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
         mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
-
     }
 
     @Override
@@ -106,9 +105,20 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
+    public void sendTCP(Packable packableObj) throws Exception {
+        mClient.sendTCP(packableObj);
+    }
+
+    @Override
     public void send(Packable packableObj, UUID clientID) throws Exception {
         Connection connection = mConnectionMap.get(clientID);
         connection.sendUDP(packableObj);
+    }
+
+    @Override
+    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
+        Connection connection = mConnectionMap.get(clientID);
+        connection.sendTCP(packableObj);
     }
 
     @Override

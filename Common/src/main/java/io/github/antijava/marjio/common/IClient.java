@@ -30,6 +30,13 @@ public interface IClient {
     void send(Packable packableObject) throws Exception;
 
     /**
+     * Send message to Server.
+     *
+     * @param packableObject information package
+     */
+    void sendTCP(Packable packableObject) throws Exception;
+
+    /**
      * Specific if this client is trying to connect or is connected.
      *
      * @return if client is running
