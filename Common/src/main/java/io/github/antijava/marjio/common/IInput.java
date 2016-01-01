@@ -1,9 +1,6 @@
 package io.github.antijava.marjio.common;
 
-import io.github.antijava.marjio.common.input.Event;
-import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.Request;
-import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.*;
 
 import java.util.List;
 
@@ -25,6 +22,9 @@ public interface IInput {
     boolean isReleased(Key key);
     boolean isTrigger(Key key);
 
+    boolean isKeyUp(Key key);
+    boolean isKeyDown(Key Key);
+
     /**
      * with key pressed for a while then key is repeat.
      * */
@@ -32,6 +32,7 @@ public interface IInput {
 
     List<Status> getStatuses();
     List<Request> getRequest();
+    List<TickRequest> getTickRequest();
 
     void triggerEvent(Event evt);
 }
