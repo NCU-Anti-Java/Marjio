@@ -119,4 +119,12 @@ public class RoomScene extends SceneBase implements Constant {
             }
         }
     }
+
+    @Override
+    public void dispose() {
+
+        super.dispose();
+        mWindowPlayerList.dispose();
+        mWindowCommand.dispose();
+    }
 }
