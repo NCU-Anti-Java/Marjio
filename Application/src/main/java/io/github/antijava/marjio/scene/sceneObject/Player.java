@@ -28,6 +28,8 @@ public class Player extends SceneObjectObjectBase {
     double mAccelerationX;
     double mAccelerationY;
 
+    boolean status_update_flag;
+
     boolean Jet;
 
 
@@ -46,6 +48,7 @@ public class Player extends SceneObjectObjectBase {
         mAccelerationX = 0;
         mAccelerationY = 0;
 
+        status_update_flag = false;
         Jet = false;
     }
 
@@ -59,6 +62,7 @@ public class Player extends SceneObjectObjectBase {
         mAccelerationX = 0;
         mAccelerationY = 0;
 
+        status_update_flag = false;
         Jet = false;
     }
 
@@ -72,6 +76,7 @@ public class Player extends SceneObjectObjectBase {
         super.setY(mY);
 
         mTick++;
+        status_update_flag = false;
     }
 
     public UUID getmId() {
@@ -169,6 +174,11 @@ public class Player extends SceneObjectObjectBase {
         mVelocityY = data.vy;
         mAccelerationX = data.ax;
         mAccelerationY = data.ay;
+        status_update_flag = true;
+    }
+
+    public boolean isStatusUpdate() {
+        return status_update_flag;
     }
 
     public Status getStatus() {

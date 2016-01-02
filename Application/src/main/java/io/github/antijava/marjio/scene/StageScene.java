@@ -158,8 +158,10 @@ public class StageScene extends SceneBase implements Constant {
 
         players.forEach(Player::preUpdate);
 
-        checkKeyState(input, player);
         checkStatus(players);
+        checkKeyState(input, player);
+        solveBumps(players);
+
         players.forEach(Player::update);
 
         //TODO : slide viewport when player is running
@@ -172,7 +174,20 @@ public class StageScene extends SceneBase implements Constant {
          ba.update();
         */
 
-        if (!mIsServer) {
+        if (mIsServer) {
+            IServer server = getApplication().getServer();
+            Status data = player.getStatus();
+            data.send_tick = data.recieve_tick = mTick;
+
+            data.setType(Status.Types.ServerMessage);
+
+            try {
+                server.broadcast(data);
+            } catch (Exception e) {
+
+            }
+
+        } else {
             IClient client = getApplication().getClient();
             Status data = player.getStatus();
 
@@ -196,6 +211,7 @@ public class StageScene extends SceneBase implements Constant {
             } catch (Exception e) {
 
             }
+
         }
 
         mTick++;
@@ -253,7 +269,9 @@ public class StageScene extends SceneBase implements Constant {
         final List<Status> fetchedStatus = getValidStatuses();
         final IServer server = getApplication().getServer();
         int send_tick = 0;
-        int recieve_tick = 0;
+        final int last_recieve_tick =
+                fetchedStatus.isEmpty() ? 0 :
+                        fetchedStatus.get(fetchedStatus.size() -1).recieve_tick;
 
         for (final Status st : fetchedStatus) {
             Player player = mPlayers.get(st.getClientID());
@@ -261,38 +279,28 @@ public class StageScene extends SceneBase implements Constant {
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
-                        if (player.isValidData(st)) {
+                        final boolean check = player.isValidData(st);
+
+                        if (check)
                             checkKeyState(st, player);
 
-                            final Status new_st = player.getStatus();
-                            new_st.setType(Status.Types.ServerMessage);
-                            new_st.send_tick = st.send_tick;
-                            new_st.recieve_tick = mTick;
+                        final Status new_st = player.getStatus();
 
+                        new_st.send_tick = st.send_tick;
+                        new_st.recieve_tick = mTick;
+                        new_st.query = check;
 
-                            if (mIsServer) {
-                                try {
-                                    server.broadcast(new_st);
-                                } catch (Exception ex) {
-
-                                }
-                            }
-
-                        } else {
-                            final Status new_st = player.getStatus();
-
-                            new_st.query = false;
-                            new_st.setType(Status.Types.ServerVerification);
-
-                            new_st.send_tick = st.send_tick;
-                            new_st.recieve_tick = mTick;
-
-                            try {
+                        try {
+                            if (check) {
+                                new_st.setType(Status.Types.ServerMessage);
                                 server.send(new_st, player.getmId());
-
-                            } catch (Exception ex) {
-
+                            } else {
+                                new_st.setType(Status.Types.ServerVerification);
+                                server.broadcast(new_st);
                             }
+
+                        } catch (Exception ex) {
+
                         }
                     }
                     break;
@@ -301,9 +309,8 @@ public class StageScene extends SceneBase implements Constant {
                 case ServerMessage: {
                     player.preUpdateStatus(st);
 
-                    if (player.getmId().equals(mYourPlayerID)) {
+                    if (player.getmId().equals(mYourPlayerID))
                         send_tick = st.send_tick;
-                    }
 
                     break;
                 }
@@ -311,6 +318,7 @@ public class StageScene extends SceneBase implements Constant {
                 case ServerVerification: {
                     if (!st.query) {
                         player.preUpdateStatus(st);
+
                         send_tick = st.send_tick;
                     }
                     break;
@@ -319,6 +327,24 @@ public class StageScene extends SceneBase implements Constant {
             }
 
         }
+
+
+        /**
+         * time synchronized for players in client
+         * */
+
+        if (mPlayers.get(mYourPlayerID).isStatusUpdate()) {
+            final int recieve_tick = mPlayers.get(mYourPlayerID).getTick();
+            players.stream()
+                    .filter(p -> !p.isStatusUpdate())
+                    .forEach(p -> p.setTick(recieve_tick));
+
+            mTick = Math.max(recieve_tick + (mTick - send_tick) / 2,
+                            last_recieve_tick);
+        } else {
+            mTick = Math.max(mTick, last_recieve_tick);
+        }
+
     }
 
     private void checkKeyState(IKeyInput input, Player player) {
@@ -372,10 +398,36 @@ public class StageScene extends SceneBase implements Constant {
     }
 
     private void solveBumps(final Collection<Player> players) {
-        players.forEach(p -> {
-            p.normalizeVelocity((double)BLOCK_SIZE/2.0 - 1.0);
-            solveBumpBlock(p);
-        });
+        final Stream<Player> s_players = players.stream();
+
+        players.forEach(p ->
+                p.normalizeVelocity((double) BLOCK_SIZE/2.0 - 1.0));
+        /**
+         * time synchronized for players in client
+         * */
+        while (s_players.anyMatch(p -> p.getTick() < mTick))
+            s_players.filter(p -> p.getTick() < mTick)
+                    .sorted((player1, player2) -> {
+                        if (player1.getX() == player2.getX())
+                            return (player1.getY() > player2.getY()) ? 1 : -1;
+                        else
+                            return (player1.getX() > player2.getX()) ? 1 : -1;
+                    })
+                    .forEach(p -> {
+                        solveBumpBlock(p);
+                        p.update();
+                        p.preUpdate();
+                        p.normalizeVelocity((double)BLOCK_SIZE/2.0 - 1.0);
+                    });
+
+        s_players
+                .sorted((player1, player2) -> {
+                        if (player1.getX() == player2.getX())
+                            return (player1.getY() > player2.getY()) ? 1 : -1;
+                        else
+                            return (player1.getX() > player2.getX()) ? 1 : -1;
+                    })
+                .forEach(this::solveBumpBlock);
 
     }
 
