@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.graphics;
 
+import io.github.antijava.marjio.application.Application;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IGraphics;
 import io.github.antijava.marjio.common.IInput;
@@ -39,6 +40,7 @@ public class Graphics implements IGraphics, GameConstant {
     private final JPanel mSwingPanel;
     private final BufferedImage mCanvas;
     private final Graphics2D mCanvasGraphics;
+    private final Bitmap mFpsMeterBitmap;
 
     public Graphics(IApplication application) {
         mApplication = application;
@@ -46,6 +48,7 @@ public class Graphics implements IGraphics, GameConstant {
         mCanvasGraphics = mCanvas.createGraphics();
         mCanvasGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         mCanvasGraphics.setBackground(Color.BLACK);
+        mFpsMeterBitmap = (Bitmap) createBitmap(GAME_WIDTH, GAME_HEIGHT);
 
         mSwingPanel = new JPanel() {
             @Override
@@ -131,6 +134,8 @@ public class Graphics implements IGraphics, GameConstant {
                             });
                 });
 
+        drawFps();
+
         mSwingPanel.repaint();
     }
 
@@ -166,5 +171,22 @@ public class Graphics implements IGraphics, GameConstant {
         final Viewport viewport = new Viewport();
         mViewports.add(viewport);
         return viewport;
+    }
+
+    private void drawFps() {
+        final Application application = (Application) mApplication;
+        mFpsMeterBitmap.clear();
+
+        mFpsMeterBitmap.drawText("Fps: " + application.getFps(), 1, 1, -1, 24,
+                io.github.antijava.marjio.common.graphics.Color.BLACK);
+        mFpsMeterBitmap.drawText("Fps: " + application.getFps(), 0, 0, -1, 24,
+                io.github.antijava.marjio.common.graphics.Color.WHITE);
+
+        mFpsMeterBitmap.drawText("Real Fps: " + application.getRealFps(), 1, 25, -1, 24,
+                io.github.antijava.marjio.common.graphics.Color.BLACK);
+        mFpsMeterBitmap.drawText("Real Fps: " + application.getRealFps(), 0, 24, -1, 24,
+                io.github.antijava.marjio.common.graphics.Color.WHITE);
+
+        mCanvasGraphics.drawImage(mFpsMeterBitmap.mImage, 0, 0, null);
     }
 }
