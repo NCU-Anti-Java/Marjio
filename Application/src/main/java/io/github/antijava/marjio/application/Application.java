@@ -3,6 +3,7 @@ package io.github.antijava.marjio.application;
 import io.github.antijava.marjio.SceneManager;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.constant.Constant;
+import io.github.antijava.marjio.graphics.FpsMeter;
 import io.github.antijava.marjio.graphics.Graphics;
 import io.github.antijava.marjio.input.Input;
 import io.github.antijava.marjio.network.Network;
@@ -12,6 +13,7 @@ import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 import io.github.antijava.marjio.scene.StageScene;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,6 +29,7 @@ public class Application implements IApplication, Constant {
     private final IClient mClient;
     private final IGraphics mGraphics;
     private final ResourcesManager mResourcesManager;
+    private final FpsMeter mFpsMeter;
 
     public Application() {
         mLogger = Logger.getLogger(LOGGER_NAME);
@@ -38,6 +41,8 @@ public class Application implements IApplication, Constant {
         mClient = new Network(this);
         mGraphics = new Graphics(this);
         mResourcesManager = new ResourcesManager(this);
+        mFpsMeter = new FpsMeter();
+
         mSceneManager.translationTo(new MainScene(this));
     }
 
@@ -48,26 +53,31 @@ public class Application implements IApplication, Constant {
      */
     @Override
     public void run() {
-        long lastUpdate = System.currentTimeMillis();
+        mFpsMeter.start();
+
+        long overSleepTime = 0;
         while (true) {
+            final long beforeUpdateTime = System.nanoTime();
             getInput().update();
             if (getSceneManager().update())
                 break;
             getGraphics().update();
+            final long afterUpdateTime = System.nanoTime();
 
-            final long elapsedTime = System.currentTimeMillis() - lastUpdate;
+            final long elapsedTime = afterUpdateTime - beforeUpdateTime;
+            final long sleepTime = FRAMERATE - elapsedTime - overSleepTime;
             try {
                 // Let Java take a rest for garbage collection.
-                if (FRAMERATE - elapsedTime < GC_TIME)
+                if (TimeUnit.NANOSECONDS.toMillis(sleepTime) < GC_TIME)
                     Thread.sleep(GC_TIME);
                 else
-                    Thread.sleep(FRAMERATE - elapsedTime);
+                    TimeUnit.NANOSECONDS.sleep(sleepTime);
             } catch (InterruptedException e) {
                 // TODO: throw exception?
                 break;
             }
-            getLogger().log(Level.INFO, "fps: " + Math.ceil(1000.0 / (System.currentTimeMillis() - lastUpdate)));
-            lastUpdate = System.currentTimeMillis();
+            mFpsMeter.tick();
+            overSleepTime = (System.nanoTime() - afterUpdateTime) - sleepTime;
         }
         System.exit(0);
     }
@@ -109,4 +119,12 @@ public class Application implements IApplication, Constant {
         return mResourcesManager;
     }
     // endregion Components
+
+    public double getRealFps() {
+        return mFpsMeter.getActualFps();
+    }
+
+    public double getFps() {
+        return mFpsMeter.getFps();
+    }
 }
