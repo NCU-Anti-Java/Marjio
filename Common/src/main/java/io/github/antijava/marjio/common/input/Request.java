@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Created by fntsr on 2015/12/31.
  */
-public class Request implements Packable, Serializable {
+public class Request implements Packable {
     UUID mUUID;
 
     Types mType;
