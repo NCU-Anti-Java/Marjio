@@ -51,31 +51,41 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void start() throws InterruptedException, UnsupportedOperationException, IOException {
+    public void start() {
         if (mRunningFlag) {
             throw new UnsupportedOperationException();
         }
-        mHostId = UUID.randomUUID();
-        mRunningFlag = true;
-        mServer.start();
-        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
-        mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
+
+        try {
+            mServer.start();
+            mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
+            mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
+            mRunningFlag = true;
+            mHostId = UUID.randomUUID();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
-    public void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException, IOException {
+    public void start(InetAddress hostAddress) throws IOException {
         if (mRunningFlag) {
             throw new UnsupportedOperationException();
         }
-        mRunningFlag = true;
 
-        mServer.start();
-        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
-        mServer.addListener(new ClientReceiver(mApplication));
+        try {
+            mServer.start();
+            mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
+            mServer.addListener(new ClientReceiver(mApplication));
 
-        mClient = new Client();
-        mClient.start();
-        mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
+            mClient.start();
+            mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
+
+            mRunningFlag = true;
+        } catch (IOException e) {
+            throw e;
+        }
     }
 
     @Override
