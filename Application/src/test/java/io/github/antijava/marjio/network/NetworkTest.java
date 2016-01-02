@@ -2,28 +2,47 @@ package io.github.antijava.marjio.network;
 
 import com.esotericsoftware.kryonet.*;
 
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
+import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.IServer;
+import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.RequestData;
 import io.github.antijava.marjio.common.network.StatusData;
+import io.github.antijava.marjio.constant.Constant;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.InetAddress;
 import java.util.UUID;
 
+import static org.mockito.Mockito.*;
 
-public class NetworkTest {
-    private final int TCP_Port = 15566;
-    private final int UDP_Port = 15566;
+
+public class NetworkTest implements Constant{
     private final UUID clientId = UUID.randomUUID();
+
+    private SceneObjectStatus mPlayerStatus;
+    private Status mStatus;
 
     @Before
     public void setUp() throws Exception {
+        mPlayerStatus = new SceneObjectStatus();
+        mPlayerStatus.uuid = clientId;
+        mPlayerStatus.type = SceneObjectStatus.Types.Player;
+        mPlayerStatus.x = 0;
+        mPlayerStatus.y = 0;
+        mPlayerStatus.vx = 55;
+        mPlayerStatus.vy = 66;
+        mPlayerStatus.ax = 77;
+        mPlayerStatus.ay = 88;
 
-
+        mStatus = new Status(mPlayerStatus, Status.Types.ClientMessage);
     }
 
     @After
@@ -31,14 +50,41 @@ public class NetworkTest {
 
     }
 
-
     @Test
     public void testSendRequest() throws Exception {
+        Request request = new Request(clientId, Request.Types.ClientWannaJoinRoom);
+
+        IApplication application = mock(IApplication.class);
+        IInput input = mock(IInput.class);
+
+        when(application.getInput()).thenReturn(input);
+
+        IServer server = new Network(application);
+        Client client = new Client(16384, 8192, new JsonSerialization());
+
+        server.start();
+        client.start();
+        client.connect(5000, "127.0.0.1", NET_TCP_PORT, NET_UDP_PORT);
+
+        client.sendTCP(Packer.RequestToData(request));
+
+        Thread.sleep(1000);
+
+        // TODO: More accurately assert
+        verify(input, atLeastOnce()).triggerEvent(anyObject());
+
+        server.stop();
+        client.stop();
+    }
+
+
+    @Test
+    public void testKryoSendRequest() throws Exception {
         Client client = new Client(16384, 8192, new JsonSerialization());
         Server server = new Server(16384, 8192, new JsonSerialization());
 
         server.start();
-        server.bind(TCP_Port, UDP_Port);
+        server.bind(NET_TCP_PORT, NET_UDP_PORT);
         server.addListener(new Listener() {
 
             @Override
@@ -57,10 +103,8 @@ public class NetworkTest {
 
         });
 
-
-
         client.start();
-        client.connect(5000, "127.0.0.1", TCP_Port, UDP_Port);
+        client.connect(5000, "127.0.0.1", NET_TCP_PORT, NET_UDP_PORT);
         client.addListener(new Listener() {
 
             @Override
@@ -89,24 +133,12 @@ public class NetworkTest {
     }
 
     @Test
-    public void testSendStatus() throws Exception {
+    public void testKryoSendStatus() throws Exception {
         Client client = new Client(16384, 8192, new JsonSerialization());
         Server server = new Server(16384, 8192, new JsonSerialization());
 
-        SceneObjectStatus info = new SceneObjectStatus();
-        info.uuid = clientId;
-        info.type = SceneObjectStatus.Types.Player;
-        info.x = 0;
-        info.y = 0;
-        info.vx = 55;
-        info.vy = 66;
-        info.ax = 77;
-        info.ay = 88;
-
-        Status status = new Status(info, Status.Types.ClientMessage);
-
         server.start();
-        server.bind(TCP_Port, UDP_Port);
+        server.bind(NET_TCP_PORT, NET_UDP_PORT);
         server.addListener(new Listener() {
             @Override
             public void received (Connection connection, Object object) {
@@ -125,9 +157,9 @@ public class NetworkTest {
 
 
         client.start();
-        client.connect(5000, "127.0.0.1", TCP_Port, UDP_Port);
+        client.connect(5000, "127.0.0.1", NET_TCP_PORT, NET_UDP_PORT);
 
-        client.sendTCP(Packer.StatustToData(status));
+        client.sendTCP(Packer.StatustToData(mStatus));
 
         Thread.sleep(2000);
 

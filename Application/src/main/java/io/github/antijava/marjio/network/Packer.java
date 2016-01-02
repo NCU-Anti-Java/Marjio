@@ -4,10 +4,12 @@ import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.network.PackData;
 import io.github.antijava.marjio.common.network.Packable;
 import io.github.antijava.marjio.common.network.RequestData;
 import io.github.antijava.marjio.common.network.StatusData;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -25,6 +27,16 @@ public class Packer {
      */
     public static Event toEvent(Packable packableObject , Event.Type type) {
         return new Event(packableObject, type);
+    }
+
+    public static Packable DataToPackable(PackData data) {
+        if (data instanceof RequestData) {
+            return DataToRequest((RequestData) data);
+        } else if (data instanceof StatusData) {
+            return DataToStatus((StatusData) data);
+        }
+
+        throw new IllegalArgumentException();
     }
 
     public static RequestData RequestToData(Request request) {

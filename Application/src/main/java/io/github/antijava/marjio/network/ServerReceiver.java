@@ -6,6 +6,7 @@ import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.ClientInfo;
+import io.github.antijava.marjio.common.network.PackData;
 import io.github.antijava.marjio.common.network.Packable;
 
 import java.util.HashMap;
@@ -28,10 +29,12 @@ public class ServerReceiver extends Listener{
 
     @Override
     public void received (Connection connection, Object object) {
-        if (object instanceof Packable) {
-            Packable packableObj = (Status) object;
+        if (object instanceof PackData) {
+            PackData data = (PackData) object;
+            Packable packableObj = Packer.DataToPackable(data);
             UUID uuid;
 
+            // Update connection list
             if (!mConnectionMap.containsValue(connection)) {
                 uuid = UUID.randomUUID();
                 mConnectionMap.put(uuid, connection);
@@ -42,6 +45,7 @@ public class ServerReceiver extends Listener{
             }
             packableObj.setClientID(uuid);
 
+            // Trigger event
             Event event = Packer.toEvent(packableObj, Event.Type.NetWorkClient);
             mApplication.getInput().triggerEvent(event);
         }

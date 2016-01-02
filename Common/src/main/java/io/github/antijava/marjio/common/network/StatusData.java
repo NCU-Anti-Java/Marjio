@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Created by fntsr on 2016/1/2.
  */
-public class StatusData {
+public class StatusData implements PackData{
     public String uuid;
     public String sourceType;
     public String objectType;
