@@ -13,6 +13,10 @@ import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowIPAddressInput;
 
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Created by Zheng-Yuan on 12/24/2015.
  */
@@ -84,14 +88,16 @@ public class JoinScene extends SceneBase implements Constant {
             case 0: {
                 try {
                     final IClient client = getApplication().getClient();
-                    final Request joinRequest = new Request(Request.Types.ClientWannaJoinRoom);
+                    final Request joinRequest = new Request(UUID.randomUUID() ,Request.Types.ClientWannaJoinRoom);
+                    client.start(mWindowIPAddressInput.getAddress());
                     client.sendTCP(joinRequest);
                     // TODO: Let user know we are waiting response
                     Thread thread = new JoinThread();
                     thread.start();
                     return true;
                 }
-                catch (Exception ex) {
+                catch (Exception e) {
+                    e.printStackTrace();
                     // TODO: Show Error.
                 }
                 return false;
@@ -143,23 +149,37 @@ public class JoinScene extends SceneBase implements Constant {
 
     private class JoinThread extends Thread {
         final ISceneManager sceneManager = getApplication().getSceneManager();
+        final IClient client= getApplication().getClient();
         final IInput input = getApplication().getInput();
+        final Logger logger= getApplication().getLogger();
         boolean waitingFlag = true;
         final int timeOut = 1000;
         long startTime = System.currentTimeMillis();
 
         @Override
         public void run() {
-            while (waitingFlag) {
-                if (System.currentTimeMillis() - startTime > timeOut) {
-                    waitingFlag = false;
+            logger.info("Connection request start");
+            try {
+                while (waitingFlag) {
+                    // if Timeout
+                    if (System.currentTimeMillis() - startTime > timeOut) {
+                        waitingFlag = false;
+                    }
+                    for (Request request : input.getRequest() ) {
+                        if (request.getType() == Request.Types.ClientCanJoinRoom) {
+                            sceneManager.translationTo(new RoomScene(getApplication(), false));
+                            client.setMyId(request.getClientID());
+
+                            logger.log(Level.WARNING, "Connection request success");
+                        }
+                    }
                 }
-                for (Request request : input.getRequest() ) {
-                    if (request.getType() == Request.Types.ClientCanJoinRoom)
-                        sceneManager.translationTo(new RoomScene(getApplication(), false));
-                }
+                client.stop();
+                logger.info("Connection request failed");
+                // TODO: Let user know we are timeout, can keep do something
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            // TODO: Let user know we are timeout, can keep do something
         }
     }
 }
