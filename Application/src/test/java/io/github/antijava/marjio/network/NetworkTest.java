@@ -3,10 +3,8 @@ package io.github.antijava.marjio.network;
 import com.esotericsoftware.kryonet.*;
 
 import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.IServer;
-import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.common.input.Status;
@@ -17,9 +15,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.net.InetAddress;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import static org.mockito.Mockito.*;
 
@@ -58,6 +55,7 @@ public class NetworkTest implements Constant{
         IInput input = mock(IInput.class);
 
         when(application.getInput()).thenReturn(input);
+        when(application.getLogger()).thenReturn(Logger.getLogger(LOGGER_NAME));
 
         IServer server = new Network(application);
         Client client = new Client(16384, 8192, new JsonSerialization());
