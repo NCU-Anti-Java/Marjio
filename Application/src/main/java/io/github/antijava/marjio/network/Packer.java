@@ -41,13 +41,18 @@ public class Packer {
 
     public static RequestData RequestToData(Request request) {
         RequestData data = new RequestData();
-        data.uuid = request.getClientID().toString();
+        if (data.uuid != null) {
+            data.uuid = request.getClientID().toString();
+        }
         data.type = request.getType().name();
         return data;
     }
 
     public static Request DataToRequest(RequestData data) {
-        UUID uuid = UUID.fromString(data.uuid);
+        UUID uuid = UUID.randomUUID();
+        if (data.uuid != null) {
+            uuid = UUID.fromString(data.uuid);
+        }
         Request.Types type = Request.Types.valueOf(data.type);
 
         return new Request(uuid, type);
