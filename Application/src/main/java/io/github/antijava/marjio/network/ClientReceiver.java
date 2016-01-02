@@ -2,7 +2,6 @@ package io.github.antijava.marjio.network;
 
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-//import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.input.Event;
 import io.github.antijava.marjio.common.input.Status;
