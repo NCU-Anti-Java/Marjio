@@ -77,7 +77,7 @@ public class WindowIPAddressInput extends WindowBase {
     }
 
     public InetAddress getAddress() throws UnknownHostException {
-        return InetAddress.getByName(getIPString());
+        return InetAddress.getByName(String.format("%d.%d.%d.%d", mIP[0], mIP[1], mIP[2], mIP[3]));
     }
 
     public int getIndex() {
