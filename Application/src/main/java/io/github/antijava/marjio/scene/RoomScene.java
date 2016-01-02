@@ -9,6 +9,7 @@ import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowPlayerList;
 import io.github.antijava.marjio.common.network.ClientInfo;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +32,19 @@ public class RoomScene extends SceneBase implements Constant {
         mCurrentChoice = 0;
 
         initWindows();
+        
+        if (mIsServer) {
+            try {
+                application.getServer().start();
+                mWindowPlayerList.addPlayer(getApplication().getServer().getMyId().toString());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
     }
 
     private void initWindows() {
@@ -53,6 +67,7 @@ public class RoomScene extends SceneBase implements Constant {
             checkKeyState();
             checkClientRequest();
             checkStatus();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,6 +101,7 @@ public class RoomScene extends SceneBase implements Constant {
             if (request.getType() == Request.Types.ClientWannaJoinRoom) {
                 server.sendTCP(new Request(Request.Types.ClientCanJoinRoom), client.getClientID());
                 client.setIsJoined(true);
+                mWindowPlayerList.addPlayer(client.getClientID().toString());
             }
 
             // Client Exit
