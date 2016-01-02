@@ -5,6 +5,7 @@ import io.github.antijava.marjio.common.network.Packable;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.UUID;
 
 /**
  * Created by fntsr on 2015/12/23.
@@ -49,4 +50,7 @@ public interface IClient {
      * @return if client connected to server
      */
     boolean isConnected();
+
+    void setMyId(UUID mMyId);
+    UUID getMyId();
 }

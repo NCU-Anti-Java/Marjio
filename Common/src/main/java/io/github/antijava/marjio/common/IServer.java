@@ -59,4 +59,7 @@ public interface IServer {
      * @return  if is listening
      */
     boolean isRunning();
+
+    void setMyId(UUID mMyId);
+    UUID getMyId();
 }

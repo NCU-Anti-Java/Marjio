@@ -36,7 +36,7 @@ public class Network implements IClient, IServer, Constant {
     private Client mClient;
 
     // Server Fields
-    private UUID mHostId;
+    private UUID mMyId;
     private List<ClientInfo> mClientList;
     private HashMap<UUID, Connection> mConnectionMap;
 
@@ -61,7 +61,7 @@ public class Network implements IClient, IServer, Constant {
             mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
             mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
             mRunningFlag = true;
-            mHostId = UUID.randomUUID();
+            mMyId = UUID.randomUUID();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -136,4 +136,16 @@ public class Network implements IClient, IServer, Constant {
     public List<ClientInfo> getClients() {
         return mClientList;
     }
+
+    @Override
+    public void setMyId(UUID mMyId) {
+        this.mMyId = mMyId;
+    }
+
+    @Override
+    public UUID getMyId() {
+
+        return mMyId;
+    }
+
 }
