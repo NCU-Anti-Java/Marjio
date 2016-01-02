@@ -46,4 +46,8 @@ public class TickRequest implements Packable {
     public int getTimeOffset(int time) {
         return (mStartTime - time) / 2;
     }
+
+    public int getNewTime(int time) {
+        return mReceiveTime + getTimeOffset(time);
+    }
 }

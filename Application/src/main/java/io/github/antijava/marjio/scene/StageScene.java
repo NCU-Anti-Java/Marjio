@@ -14,23 +14,23 @@ import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
 import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
-import io.github.antijava.marjio.window.WindowBase;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
  */
 public class StageScene extends SceneBase implements Constant {
-    private final static int START_GAME_COUNTER = 5;
+
     private final Viewport GameViewPort;
     private SceneMap mMap;
     UUID mYourPlayerID;
     Map<UUID, Player> mPlayers;
 
     private final Sprite mTimer;
-    private int mCountDown;
+    private int mTick;
 
 
     boolean mIsServer;
@@ -47,7 +47,7 @@ public class StageScene extends SceneBase implements Constant {
 
         mMap = new SceneMap(application, stage);
 
-        mCountDown = START_GAME_COUNTER * FPS;
+        mTick = - START_GAME_TICKS;
         GameViewPort = graphics.createViewport();
 
         mTimer = new SpriteBase(application.getGraphics().getDefaultViewport());
@@ -56,8 +56,9 @@ public class StageScene extends SceneBase implements Constant {
 
 /*
 
-         //TODO: Fake data
 
+         //TODO: Fake data
+        mIsServer = true;
         ba = new WindowBase(getApplication(), PLAYER_SIZE, PLAYER_SIZE);
         mYourPlayerID = UUID.randomUUID();
 
@@ -81,7 +82,7 @@ public class StageScene extends SceneBase implements Constant {
         super.update();
 
 
-        if (mCountDown > 0) {
+        if (mTick < 0) {
 
             // TODO: If you are client, you should receive server's count down time.
             // Hint: NTP, Clock synchronization
@@ -92,64 +93,63 @@ public class StageScene extends SceneBase implements Constant {
                                             .getTickRequest();
 
                 reqs.forEach(tick_req -> {
-                    tick_req.setReceiveTime(mCountDown);
+                    tick_req.setReceiveTime(mTick);
                     try {
                         server.send(tick_req, tick_req.getClientID());
                     } catch (Exception e) {
                     }
                 });
-
-                mCountDown--;
             } else {
-                IClient client = getApplication().getClient();
-                List<TickRequest> reqs = getApplication()
+                final IClient client = getApplication().getClient();
+                final List<TickRequest> reqs = getApplication()
                                             .getInput()
                                             .getTickRequest();
 
-                TickRequest ret = null;
+                TickRequest tick_req = null;
 
+
+                /**
+                 * find the newest ticks in TickRequests
+                 * */
                 for (TickRequest req : reqs) {
-                    if (ret == null) {
-                        ret = req;
+                    if (tick_req == null) {
+                        tick_req = req;
                         continue;
-                    } else if (ret.getReceiveTime() > req.getReceiveTime()) {
-                        ret = req;
+                    }
+
+                    if (tick_req.getReceiveTime() < req.getReceiveTime()) {
+                        tick_req = req;
                     }
                 }
 
-                if (ret == null) {
-                    ret = new TickRequest(mCountDown);
-                    ret.setClientID(mYourPlayerID);
-
+                if (tick_req == null) {
+                    tick_req = new TickRequest(mTick);
+                    tick_req.setClientID(mYourPlayerID);
                 } else {
-                    mCountDown = ret.getReceiveTime()
-                                    - ret.getTimeOffset(mCountDown);
-                    ret.setStartTime(mCountDown);
+                    mTick = tick_req.getNewTime(mTick);
+                    tick_req.setStartTime(mTick);
                 }
 
                 try {
-                    client.send(ret);
+                    client.send(tick_req);
                 } catch (Exception e) {
-                    e.printStackTrace();
+
                 }
-
-                mCountDown--;
-
             }
 
             mTimer.getBitmap().clear();
             mTimer.getBitmap().setFont(new Font("Consolas", 48, false, true));
             mTimer.getBitmap().drawText(
-                    Integer.toString(mCountDown / FPS), 0, 0,
+                    Integer.toString((-mTick) / FPS), 0, 0,
                     GAME_WIDTH, GAME_HEIGHT, Color.WHITE, IBitmap.TextAlign.CENTER);
             mTimer.update();
 
+            mTick++;
+
             return ;
-        } else if (mCountDown == 0) {
+        } else if (mTick == 0) {
             mTimer.getBitmap().clear();
             mTimer.update();
-
-            mCountDown--;
         }
 
         final Player player = mPlayers.get(mYourPlayerID);
@@ -159,11 +159,9 @@ public class StageScene extends SceneBase implements Constant {
         players.forEach(Player::preUpdate);
 
         checkKeyState(input, player);
-        checkStatus();
-        solveBumps(players);
-        checkDead(players);
-
+        checkStatus(players);
         players.forEach(Player::update);
+
         //TODO : slide viewport when player is running
 
 
@@ -176,7 +174,7 @@ public class StageScene extends SceneBase implements Constant {
 
         if (!mIsServer) {
             IClient client = getApplication().getClient();
-            StatusData data = player.getStatusData();
+            Status data = player.getStatus();
 
             for (final Key key : Player.action_keys) {
                 if (input.isPressed(key))
@@ -190,14 +188,17 @@ public class StageScene extends SceneBase implements Constant {
                     data.isRepeat(key);
             }
 
+            data.setType(Status.Types.ClientMessage);
+            data.send_tick = mTick;
+
             try {
-                client.send(new Status(data, Status.Types.ClientMessage));
+                client.send(data);
             } catch (Exception e) {
 
             }
         }
 
-
+        mTick++;
     }
 
     private void checkDead(final Collection<Player> players) {
@@ -229,49 +230,65 @@ public class StageScene extends SceneBase implements Constant {
     }
 
     public List<Status> getValidStatuses() {
-        return getApplication()
+        final Stream<Status> statuses = getApplication()
                 .getInput()
                 .getStatuses()
                 .stream()
-                .filter(st -> st.getData() instanceof StatusData &&
-                        mPlayers.containsKey(((StatusData)st.getData()).uuid))
-                .collect(Collectors.toList());
+                .filter(st -> mPlayers.containsKey(st.getClientID()));
+
+        if (mIsServer)
+            return statuses
+                    .sorted((st, st2) ->
+                            st.send_tick > st2.send_tick ? 1 : -1)
+                    .collect(Collectors.toList());
+        else
+            return statuses
+                    .sorted((st, st2) ->
+                            st.recieve_tick > st2.recieve_tick ? 1 : -1)
+                    .collect(Collectors.toList());
     }
 
-    public void checkStatus () {
+    public void checkStatus (final Collection<Player> players) {
+
         final List<Status> fetchedStatus = getValidStatuses();
         final IServer server = getApplication().getServer();
+        int send_tick = 0;
+        int recieve_tick = 0;
 
         for (final Status st : fetchedStatus) {
-            StatusData data = (StatusData) st.getData();
-            Player player = mPlayers.get(data.uuid);
+            Player player = mPlayers.get(st.getClientID());
 
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
-                        if (player.isValidData(data)) {
-                            checkKeyState(data, player);
+                        if (player.isValidData(st)) {
+                            checkKeyState(st, player);
 
-                            final Status new_st = new Status(player.getStatusData(),
-                                    Status.Types.ServerMessage);
+                            final Status new_st = player.getStatus();
+                            new_st.setType(Status.Types.ServerMessage);
+                            new_st.send_tick = st.send_tick;
+                            new_st.recieve_tick = mTick;
+
 
                             if (mIsServer) {
                                 try {
                                     server.broadcast(new_st);
-
                                 } catch (Exception ex) {
 
                                 }
                             }
 
                         } else {
-                            data = player.getStatusData();
-                            data.query = false;
-                            final Status new_st = new Status(data,
-                                    Status.Types.ServerVerification);
+                            final Status new_st = player.getStatus();
+
+                            new_st.query = false;
+                            new_st.setType(Status.Types.ServerVerification);
+
+                            new_st.send_tick = st.send_tick;
+                            new_st.recieve_tick = mTick;
 
                             try {
-                                server.send(new_st, player.getId());
+                                server.send(new_st, player.getmId());
 
                             } catch (Exception ex) {
 
@@ -282,15 +299,20 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerMessage: {
-                    player.preUpdateStatusData(data);
+                    player.preUpdateStatus(st);
+
+                    if (player.getmId().equals(mYourPlayerID)) {
+                        send_tick = st.send_tick;
+                    }
 
                     break;
                 }
 
                 case ServerVerification: {
-                    if (!data.query)
-                        player.preUpdateStatusData(data);
-
+                    if (!st.query) {
+                        player.preUpdateStatus(st);
+                        send_tick = st.send_tick;
+                    }
                     break;
                 }
 

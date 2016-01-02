@@ -3,7 +3,7 @@ package io.github.antijava.marjio.scene.sceneObject;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.StatusData;
+import io.github.antijava.marjio.common.input.Status;
 
 import java.util.UUID;
 
@@ -15,8 +15,9 @@ public class Player extends SceneObjectObjectBase {
        Key.MOVE_LEFT, Key.MOVE_RIGHT, Key.JUMP, Key.CAST
     };
 
-    UUID id;
+    UUID mId;
 
+    int mTick;
 
     int mX;
     int mY;
@@ -32,7 +33,10 @@ public class Player extends SceneObjectObjectBase {
 
     public Player(Viewport viewport, UUID id) {
         super(viewport);
-        this.id = id;
+        mId = id;
+
+        mTick = 0;
+
         mX = super.getX();
         mY = super.getY();
 
@@ -66,21 +70,22 @@ public class Player extends SceneObjectObjectBase {
 
         super.setX(mX);
         super.setY(mY);
+
+        mTick++;
     }
 
-    public UUID getId() {
-        return id;
+    public UUID getmId() {
+        return mId;
     }
 
-
-    public void preUpdateStatusData(StatusData data) {
-        mX = data.x;
-        mY = data.y;
-        mVelocityX = data.vx;
-        mVelocityY = data.vy;
-        mAccelerationX = data.ax;
-        mAccelerationY = data.ay;
+    public void setTick(int tick) {
+        mTick = tick;
     }
+
+    public int getTick() {
+        return mTick;
+    }
+
 
     @Override
     public void setX(int x)  {
@@ -143,8 +148,6 @@ public class Player extends SceneObjectObjectBase {
         mAccelerationY = ay;
     }
 
-
-
     public void preUpdate() {
 
         mVelocityX += mAccelerationX;
@@ -158,12 +161,22 @@ public class Player extends SceneObjectObjectBase {
         mVelocityY += mAccelerationY + PhysicsConstant.gravity;
     }
 
-    public StatusData getStatusData() {
-        StatusData data = new StatusData();
+    public void preUpdateStatus(Status data) {
+        mTick = data.tick;
+        mX = data.x;
+        mY = data.y;
+        mVelocityX = data.vx;
+        mVelocityY = data.vy;
+        mAccelerationX = data.ax;
+        mAccelerationY = data.ay;
+    }
 
-        data.uuid = id;
-        data.type = StatusData.Player;
+    public Status getStatus() {
+        Status data = new Status(Status.DataTypes.Player);
 
+        data.setClientID(mId);
+
+        data.tick = mTick;
         data.x = mX;
         data.y = mY;
         data.vx = mVelocityX;
@@ -175,10 +188,8 @@ public class Player extends SceneObjectObjectBase {
     }
 
 
-    public boolean isValidData (StatusData data) {
-        // TODO: need to find good speed limit;
-
-        if (data.type != StatusData.Player)
+    public boolean isValidData (Status data) {
+        if (data.getDataType() != Status.DataTypes.Player)
             return false;
 
         return data.isValidKeySets();
