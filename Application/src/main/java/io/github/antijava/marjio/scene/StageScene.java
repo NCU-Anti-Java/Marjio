@@ -74,6 +74,7 @@ public class StageScene extends SceneBase implements Constant {
     @Override
     public void dispose() {
         super.dispose();
+
         //ba.dispose();
     }
 
@@ -225,12 +226,7 @@ public class StageScene extends SceneBase implements Constant {
             final int y = (int) Math.round (
                     (double)p.getNextY() / BLOCK_SIZE);
 
-            try {
-
-                mMap.getBlock(y, x);
-
-
-            } catch (Exception e) {
+            if (!mMap.isInMap(y, x)) {
                 if (y > 0) { //drop in hole
                     p.reset();
                 } else if (y < -1000) { //fly to death, it means you
@@ -239,8 +235,8 @@ public class StageScene extends SceneBase implements Constant {
                     p.setX(0);
                     p.setVelocityX(0.0);
                 }
-
             }
+
         });
 
     }
@@ -377,20 +373,13 @@ public class StageScene extends SceneBase implements Constant {
 
 
         if (input.isRepeat(Key.JUMP)) {
-            try {
+            final int x = (int)Math.round((double)player.getX() / BLOCK_SIZE);
+            final int y = (int)Math.round((double) player.getY() / BLOCK_SIZE) + 1;
 
-                Block block = mMap.getBlock(
-                        (int)Math.round(
-                                (double) player.getY() / BLOCK_SIZE) + 1,
-                        (int)Math.round((double)player.getX() / BLOCK_SIZE));
-
-                // prevent gravity problem
-                if (block.getType() != Block.Type.AIR) {
-                    player.setVelocityY(-20.0);
-                    player.addAccelerationY(0.0);
-                }
-            } catch (Exception ex) {
-
+            if (mMap.isInMap(y, x) &&
+                    mMap.getBlock(y, x).getType() != Block.Type.AIR) {
+                player.setVelocityY(-20.0);
+                player.addAccelerationY(0.0);
             }
 
         }
@@ -400,8 +389,6 @@ public class StageScene extends SceneBase implements Constant {
     private void solveBumps(final Collection<Player> players) {
         final Stream<Player> s_players = players.stream();
 
-        players.forEach(p ->
-                p.normalizeVelocity((double) BLOCK_SIZE/2.0 - 1.0));
         /**
          * time synchronized for players in client
          * */
@@ -417,7 +404,6 @@ public class StageScene extends SceneBase implements Constant {
                         solveBumpBlock(p);
                         p.update();
                         p.preUpdate();
-                        p.normalizeVelocity((double)BLOCK_SIZE/2.0 - 1.0);
                     });
 
         s_players
@@ -444,7 +430,7 @@ public class StageScene extends SceneBase implements Constant {
 
 
 
-            if (magicalbumpTest(dx, dy)) {
+            if (magicbumpTest(dx, dy)) {
 
                 //TODO: setup reflect direction
                 final double vx = player.getVelocityX();
@@ -507,7 +493,7 @@ public class StageScene extends SceneBase implements Constant {
         }
     }
 
-    public static boolean magicalbumpTest(double dx, double dy) {
+    public static boolean magicbumpTest(double dx, double dy) {
 
         return ((dx*dx*dx*dx) + (dy*dy*dy*dy)) <= 1.0D;
     }

@@ -1,19 +1,32 @@
 package io.github.antijava.marjio.scene.sceneObject;
 
+import io.github.antijava.marjio.common.graphics.Color;
+import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.constant.Constant;
 
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by firejox on 2015/12/28.
  */
-public class Player extends SceneObjectObjectBase {
+public class Player extends SceneObjectObjectBase implements Constant {
+    public static final double VELOCITY_LIMIT =
+            (double)BLOCK_SIZE / 2.0D - 1.0D;
+
     public static final Key[] action_keys = {
        Key.MOVE_LEFT, Key.MOVE_RIGHT, Key.JUMP, Key.CAST
     };
+
+    public static final Map<Color, IBitmap[]> player_styles;
+
+    static {
+        player_styles = new HashMap<>();
+    }
+
 
     UUID mId;
 
@@ -23,14 +36,17 @@ public class Player extends SceneObjectObjectBase {
     int mY;
 
     double mVelocityX;
+    double mVelocityXModify;
     double mVelocityY;
 
     double mAccelerationX;
     double mAccelerationY;
 
-    boolean status_update_flag;
+    boolean mStatusUpdate;
 
-    boolean Jet;
+    Item mHave;
+
+    Queue<IAction> mEffect;
 
 
     public Player(Viewport viewport, UUID id) {
@@ -48,8 +64,12 @@ public class Player extends SceneObjectObjectBase {
         mAccelerationX = 0;
         mAccelerationY = 0;
 
-        status_update_flag = false;
-        Jet = false;
+        mStatusUpdate = false;
+
+        mHave = null;
+
+        mVelocityXModify = 1.0;
+
     }
 
     public void reset() {
@@ -62,8 +82,7 @@ public class Player extends SceneObjectObjectBase {
         mAccelerationX = 0;
         mAccelerationY = 0;
 
-        status_update_flag = false;
-        Jet = false;
+        mStatusUpdate = false;
     }
 
     @Override
@@ -76,7 +95,7 @@ public class Player extends SceneObjectObjectBase {
         super.setY(mY);
 
         mTick++;
-        status_update_flag = false;
+        mStatusUpdate = false;
     }
 
     public UUID getmId() {
@@ -113,16 +132,16 @@ public class Player extends SceneObjectObjectBase {
     }
 
     public int getNextX() {
-        return mX + (int)Math.round(mVelocityX);
+        return mX + (int)Math.round(normalizeVelocityX());
     }
 
     public int getNextY() {
-        return mY + (int)Math.round(mVelocityY);
+        return mY + (int)Math.round(normalizeVelocityY());
     }
 
 
     public double getVelocityX (){
-        return mVelocityX;
+        return mVelocityX * mVelocityXModify;
     }
 
     public double getVelocityY (){
@@ -174,11 +193,11 @@ public class Player extends SceneObjectObjectBase {
         mVelocityY = data.vy;
         mAccelerationX = data.ax;
         mAccelerationY = data.ay;
-        status_update_flag = true;
+        mStatusUpdate = true;
     }
 
     public boolean isStatusUpdate() {
-        return status_update_flag;
+        return mStatusUpdate;
     }
 
     public Status getStatus() {
@@ -205,14 +224,19 @@ public class Player extends SceneObjectObjectBase {
         return data.isValidKeySets();
     }
 
-    public void normalizeVelocity(double lim) {
-        if (mVelocityX < 0)
-            mVelocityX = Math.max(mVelocityX, -lim);
+
+    public double normalizeVelocityX() {
+        final double vx = getVelocityX();
+
+        if (vx < 0)
+            return Math.max(vx, -VELOCITY_LIMIT);
         else
-            mVelocityX = Math.min(mVelocityX, lim);
+           return Math.min(vx, VELOCITY_LIMIT);
+    }
 
-        mVelocityY = Math.min(mVelocityY, lim);
-
+    public double normalizeVelocityY() {
+        final double vy = getVelocityY();
+        return Math.min(vy, VELOCITY_LIMIT);
     }
 
 
