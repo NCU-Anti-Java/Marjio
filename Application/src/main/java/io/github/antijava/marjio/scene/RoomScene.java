@@ -32,7 +32,7 @@ public class RoomScene extends SceneBase implements Constant {
         mCurrentChoice = 0;
 
         initWindows();
-        
+
         if (mIsServer) {
             try {
                 application.getServer().start();
@@ -65,12 +65,27 @@ public class RoomScene extends SceneBase implements Constant {
             mWindowCommand.update();
             mWindowPlayerList.update();
             checkKeyState();
-            checkClientRequest();
             checkStatus();
+
+            if (mIsServer) {
+                checkClientRequest();
+                broadcastPlayerList();
+            } else {
+                updatePlayerList();
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void broadcastPlayerList() throws Exception {
+        // TODO: broadcast player list
+    }
+
+    private void updatePlayerList() {
+        // TODO: get input and update list
     }
 
     /**
