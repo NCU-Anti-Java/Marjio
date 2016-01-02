@@ -106,24 +106,25 @@ public class Network implements IClient, IServer, Constant {
 
     @Override
     public void send(Packable packableObj) throws Exception {
-        mClient.sendUDP(packableObj);
+        mClient.sendUDP(Packer.PackableToData(packableObj));
     }
 
     @Override
     public void sendTCP(Packable packableObj) throws Exception {
-        mClient.sendTCP(packableObj);
+        mApplication.getLogger().info("Client send message");
+        mClient.sendTCP(Packer.PackableToData(packableObj));
     }
 
     @Override
     public void send(Packable packableObj, UUID clientID) throws Exception {
         Connection connection = mConnectionMap.get(clientID);
-        connection.sendUDP(packableObj);
+        connection.sendUDP(Packer.PackableToData(packableObj));
     }
 
     @Override
     public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
         Connection connection = mConnectionMap.get(clientID);
-        connection.sendTCP(packableObj);
+        connection.sendTCP(Packer.PackableToData(packableObj));
     }
 
     @Override

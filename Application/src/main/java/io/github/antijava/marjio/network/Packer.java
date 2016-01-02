@@ -39,6 +39,18 @@ public class Packer {
         throw new IllegalArgumentException();
     }
 
+
+    public static PackData PackableToData(Packable packableObj) {
+        if (packableObj instanceof Request) {
+            return RequestToData((Request) packableObj);
+        } else if (packableObj instanceof Status) {
+            return StatustToData((Status) packableObj);
+        }
+
+        throw new IllegalArgumentException();
+    }
+
+
     public static RequestData RequestToData(Request request) {
         RequestData data = new RequestData();
         if (data.uuid != null) {
