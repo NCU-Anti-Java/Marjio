@@ -1,6 +1,8 @@
 package io.github.antijava.marjio.network;
 
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.ExternalizableSerializer;
+import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.JsonSerialization;
@@ -9,6 +11,7 @@ import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.input.Request;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.common.network.Packable;
@@ -44,10 +47,28 @@ public class Network implements IClient, IServer, Constant {
         mApplication = application;
         mRunningFlag = false;
         mConnectedFlag = true;
-        mServer = new Server(NET_WRITE_BUFFER_SIZE, NET_OBJECT_BUFFER_SIZE, new JsonSerialization());
-        mClient = new Client(NET_WRITE_BUFFER_SIZE, NET_OBJECT_BUFFER_SIZE, new JsonSerialization());
+        mServer = new Server(NET_WRITE_BUFFER_SIZE, NET_OBJECT_BUFFER_SIZE);
+        mClient = new Client(NET_WRITE_BUFFER_SIZE, NET_OBJECT_BUFFER_SIZE);
         mConnectionMap = new HashMap<>();
         mClientList = new ArrayList<>();
+
+        mServer.getKryo().register(byte[].class);
+        mClient.getKryo().register(byte[].class);
+
+        /*
+        mServer.getKryo().register(Request.class, new JavaSerializer());
+        mServer.getKryo().register(Status.class, new ExternalizableSerializer());
+        mServer.getKryo().register(SceneObjectStatus.class, new JavaSerializer());
+        */
+        //mServer.getKryo().register(Status.class);
+
+        /*
+        mClient.getKryo().register(Request.class, new JavaSerializer());
+        mClient.getKryo().register(Status.class, new ExternalizableSerializer());
+        mClient.getKryo().register(SceneObjectStatus.class, new JavaSerializer());
+        */
+        //mClient.getKryo().register(Status.class);
+
     }
 
     @Override
@@ -106,30 +127,30 @@ public class Network implements IClient, IServer, Constant {
 
     @Override
     public void send(Packable packableObj) throws Exception {
-        mClient.sendUDP(Packer.PackableToData(packableObj));
+        mClient.sendUDP(Packer.PackabletoByteArray(packableObj));
     }
 
     @Override
     public void sendTCP(Packable packableObj) throws Exception {
         mApplication.getLogger().info("Client send message");
-        mClient.sendTCP(Packer.PackableToData(packableObj));
+        mClient.sendTCP(Packer.PackabletoByteArray(packableObj));
     }
 
     @Override
     public void send(Packable packableObj, UUID clientID) throws Exception {
         Connection connection = mConnectionMap.get(clientID);
-        connection.sendUDP(Packer.PackableToData(packableObj));
+        connection.sendUDP(Packer.PackabletoByteArray(packableObj));
     }
 
     @Override
     public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
         Connection connection = mConnectionMap.get(clientID);
-        connection.sendTCP(Packer.PackableToData(packableObj));
+        connection.sendTCP(Packer.PackabletoByteArray(packableObj));
     }
 
     @Override
     public void broadcast(Packable packableObj) throws Exception {
-        mServer.sendToAllUDP(packableObj);
+        mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
     }
 
     @Override

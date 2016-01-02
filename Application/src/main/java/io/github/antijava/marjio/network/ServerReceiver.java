@@ -29,9 +29,9 @@ public class ServerReceiver extends Listener{
 
     @Override
     public void received (Connection connection, Object object) {
-        if (object instanceof PackData) {
-            PackData data = (PackData) object;
-            Packable packableObj = Packer.DataToPackable(data);
+        if (object instanceof byte[]) {
+            //PackData data = (PackData) object;
+            Packable packableObj = Packer.ByteArraytoPackable((byte[])object);
             UUID uuid;
 
             // Update connection list

@@ -1,15 +1,18 @@
 package io.github.antijava.marjio.common.input;
 
 import io.github.antijava.marjio.common.network.Packable;
+
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Created by fntsr on 2015/12/31.
  */
-public class Request implements Packable {
-    private UUID mUUID;
+public class Request implements Packable, Serializable {
+    UUID mUUID;
 
-    private Types mType;
+    Types mType;
+
 
     public Request(Types type) {
         mType = type;
