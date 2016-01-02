@@ -16,6 +16,9 @@ public class Status implements Packable, Externalizable {
     private Object mObject;
     private UUID mId;
 
+    public Status() {
+
+    }
 
     public Status(SceneObjectStatus obj, Types type) {
         mType = type;
@@ -35,14 +38,14 @@ public class Status implements Packable, Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeUTF(mType.name());
+        out.writeObject(mType);
         out.writeObject(mObject);
         out.writeObject(mId);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        mType = Types.valueOf(in.readUTF());
+        mType = (Types) in.readObject();
         mObject = in.readObject();
         mId = (UUID) in.readObject();
     }
