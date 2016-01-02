@@ -75,11 +75,8 @@ public class Network implements IClient, IServer, Constant {
         }
 
         try {
-            mServer.start();
-            mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
-            mServer.addListener(new ClientReceiver(mApplication));
-
             mClient.start();
+            mClient.addListener(new ClientReceiver(mApplication));
             mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
 
             mRunningFlag = true;
