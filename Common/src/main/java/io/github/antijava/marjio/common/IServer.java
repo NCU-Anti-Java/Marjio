@@ -1,6 +1,7 @@
 package io.github.antijava.marjio.common;
 
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.common.network.Packable;
 
 import java.io.IOException;
@@ -38,11 +39,19 @@ public interface IServer {
     void send(Packable packableObject, UUID clientID) throws Exception;
 
     /**
+     * Send message to specific client
+     *
+     * @param packableObject information package
+     * @param clientID client's id
+     */
+    void sendTCP(Packable packableObject, UUID clientID) throws Exception;
+
+    /**
      * Return all connected clients' information.
      *
      * @return IP 清單，暫定是 String List
      */
-    List getClients();
+    List<ClientInfo> getClients();
 
     /**
      * Specifics if is listening.
@@ -50,4 +59,7 @@ public interface IServer {
      * @return  if is listening
      */
     boolean isRunning();
+
+    void setMyId(UUID mMyId);
+    UUID getMyId();
 }

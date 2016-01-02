@@ -1,7 +1,6 @@
 package io.github.antijava.marjio.common.input;
 
 import io.github.antijava.marjio.common.network.Packable;
-
 import java.util.UUID;
 
 /**
@@ -9,12 +8,17 @@ import java.util.UUID;
  */
 public class Request implements Packable {
     private UUID mUUID;
+
     private Types mType;
 
     public Request(Types type) {
         mType = type;
     }
 
+    public Request(UUID id, Types type) {
+        mUUID = id;
+        mType = type;
+    }
 
     @Override
     public UUID getClientID() {
@@ -32,8 +36,8 @@ public class Request implements Packable {
 
     public enum Types {
         ClientWannaJoinRoom,
-        ClientCanJoinRoom;
+        ClientCanJoinRoom,
+        ClientWannaExitRoom,
+        ClientExitedRoom;
     }
-
-
 }

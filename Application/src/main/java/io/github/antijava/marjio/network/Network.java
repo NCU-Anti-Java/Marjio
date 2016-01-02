@@ -1,7 +1,9 @@
 package io.github.antijava.marjio.network;
 
+import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.JsonSerialization;
 import com.esotericsoftware.kryonet.Server;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IClient;
@@ -10,6 +12,7 @@ import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.common.network.Packable;
+import io.github.antijava.marjio.common.network.RequestData;
 import io.github.antijava.marjio.constant.Constant;
 
 import java.io.IOException;
@@ -33,7 +36,7 @@ public class Network implements IClient, IServer, Constant {
     private Client mClient;
 
     // Server Fields
-    private UUID mHostId;
+    private UUID mMyId;
     private List<ClientInfo> mClientList;
     private HashMap<UUID, Connection> mConnectionMap;
 
@@ -41,44 +44,45 @@ public class Network implements IClient, IServer, Constant {
         mApplication = application;
         mRunningFlag = false;
         mConnectedFlag = true;
-        mServer = new Server();
-        mClient = new Client();
+        mServer = new Server(NET_WRITE_BUFFER_SIZE, NET_OBJECT_BUFFER_SIZE, new JsonSerialization());
+        mClient = new Client(NET_WRITE_BUFFER_SIZE, NET_OBJECT_BUFFER_SIZE, new JsonSerialization());
         mConnectionMap = new HashMap<>();
         mClientList = new ArrayList<>();
-
-        mServer.getKryo().register(Status.class);
-        mServer.getKryo().register(Request.class);
-        mClient.getKryo().register(Status.class);
-        mClient.getKryo().register(Request.class);
     }
 
     @Override
-    public void start() throws InterruptedException, UnsupportedOperationException, IOException {
+    public void start() {
         if (mRunningFlag) {
             throw new UnsupportedOperationException();
         }
-        mHostId = UUID.randomUUID();
-        mRunningFlag = true;
-        mServer.start();
-        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
-        mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
+
+        try {
+            mServer.start();
+            mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
+            mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
+            mRunningFlag = true;
+            mMyId = UUID.randomUUID();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Override
-    public void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException, IOException {
+    public void start(InetAddress hostAddress) throws IOException {
         if (mRunningFlag) {
             throw new UnsupportedOperationException();
         }
-        mRunningFlag = true;
 
-        mServer.start();
-        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
-        mServer.addListener(new ClientReceiver(mApplication));
+        try {
+            mClient.start();
+            mClient.addListener(new ClientReceiver(mApplication));
+            mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
 
-        mClient = new Client();
-        mClient.start();
-        mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
+            mRunningFlag = true;
+        } catch (IOException e) {
+            throw e;
+        }
     }
 
     @Override
@@ -102,13 +106,25 @@ public class Network implements IClient, IServer, Constant {
 
     @Override
     public void send(Packable packableObj) throws Exception {
-        mClient.sendUDP(packableObj);
+        mClient.sendUDP(Packer.PackableToData(packableObj));
+    }
+
+    @Override
+    public void sendTCP(Packable packableObj) throws Exception {
+        mApplication.getLogger().info("Client send message");
+        mClient.sendTCP(Packer.PackableToData(packableObj));
     }
 
     @Override
     public void send(Packable packableObj, UUID clientID) throws Exception {
         Connection connection = mConnectionMap.get(clientID);
-        connection.sendUDP(packableObj);
+        connection.sendUDP(Packer.PackableToData(packableObj));
+    }
+
+    @Override
+    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
+        Connection connection = mConnectionMap.get(clientID);
+        connection.sendTCP(Packer.PackableToData(packableObj));
     }
 
     @Override
@@ -120,4 +136,16 @@ public class Network implements IClient, IServer, Constant {
     public List<ClientInfo> getClients() {
         return mClientList;
     }
+
+    @Override
+    public void setMyId(UUID mMyId) {
+        this.mMyId = mMyId;
+    }
+
+    @Override
+    public UUID getMyId() {
+
+        return mMyId;
+    }
+
 }

@@ -5,19 +5,14 @@ import java.util.UUID;
 /**
  * Created by Date on 2015/12/29.
  */
-public class StatusData {
-
-    /*
-     * Player 0
-     * Block  1
-     * Item   2
-     */
-    public static final int Player = 0;
-    public static final int Block  = 1;
-    public static final int Item   = 2;
-
+public class SceneObjectStatus {
+    public enum Types {
+        Player,
+        Block,
+        Item
+    }
     public UUID uuid;
-    public int type;
+    public Types type;
     public int id;
     public int action_id;
     public int time_counter;

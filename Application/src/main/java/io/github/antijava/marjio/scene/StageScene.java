@@ -7,7 +7,7 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.common.input.StatusData;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
@@ -16,7 +16,6 @@ import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
 import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
-import io.github.antijava.marjio.window.WindowBase;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -114,7 +113,7 @@ public class StageScene extends SceneBase implements Constant {
 
         if (!mIsServer) {
             IClient client = getApplication().getClient();
-            StatusData data = mPlayers.get(mYourPlayerID).getStatusData();
+            SceneObjectStatus data = mPlayers.get(mYourPlayerID).getStatusData();
 
             try {
                 client.send(new Status(data, Status.Types.ClientMessage));
@@ -128,8 +127,8 @@ public class StageScene extends SceneBase implements Constant {
                 .getInput()
                 .getStatuses()
                 .stream()
-                .filter(st -> st.getData() instanceof StatusData &&
-                        mPlayers.containsKey(((StatusData)st.getData()).uuid))
+                .filter(st -> st.getData() instanceof SceneObjectStatus &&
+                        mPlayers.containsKey(((SceneObjectStatus)st.getData()).uuid))
                 .collect(Collectors.toList());
     }
 
@@ -138,7 +137,7 @@ public class StageScene extends SceneBase implements Constant {
         final IServer server = getApplication().getServer();
 
         for (Status st : fetchedStatus) {
-            StatusData data = (StatusData) st.getData();
+            SceneObjectStatus data = (SceneObjectStatus) st.getData();
             Player player = mPlayers.get(data.uuid);
 
             switch (st.getType()) {
