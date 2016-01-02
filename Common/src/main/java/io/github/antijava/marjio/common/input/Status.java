@@ -12,9 +12,10 @@ public class Status implements Packable{
     Object mObject;
     UUID mId;
 
-    public Status(Object obj, Types type) {
+    public Status(SceneObjectStatus obj, Types type) {
         mType = type;
         mObject = obj;
+        mId = obj.uuid;
     }
 
     @Override

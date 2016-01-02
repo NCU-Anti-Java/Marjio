@@ -1,23 +1,14 @@
-package io.github.antijava.marjio.common.input;
+package io.github.antijava.marjio.common.network;
 
 import java.util.UUID;
 
 /**
- * Created by Date on 2015/12/29.
+ * Created by fntsr on 2016/1/2.
  */
 public class StatusData {
-
-    /*
-     * Player 0
-     * Block  1
-     * Item   2
-     */
-    public static final int Player = 0;
-    public static final int Block  = 1;
-    public static final int Item   = 2;
-
-    public UUID uuid;
-    public int type;
+    public String uuid;
+    public String sourceType;
+    public String objectType;
     public int id;
     public int action_id;
     public int time_counter;

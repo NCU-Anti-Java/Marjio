@@ -2,7 +2,8 @@ package io.github.antijava.marjio.scene.sceneObject;
 
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
-import io.github.antijava.marjio.common.input.StatusData;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
+import io.github.antijava.marjio.common.input.Status;
 
 import java.util.UUID;
 
@@ -57,7 +58,7 @@ public class Player extends SceneObjectObjectBase {
     }
 
 
-    public void preUpdateStatusData(StatusData data) {
+    public void preUpdateStatusData(SceneObjectStatus data) {
         mX = data.x;
         mY = data.y;
         mVelocityX = data.vx;
@@ -142,11 +143,11 @@ public class Player extends SceneObjectObjectBase {
         mVelocityY += mAccelerationY + PhysicsConstant.gravity;
     }
 
-    public StatusData getStatusData() {
-        StatusData data = new StatusData();
+    public SceneObjectStatus getStatusData() {
+        SceneObjectStatus data = new SceneObjectStatus();
 
         data.uuid = id;
-        data.type = StatusData.Player;
+        data.type = SceneObjectStatus.Types.Player;
 
         data.x = mX;
         data.y = mY;
@@ -159,10 +160,10 @@ public class Player extends SceneObjectObjectBase {
     }
 
 
-    public boolean isValidData (StatusData data) {
+    public boolean isValidData (SceneObjectStatus data) {
         // TODO: need to find good speed limit;
 
-        if (data.type != StatusData.Player)
+        if (data.type != SceneObjectStatus.Types.Player)
             return false;
 
         return false;

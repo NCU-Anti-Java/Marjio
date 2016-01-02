@@ -1,10 +1,12 @@
 package io.github.antijava.marjio.network;
 
 import com.esotericsoftware.kryonet.*;
-import com.esotericsoftware.jsonbeans.JsonWriter;
 
 import io.github.antijava.marjio.common.input.Request;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
+import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.RequestData;
+import io.github.antijava.marjio.common.network.StatusData;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,13 +16,14 @@ import java.util.UUID;
 
 
 public class NetworkTest {
-    private Client mClient;
-    private Server mServer;
+    private final int TCP_Port = 15566;
+    private final int UDP_Port = 15566;
+    private final UUID clientId = UUID.randomUUID();
 
     @Before
     public void setUp() throws Exception {
-        mClient = new Client(16384, 8192, new JsonSerialization());
-        mServer = new Server(16384, 8192, new JsonSerialization());
+
+
     }
 
     @After
@@ -31,14 +34,12 @@ public class NetworkTest {
 
     @Test
     public void testSendRequest() throws Exception {
-        final int TCP_Port = 15566;
-        final int UDP_Port = 15566;
+        Client client = new Client(16384, 8192, new JsonSerialization());
+        Server server = new Server(16384, 8192, new JsonSerialization());
 
-        final UUID clientId = UUID.randomUUID();
-
-        mServer.start();
-        mServer.bind(TCP_Port, UDP_Port);
-        mServer.addListener(new Listener() {
+        server.start();
+        server.bind(TCP_Port, UDP_Port);
+        server.addListener(new Listener() {
 
             @Override
             public void received (Connection connection, Object object) {
@@ -58,9 +59,9 @@ public class NetworkTest {
 
 
 
-        mClient.start();
-        mClient.connect(5000, "127.0.0.1", TCP_Port, UDP_Port);
-        mClient.addListener(new Listener() {
+        client.start();
+        client.connect(5000, "127.0.0.1", TCP_Port, UDP_Port);
+        client.addListener(new Listener() {
 
             @Override
             public void received (Connection connection, Object object) {
@@ -77,7 +78,63 @@ public class NetworkTest {
         });
 
         Request request = new Request(clientId, Request.Types.ClientWannaJoinRoom);
-        mClient.sendTCP(Packer.RequestToData(request));
+        client.sendTCP(Packer.RequestToData(request));
+
+        Thread.sleep(2000);
+
+        client.stop();
+        server.stop();
+        client.close();
+        server.close();
+    }
+
+    @Test
+    public void testSendStatus() throws Exception {
+        Client client = new Client(16384, 8192, new JsonSerialization());
+        Server server = new Server(16384, 8192, new JsonSerialization());
+
+        SceneObjectStatus info = new SceneObjectStatus();
+        info.uuid = clientId;
+        info.type = SceneObjectStatus.Types.Player;
+        info.x = 0;
+        info.y = 0;
+        info.vx = 55;
+        info.vy = 66;
+        info.ax = 77;
+        info.ay = 88;
+
+        Status status = new Status(info, Status.Types.ClientMessage);
+
+        server.start();
+        server.bind(TCP_Port, UDP_Port);
+        server.addListener(new Listener() {
+            @Override
+            public void received (Connection connection, Object object) {
+                if (object instanceof StatusData) {
+                    Status receiveStatus = Packer.DataToStatus((StatusData) object);
+
+                    // TODO: More accurately compare with status.equals(anotherStatus);
+                    if (receiveStatus.getClientID().toString().equals(clientId.toString())) {
+                        Assert.assertTrue(true);
+                        return;
+                    }
+                }
+                Assert.assertTrue(false);
+            }
+        });
+
+
+        client.start();
+        client.connect(5000, "127.0.0.1", TCP_Port, UDP_Port);
+
+        client.sendTCP(Packer.StatustToData(status));
+
+        Thread.sleep(2000);
+
+        client.stop();
+        server.stop();
+        client.close();
+        server.close();
     }
 
 }
