@@ -1,6 +1,5 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.application.Application;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
@@ -11,7 +10,6 @@ import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.*;
-import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 import io.github.antijava.marjio.scene.sceneObject.*;
 
 import java.nio.file.NoSuchFileException;
@@ -33,9 +31,7 @@ public class StageScene extends SceneBase implements Constant {
 
     private final Sprite mItemSlot; // Item slot background
     private final Sprite mItemSlotText; // Text above item slot
-    private Item mItemOwned; // Item owned by player
-    private Sprite mItemOwnedSprite; // Item owned by player
-    private final ArrayList<IBitmap> mItemBitmaps = new ArrayList<>();
+    private Item mItemOwned = null; // Item owned by player
 
     boolean mIsServer;
     
@@ -51,17 +47,6 @@ public class StageScene extends SceneBase implements Constant {
         mTimer = new SpriteBase(graphics.getDefaultViewport());
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
-
-        // Prepare images for items
-        ResourcesManager rm = ((Application)application).getResourcesManager();
-
-        Bitmap trapBitmap = rm.tile("default.png", 15, 6);
-        trapBitmap.resize(BLOCK_SIZE - 6, BLOCK_SIZE - 6);
-        mItemBitmaps.add(graphics.createBitmap(BLOCK_SIZE - 6, BLOCK_SIZE - 6)); // None
-        mItemBitmaps.add(trapBitmap); // Trap
-
-        // Initialize item
-        mItemOwned = new Item();
 
         // Item slot
         mItemSlot = new SpriteBase(graphics.getDefaultViewport());
@@ -82,12 +67,11 @@ public class StageScene extends SceneBase implements Constant {
         mItemSlotText.setY(30);
         mItemSlotText.setZ(99);
 
-        // Item owned by player
-        mItemOwnedSprite = new SpriteBase(graphics.getDefaultViewport());
-        mItemOwnedSprite.setBitmap(mItemBitmaps.get(mItemOwned.getType().ordinal()));
-        mItemOwnedSprite.setX(33);
-        mItemOwnedSprite.setY(53);
-        mItemOwnedSprite.setZ(100);
+        // Test
+        mItemOwned = new Item(graphics.getDefaultViewport(), application, 50, 50, 99, Item.ItemType.TrapTool);
+        mItemOwned.getBitmap().resize(40, 40);
+        mItemOwned.setX(35);
+        mItemOwned.setY(55);
 /*
          //TODO: Fake data
 
@@ -115,7 +99,8 @@ public class StageScene extends SceneBase implements Constant {
         // Draw item slot
         mItemSlot.update();
         mItemSlotText.update();
-        mItemOwnedSprite.update();
+        if (mItemOwned != null)
+            mItemOwned.update();
 
         if (mCountDown > 0) {
 
