@@ -12,12 +12,11 @@ import io.github.antijava.marjio.common.network.ClientInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Room Scene
- * 
+ *
  * Created by Zheng-Yuan on 12/27/2015.
  */
 public class RoomScene extends SceneBase implements Constant {
@@ -32,6 +31,8 @@ public class RoomScene extends SceneBase implements Constant {
 
     public RoomScene(IApplication application, boolean isServer) {
         super(application);
+        application.getLogger().info("Enter RoomScene");
+
         mIsServer = isServer;
         mCurrentChoice = 0;
 
@@ -44,11 +45,12 @@ public class RoomScene extends SceneBase implements Constant {
 
         // Check if server started
         if (mIsServer && !getApplication().getServer().isRunning()) {
+            final Logger logger = getApplication().getLogger();
             try {
                 getApplication().getServer().start();
                 mWindowPlayerList.addPlayer(getApplication().getServer().getMyId().toString());
+                logger.info("Server started. ");
             } catch (IOException e) {
-                final Logger logger = getApplication().getLogger();
                 final ISceneManager sceneManager = getApplication().getSceneManager();
 
                 // TODO: Let user know the port of game use is occupied, so we can't start server
@@ -74,8 +76,9 @@ public class RoomScene extends SceneBase implements Constant {
 
     @Override
     public void dispose() {
-
         super.dispose();
+
+        getApplication().getLogger().info("Leave RoomScene");
         mWindowPlayerList.dispose();
         mWindowCommand.dispose();
     }
@@ -180,6 +183,7 @@ public class RoomScene extends SceneBase implements Constant {
     private void checkClientRequest() {
         final IInput input = getApplication().getInput();
         final IServer server = getApplication().getServer();
+        final Logger logger = getApplication().getLogger();
 
         List<Request> requests = input.getRequest();
         List<ClientInfo> clients = server.getClients();
@@ -187,31 +191,34 @@ public class RoomScene extends SceneBase implements Constant {
         for (Request request : requests) {
 
             // Find request is asked from which client
-            getApplication().getLogger().log(Level.INFO, request.getClientID().toString());
             ClientInfo client = null;
             for (ClientInfo clientInfo : clients) {
                 if (clientInfo.getClientID().equals(request.getClientID())) {
                     client = clientInfo;
+                    break;
                 }
             }
             if (client == null) {
                 return;
             }
+            logger.info("Get client's request from " + client.getClientID().toString() + ".");
 
             // Client Join
             if (request.getType() == Request.Types.ClientWannaJoinRoom) {
                 server.sendTCP(new Request(Request.Types.ClientCanJoinRoom), client.getClientID());
                 client.setIsJoined(true);
                 mWindowPlayerList.addPlayer(client.getClientID().toString());
+                logger.info("Player {" + client.getClientID().toString() + "} join room.");
             }
 
             // Client Exit
             else if (request.getType() == Request.Types.ClientWannaExitRoom) {
-                getApplication().getLogger().log(Level.INFO, "del!!!");
                 client.setIsJoined(false);
                 mWindowPlayerList.delPlayer(client.getClientID().toString());
+                logger.info("Player {" + client.getClientID().toString() + "} leave room.");
             }
 
+            logger.info("Server broadcast player list to clients.");
             broadcastPlayerList();
         }
     }
@@ -224,13 +231,16 @@ public class RoomScene extends SceneBase implements Constant {
     private void checkServerStatus() {
         final IInput input = getApplication().getInput();
         final ISceneManager sceneManager = getApplication().getSceneManager();
+        final Logger logger = getApplication().getLogger();
         List<Request> requests = input.getRequest();
 
         for (Request request : requests) {
             if(request.getType() == Request.Types.ServerCancelRoom) {
+                logger.info("Server canceled game.");
                 sceneManager.translationTo(new MainScene(getApplication()));
                 break;
             } else if (request.getType() == Request.Types.ClientCanStartGame) {
+                logger.info("Server start game.");
                 sceneManager.translationTo(new StageScene(getApplication(), false, 1));
                 break;
             }
@@ -241,14 +251,16 @@ public class RoomScene extends SceneBase implements Constant {
      * Update player list of room
      */
     private void updatePlayerList() {
-        // TODO: get input and update list
         final IInput input = getApplication().getInput();
+        final Logger logger = getApplication().getLogger();
 
         List<SyncList> syncLists = input.getSyncList();
 
         for (SyncList syncList : syncLists) {
-            mWindowPlayerList.updatePlayerList((List<String>)syncList.getData());
+            mWindowPlayerList.updatePlayerList((List<String>) syncList.getData());
         }
+
+        logger.info("Client update player list from server.");
     }
     // endregion ClientSideOnly
 }
