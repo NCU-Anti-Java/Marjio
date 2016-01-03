@@ -5,7 +5,10 @@ package io.github.antijava.marjio.constant;
  */
 public interface GameConstant {
     int FPS = 60;
-    int FRAMERATE = 1000 / FPS;
+    /**
+     * Unit: Nano second.
+     */
+    long FRAMERATE = 1_000_000_000L / FPS;
     int GAME_WIDTH = 800;
     int GAME_HEIGHT = 600;
     int START_GAME_COUNTER = 5;

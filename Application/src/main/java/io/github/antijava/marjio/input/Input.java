@@ -3,13 +3,10 @@ package io.github.antijava.marjio.input;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.input.*;
 import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
+import io.github.antijava.marjio.common.network.Packable;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -32,11 +29,8 @@ public final class Input implements IInput, IKeyInput {
     private Set<Key> mPreviousKeys;
     private Map<Key, Integer> mKeyRepeatCount;
 
-    private Vector<Status> mStatuses;
-    private Vector<Status> mStatusesCached;
-
-    private Vector<Request> mRequests;
-    private Vector<Request> mRequestsCached;
+    private Map<Class<? extends Packable>, List<Packable>> mNetWorkData;
+    private Map<Class<? extends Packable>, List<Packable>> mNetWorkDataCached;
 
     private Vector<TickRequest> mTickRequests;
     private Vector<TickRequest> mTickRequestsCached;
@@ -52,12 +46,29 @@ public final class Input implements IInput, IKeyInput {
 
         mKeyRepeatCount = new EnumMap<>(Key.class);
 
-        mStatuses = new Vector<>();
-        mStatusesCached = new Vector<>();
-        mRequests = new Vector<>();
-        mRequestsCached = new Vector<>();
+        mNetWorkData = new HashMap<>();
+        mNetWorkDataCached = new HashMap<>();
+        
+        initNetWorkData();
 
         mLock = new ReentrantReadWriteLock();
+    }
+
+    private void initNetWorkData() {
+        try {
+            Class[] cArg = new Class[1];
+            cArg[0] = Class.class;
+            Method m = IInput.class.getMethod("getNetWorkData", cArg);
+            NetWorkData data = m.getAnnotation(NetWorkData.class);
+
+            for (Class c : data.value()) {
+                mNetWorkData.put(c, new Vector<>());
+                mNetWorkDataCached.put(c, new Vector<>());
+            }
+
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -74,23 +85,14 @@ public final class Input implements IInput, IKeyInput {
         mCurrentKeys = mNextKeys;
         mNextKeys = tmpKeys;
 
-        // Switching using Vector for optimization
-        final Vector<TickRequest> tmpTickRequest = mTickRequestsCached;
-        mTickRequestsCached = mTickRequests;
-        mTickRequests = tmpTickRequest;
-        mTickRequests.clear();
 
-        // Switching using Vector for optimization
-        final Vector<Request> tmpRequest = mRequestsCached;
-        mRequestsCached = mRequests;
-        mRequests = tmpRequest;
-        mRequests.clear();
-
-        // Switching using Vector for optimization
-        final Vector<Status> tmpStatuses = mStatusesCached;
-        mStatusesCached = mStatuses;
-        mStatuses = tmpStatuses;
-        mStatuses.clear();
+        for (final Class c : mNetWorkData.keySet()) {
+            final List<Packable> tempData = mNetWorkData.get(c);
+            
+            mNetWorkData.put(c, mNetWorkDataCached.get(c));
+            mNetWorkDataCached.put(c, tempData);
+            mNetWorkData.get(c).clear();
+        }
 
         // Unlock
         mLock.writeLock().unlock();
@@ -177,14 +179,27 @@ public final class Input implements IInput, IKeyInput {
                 (0 == ((count - key_start_ticks) % key_repeat_ticks));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Status> getStatuses() {
-        return mStatusesCached;
+        return (List<Status>)getNetWorkData(Status.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Request> getRequest() {
+        return (List<Request>)getNetWorkData(Request.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<SyncList> getSyncList() {
+        return (List<SyncList>)getNetWorkData(SyncList.class);
     }
 
     @Override
-    public List<Request> getRequest() {
-        return mRequestsCached;
+    public List<? extends Packable> getNetWorkData(Class c) {
+        return mNetWorkDataCached.getOrDefault(c, Collections.emptyList());
     }
 
     @Override
@@ -212,12 +227,13 @@ public final class Input implements IInput, IKeyInput {
             case NetWorkClient:
             case NetworkServer: {
                 Object data = evt.getData();
-                if (data instanceof Status) {
-                    mStatuses.add((Status) data);
-                } else if (data instanceof Request) {
-                    mRequests.add((Request) data);
-                } else if (data instanceof TickRequest) {
-                    mTickRequests.add((TickRequest) data);
+
+                if (data != null) {
+                    mNetWorkData.forEach((klass, list) -> {
+                        if (klass.isAssignableFrom(data.getClass())) {
+                            list.add((Packable)(data));
+                        }
+                    });
                 }
                 break;
             }

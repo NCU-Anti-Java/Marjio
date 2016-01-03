@@ -50,4 +50,22 @@ public class WindowPlayerList extends WindowSelectableBase {
         setItemMax(mPlayerList.size());
         refresh();
     }
+
+    public void updatePlayerList(List<String> list){
+        mPlayerList.clear();
+        mPlayerList.addAll(list);
+        setItemMax(mPlayerList.size());
+        refresh();
+    }
+
+    public void delPlayer(final String player) {
+        System.out.println(player);
+        mPlayerList.removeIf(s -> player.equals(s));
+        setItemMax(mPlayerList.size());
+        refresh();
+    }
+
+    public List<String> getPlayerList() {
+        return mPlayerList;
+    }
 }

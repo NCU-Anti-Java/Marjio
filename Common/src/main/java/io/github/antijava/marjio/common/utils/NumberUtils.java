@@ -39,4 +39,9 @@ public final class NumberUtils {
     public static double longBitsToDouble (long value) {
         return Double.longBitsToDouble(value);
     }
+
+    public static double round(final double v, final int _10base) {
+        final double base = Math.pow(10, _10base);
+        return Math.round(v * base) / base;
+    }
 }

@@ -6,6 +6,7 @@ import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.*;
+
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
@@ -41,19 +42,28 @@ public class StageScene extends SceneBase implements Constant {
     final Player p;
 */
 
+
+
     public StageScene(IApplication application, int stage) {
         super(application);
         final IGraphics graphics = application.getGraphics();
 
         mMap = new SceneMap(application, stage);
 
-        mTick = - START_GAME_TICKS;
         GameViewPort = graphics.createViewport();
+
+        mTick = - START_GAME_TICKS;
 
         mTimer = new SpriteBase(application.getGraphics().getDefaultViewport());
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
 
+        mIsServer = !application.getServer().getClients().isEmpty();
+
+        if (mIsServer) {
+            mYourPlayerID = application.getServer().getMyId();
+
+        }
 /*
 
 
@@ -177,7 +187,7 @@ public class StageScene extends SceneBase implements Constant {
 
         if (mIsServer) {
             IServer server = getApplication().getServer();
-            Status data = player.getStatus();
+            SceneObjectStatus data = player.getStatus();
             data.send_tick = data.recieve_tick = mTick;
 
             data.setType(Status.Types.ServerMessage);
@@ -190,7 +200,7 @@ public class StageScene extends SceneBase implements Constant {
 
         } else {
             IClient client = getApplication().getClient();
-            Status data = player.getStatus();
+            SceneObjectStatus data = player.getStatus();
 
             for (final Key key : Player.action_keys) {
                 if (input.isPressed(key))
@@ -251,13 +261,14 @@ public class StageScene extends SceneBase implements Constant {
         if (mIsServer)
             return statuses
                     .sorted((st, st2) ->
-                            st.send_tick > st2.send_tick ? 1 : -1)
+                            ((SceneObjectStatus)st).send_tick > ((SceneObjectStatus)st2).send_tick ? 1 : -1)
                     .collect(Collectors.toList());
         else
             return statuses
                     .sorted((st, st2) ->
-                            st.recieve_tick > st2.recieve_tick ? 1 : -1)
+                            ((SceneObjectStatus)st).recieve_tick > ((SceneObjectStatus)st2).recieve_tick ? 1 : -1)
                     .collect(Collectors.toList());
+
     }
 
     public void checkStatus (final Collection<Player> players) {
@@ -267,22 +278,23 @@ public class StageScene extends SceneBase implements Constant {
         int send_tick = 0;
         final int last_recieve_tick =
                 fetchedStatus.isEmpty() ? 0 :
-                        fetchedStatus.get(fetchedStatus.size() -1).recieve_tick;
+                        ((SceneObjectStatus)fetchedStatus.get(fetchedStatus.size() -1)).recieve_tick;
 
         for (final Status st : fetchedStatus) {
             Player player = mPlayers.get(st.getClientID());
 
+
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
-                        final boolean check = player.isValidData(st);
+                        final boolean check = player.isValidData((SceneObjectStatus) st);
 
                         if (check)
-                            checkKeyState(st, player);
+                            checkKeyState((SceneObjectStatus)st, player);
 
-                        final Status new_st = player.getStatus();
+                        final SceneObjectStatus new_st = player.getStatus();
 
-                        new_st.send_tick = st.send_tick;
+                        new_st.send_tick = ((SceneObjectStatus)st).send_tick;
                         new_st.recieve_tick = mTick;
                         new_st.query = check;
 
@@ -303,19 +315,19 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerMessage: {
-                    player.preUpdateStatus(st);
+                    player.preUpdateStatus((SceneObjectStatus)st);
 
                     if (player.getmId().equals(mYourPlayerID))
-                        send_tick = st.send_tick;
+                        send_tick = ((SceneObjectStatus)st).send_tick;
 
                     break;
                 }
 
                 case ServerVerification: {
-                    if (!st.query) {
-                        player.preUpdateStatus(st);
+                    if (!((SceneObjectStatus)st).query) {
+                        player.preUpdateStatus((SceneObjectStatus)st);
 
-                        send_tick = st.send_tick;
+                        send_tick = ((SceneObjectStatus)st).send_tick;
                     }
                     break;
                 }
@@ -389,9 +401,11 @@ public class StageScene extends SceneBase implements Constant {
     private void solveBumps(final Collection<Player> players) {
         final Stream<Player> s_players = players.stream();
 
-        /**
-         * time synchronized for players in client
-         * */
+
+        /*
+        //TODO: BUG need fix
+        //time synchronized for players in client
+
         while (s_players.anyMatch(p -> p.getTick() < mTick))
             s_players.filter(p -> p.getTick() < mTick)
                     .sorted((player1, player2) -> {
@@ -405,6 +419,7 @@ public class StageScene extends SceneBase implements Constant {
                         p.update();
                         p.preUpdate();
                     });
+                    */
 
         s_players
                 .sorted((player1, player2) -> {

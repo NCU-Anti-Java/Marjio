@@ -12,6 +12,13 @@ import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowIPAddressInput;
+import sun.nio.cs.ext.ISCII91;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Zheng-Yuan on 12/24/2015.
@@ -20,6 +27,10 @@ public class JoinScene extends SceneBase implements Constant {
     private WindowBase mWindowBack;
     private WindowIPAddressInput mWindowIPAddressInput;
     private WindowCommand mWindowCommand;
+
+    // unit: how many frame
+    private int mTimeout = 0;
+    private final static int DEFAULT_TIMEOUT = 600;
 
     public JoinScene(IApplication application) {
         super(application);
@@ -34,6 +45,10 @@ public class JoinScene extends SceneBase implements Constant {
         super.update();
 
         final IInput input = getApplication().getInput();
+
+        if(mTimeout > 0 && checkJoin()) {
+            return;
+        }
 
         mWindowBack.update();
         if (input.isPressed(Key.ENTER)) {
@@ -70,6 +85,32 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowCommand.update();
     }
 
+    private void setTimeout() {
+        mTimeout = DEFAULT_TIMEOUT;
+    }
+
+    private boolean checkJoin() {
+
+        final ISceneManager sceneManager = getApplication().getSceneManager();
+        final IInput input = getApplication().getInput();
+        final List<Request> requests = input.getRequest();
+        final IClient client = getApplication().getClient();
+        final Logger logger = getApplication().getLogger();
+
+        logger.log(Level.INFO, "checkJoin");
+
+        for (Request request : requests) {
+            if (request.getType() == Request.Types.ClientCanJoinRoom) {
+                client.setMyId(request.getClientID());
+                mTimeout = 0;
+                sceneManager.translationTo(new RoomScene(getApplication(), false));
+                return true;
+            }
+        }
+        mTimeout--;
+        return false;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
@@ -83,34 +124,17 @@ public class JoinScene extends SceneBase implements Constant {
         switch (mWindowCommand.getIndex()) {
             case 0: {
                 try {
-                    final ISceneManager sceneManager = getApplication().getSceneManager();
-                    final IInput input = getApplication().getInput();
                     final IClient client = getApplication().getClient();
-                    final Request joinRequest = new Request(Request.Types.ClientWannaJoinRoom);
-                    client.send(joinRequest);
+                    final Request joinRequest = new Request(UUID.randomUUID() ,Request.Types.ClientWannaJoinRoom);
+                    client.start(mWindowIPAddressInput.getAddress());
+                    client.sendTCP(joinRequest);
+                    setTimeout();
                     // TODO: Let user know we are waiting response
-
-                    Thread thread = new Thread(() -> {
-                        boolean waitingFlag = true;
-                        final int timeOut = 1000;
-                        long startTime = System.currentTimeMillis();
-
-                        while (waitingFlag) {
-                            if (System.currentTimeMillis() - startTime > timeOut) {
-                                waitingFlag = false;
-                            }
-                            for (Request request : input.getRequest() ) {
-                                if (request.getType() == Request.Types.ClientCanJoinRoom)
-                                    sceneManager.translationTo(new RoomScene(getApplication(), false));
-                            }
-                        }
-                        // TODO: Let user know we are timeout, can keep do something
-                    });
-                    thread.start();
 
                     return true;
                 }
-                catch (Exception ex) {
+                catch (Exception e) {
+                    e.printStackTrace();
                     // TODO: Show Error.
                 }
                 return false;
@@ -159,4 +183,5 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowCommand.setX(mWindowIPAddressInput.getWidth() + x);
         mWindowCommand.setY(y);
     }
+
 }

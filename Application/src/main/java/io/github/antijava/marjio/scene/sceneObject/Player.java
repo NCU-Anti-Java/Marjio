@@ -6,11 +6,16 @@ import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
+
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.resourcemanager.ResourcesManager;
+
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
+import io.github.antijava.marjio.common.input.Status;
+
 
 import java.util.*;
 
@@ -161,6 +166,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
 
     public int getTick() {
         return mTick;
+
     }
 
 
@@ -238,7 +244,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mVelocityY += mAccelerationY + PhysicsConstant.gravity;
     }
 
-    public void preUpdateStatus(Status data) {
+    public void preUpdateStatus(SceneObjectStatus data) {
         mTick = data.tick;
         mX = data.x;
         mY = data.y;
@@ -253,10 +259,10 @@ public class Player extends SceneObjectObjectBase implements Constant {
         return mStatusUpdate;
     }
 
-    public Status getStatus() {
-        Status data = new Status(Status.DataTypes.Player);
+    public SceneObjectStatus getStatus() {
+        SceneObjectStatus data = new SceneObjectStatus(mId,
+                SceneObjectStatus.SceneObjectTypes.Player);
 
-        data.setClientID(mId);
 
         data.tick = mTick;
         data.x = mX;
@@ -270,8 +276,9 @@ public class Player extends SceneObjectObjectBase implements Constant {
     }
 
 
-    public boolean isValidData (Status data) {
-        if (data.getDataType() != Status.DataTypes.Player)
+    public boolean isValidData (SceneObjectStatus data) {
+        if (data.getDataType() != SceneObjectStatus.SceneObjectTypes.Player)
+
             return false;
 
         return data.isValidKeySets();

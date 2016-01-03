@@ -2,19 +2,26 @@ package io.github.antijava.marjio.common.input;
 
 import io.github.antijava.marjio.common.network.Packable;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Created by fntsr on 2015/12/31.
  */
 public class Request implements Packable {
-    private UUID mUUID;
-    private Types mType;
+    UUID mUUID;
+
+    Types mType;
+
 
     public Request(Types type) {
         mType = type;
     }
 
+    public Request(UUID id, Types type) {
+        mUUID = id;
+        mType = type;
+    }
 
     @Override
     public UUID getClientID() {
@@ -32,8 +39,9 @@ public class Request implements Packable {
 
     public enum Types {
         ClientWannaJoinRoom,
-        ClientCanJoinRoom;
+        ClientCanJoinRoom,
+        ClientWannaExitRoom,
+        ClientExitedRoom,
+        ServerCancelRoom;
     }
-
-
 }
