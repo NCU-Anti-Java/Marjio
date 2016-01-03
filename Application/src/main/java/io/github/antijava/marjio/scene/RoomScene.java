@@ -44,6 +44,7 @@ public class RoomScene extends SceneBase implements Constant {
     public void update() {
         super.update();
 
+        // Check if server started
         if (mIsServer && !getApplication().getServer().isRunning()) {
             try {
                 getApplication().getServer().start();
@@ -60,19 +61,16 @@ public class RoomScene extends SceneBase implements Constant {
             }
         }
 
-        try {
-            mWindowCommand.update();
-            mWindowPlayerList.update();
-            checkKeyState();
 
-            if (mIsServer && getApplication().getServer().isRunning()) {
-                checkClientRequest();
-            } else {
-                updatePlayerList();
-                checkServerStatus();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        mWindowCommand.update();
+        mWindowPlayerList.update();
+        checkKeyState();
+
+        if (mIsServer) {
+            checkClientRequest();
+        } else {
+            updatePlayerList();
+            checkServerStatus();
         }
     }
 
@@ -127,53 +125,33 @@ public class RoomScene extends SceneBase implements Constant {
 
                 if (mIsServer) {
                     final IServer server = getApplication().getServer();
-                    // TODO: Server should broadcast to clients that the room is canceled.
                     final Request cancelRequest = new Request(Request.Types.ServerCancelRoom);
 
-                    try {
-                        server.broadcastTCP(cancelRequest);
-                        server.stop();
-                    } catch (InterruptedException e) {
-                        // TODO
-                    } catch (UnsupportedOperationException e) {
-                        // TODO
-                    } catch (Exception e) {
-                        // TODO
-                    }
-                }
-                else {
+                    server.broadcastTCP(cancelRequest);
+                    server.stop();
+                } else {
                     final IClient client = getApplication().getClient();
-                    // TODO: Client should send message to server that I quit.
+                    final Request exitRequest = new Request(Request.Types.ClientWannaExitRoom);
+                    exitRequest.setClientID(client.getMyId());
+                    client.sendTCP(exitRequest);
+
+                    // To prevent message sending be interrupt
                     try {
-                        final Request exitRequest = new Request(Request.Types.ClientWannaExitRoom);
-                        exitRequest.setClientID(client.getMyId());
-                        client.sendTCP(exitRequest);
-                        // TODO: check if TCP not timeout and server really receive
                         Thread.sleep(10);
-                        client.stop();
                     } catch (InterruptedException e) {
-                        // TODO
-                    } catch (UnsupportedOperationException e) {
-                        // TODO
-                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
+                    client.stop();
                 }
                 sceneManager.translationTo(new MainScene(getApplication()));
                 break;
             }
             case START_GAME: {
-                // TODO: Only server can start game, then server broadcast to clients to start game.
                 if(mIsServer) {
-
-                    try {
-                        Request request = new Request(Request.Types.ClientCanStartGame);
-                        getApplication().getServer().broadcastTCP(request);
-                        getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    final Request request = new Request(Request.Types.ClientCanStartGame);
+                    getApplication().getServer().broadcastTCP(request);
+                    getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
                 }
                 break;
             }
@@ -182,7 +160,7 @@ public class RoomScene extends SceneBase implements Constant {
     // endregion Common
 
     // region ServerSideOnly
-    private void broadcastPlayerList() throws Exception {
+    private void broadcastPlayerList() {
         // TODO: broadcast player list
         ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
         SyncList syncList = new SyncList(playerList);
@@ -191,9 +169,8 @@ public class RoomScene extends SceneBase implements Constant {
 
     /**
      * Check if there has client wanna join or exit
-     * @throws Exception
      */
-    private void checkClientRequest() throws Exception {
+    private void checkClientRequest() {
         final IInput input = getApplication().getInput();
         final IServer server = getApplication().getServer();
 
@@ -234,11 +211,7 @@ public class RoomScene extends SceneBase implements Constant {
     // endregion ServerSideOnly
 
     // region ClientSideOnly
-    /**
-     *
-     * @throws Exception
-     */
-    private void checkServerStatus() throws Exception {
+    private void checkServerStatus() {
         final IInput input = getApplication().getInput();
         final ISceneManager sceneManager = getApplication().getSceneManager();
         List<Request> requests = input.getRequest();

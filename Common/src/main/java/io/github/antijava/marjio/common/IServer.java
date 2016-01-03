@@ -21,21 +21,21 @@ public interface IServer {
     /**
      * Stop listening.
      */
-    void stop() throws InterruptedException, UnsupportedOperationException;
+    void stop();
 
     /**
      * Broadcast message to all connected clients.
      *
      * @param packableObject information package
      */
-    void broadcast(Packable packableObject) throws Exception;
+    void broadcast(Packable packableObject);
 
     /**
      * Broadcast message to all connected clients.
      *
      * @param packableObject information package
      */
-    void broadcastTCP(Packable packableObject) throws Exception;
+    void broadcastTCP(Packable packableObject);
 
     /**
      * Send message to specific client
@@ -43,7 +43,7 @@ public interface IServer {
      * @param packableObject information package
      * @param clientID client's id
      */
-    void send(Packable packableObject, UUID clientID) throws Exception;
+    void send(Packable packableObject, UUID clientID);
 
     /**
      * Send message to specific client
@@ -51,7 +51,7 @@ public interface IServer {
      * @param packableObject information package
      * @param clientID client's id
      */
-    void sendTCP(Packable packableObject, UUID clientID) throws Exception;
+    void sendTCP(Packable packableObject, UUID clientID);
 
     /**
      * Return all connected clients' information.
