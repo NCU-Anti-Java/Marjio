@@ -9,14 +9,13 @@ import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.constant.Constant;
-import io.github.antijava.marjio.graphics.Font;
-import io.github.antijava.marjio.graphics.Sprite;
-import io.github.antijava.marjio.graphics.SpriteBase;
+import io.github.antijava.marjio.graphics.*;
 import io.github.antijava.marjio.scene.sceneObject.Block;
 import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
 import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 
+import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +32,8 @@ public class StageScene extends SceneBase implements Constant {
     private final Sprite mTimer;
     private int mCountDown;
 
+    private final Sprite mItemSlot;
+    private final Sprite mItemSlotText;
 
     boolean mIsServer;
     
@@ -49,6 +50,24 @@ public class StageScene extends SceneBase implements Constant {
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
 
+        // Item slot
+        mItemSlot = new SpriteBase(graphics.getDefaultViewport());
+        try {
+            mItemSlot.setBitmap(graphics.loadBitmap("slot.png"));
+        } catch (NoSuchFileException e) {
+            e.printStackTrace();
+        }
+        mItemSlot.setX(30);
+        mItemSlot.setY(50);
+        mItemSlot.setZ(99);
+
+        // Text above item slot
+        mItemSlotText = new SpriteBase(graphics.getDefaultViewport());
+        mItemSlotText.setBitmap(graphics.createBitmap(50, 20));
+        mItemSlotText.getBitmap().drawText("Item", 0, 0, 50, 20, Color.WHITE, IBitmap.TextAlign.CENTER);
+        mItemSlotText.setX(30);
+        mItemSlotText.setY(30);
+        mItemSlotText.setZ(99);
 
 /*
          //TODO: Fake data
@@ -73,6 +92,10 @@ public class StageScene extends SceneBase implements Constant {
     @Override
     public void update() {
         super.update();
+
+        // Draw item slot
+        mItemSlot.update();
+        mItemSlotText.update();
 
 
         if (mCountDown > 0) {
