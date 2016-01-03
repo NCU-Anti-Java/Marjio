@@ -15,6 +15,10 @@ public class Item {
     // endregion Enum
 
     // region Constructor
+    public Item() {
+        this(ItemType.None);
+    }
+
     public Item(ItemType type) {
         this.type = type;
 
