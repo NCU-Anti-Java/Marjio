@@ -30,8 +30,8 @@ public class JoinScene extends SceneBase implements Constant {
     private WindowCommand mWindowCommand;
 
     // unit: how many frame
-    private int mTimeout = 0;
-    private final static int DEFAULT_TIMEOUT = 600;
+    private int mResponseTimeout = 0;
+    private final static int DEFAULT_RESPONSE_TIMEOUT = 600;
 
     public JoinScene(IApplication application) {
         super(application);
@@ -48,7 +48,7 @@ public class JoinScene extends SceneBase implements Constant {
         final IInput input = getApplication().getInput();
 
         // Check whether response of request is back
-        if (mTimeout > 0 && checkJoin()) {
+        if (mResponseTimeout > 0 && checkJoin()) {
             return;
         }
 
@@ -200,7 +200,7 @@ public class JoinScene extends SceneBase implements Constant {
      * Reset timeout of request waiting response
      */
     private void resetTimeout() {
-        mTimeout = DEFAULT_TIMEOUT;
+        mResponseTimeout = DEFAULT_RESPONSE_TIMEOUT;
     }
 
     /**
@@ -218,14 +218,14 @@ public class JoinScene extends SceneBase implements Constant {
         for (Request request : requests) {
             if (request.getType() == Request.Types.ClientCanJoinRoom) {
                 client.setMyId(request.getClientID());
-                mTimeout = 0;
+                mResponseTimeout = 0;
                 sceneManager.translationTo(new RoomScene(getApplication(), false));
                 logger.log(Level.INFO, "Client get \"ClientCanJoinRoom\" request from server.");
 
                 return true;
             }
         }
-        mTimeout--;
+        mResponseTimeout--;
 
         return false;
     }
