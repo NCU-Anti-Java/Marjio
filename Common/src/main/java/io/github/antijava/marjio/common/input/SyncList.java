@@ -2,18 +2,25 @@ package io.github.antijava.marjio.common.input;
 
 import io.github.antijava.marjio.common.network.Packable;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Created by Date on 2016/1/3.
  */
-public class SyncList implements Packable{
+public class SyncList implements Packable {
 
     UUID mId;
-    Object mData;
+    ArrayList mData;
 
-    public SyncList(Object data) {
+    public SyncList() {}
+
+    public SyncList(ArrayList data) {
         mData = data;
     }
 
@@ -27,7 +34,8 @@ public class SyncList implements Packable{
         mId = id;
     }
 
-    public Object getData() {
+    public ArrayList getData() {
         return mData;
     }
+
 }

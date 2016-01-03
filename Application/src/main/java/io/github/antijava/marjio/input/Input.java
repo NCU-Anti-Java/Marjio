@@ -171,6 +171,12 @@ public final class Input implements IInput {
         return (List<Request>)getNetWorkData(Request.class);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<SyncList> getSyncList() {
+        return (List<SyncList>)getNetWorkData(SyncList.class);
+    }
+
     @Override
     public List<? extends Packable> getNetWorkData(Class c) {
         return mNetWorkDataCached.getOrDefault(c, Collections.emptyList());

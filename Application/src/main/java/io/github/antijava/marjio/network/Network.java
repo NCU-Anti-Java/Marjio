@@ -47,7 +47,6 @@ public class Network implements IClient, IServer, Constant {
         mServer.getKryo().register(byte[].class);
         mClient.getKryo().register(byte[].class);
 
-
     }
 
     @Override
@@ -130,6 +129,11 @@ public class Network implements IClient, IServer, Constant {
     @Override
     public void broadcast(Packable packableObj) throws Exception {
         mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public void broadcastTCP(Packable packableObject) throws Exception {
+        mServer.sendToAllTCP(Packer.PackabletoByteArray(packableObject));
     }
 
     @Override
