@@ -110,6 +110,7 @@ public class JoinScene extends SceneBase implements Constant {
                 try {
                     final IClient client = getApplication().getClient();
                     final Request joinRequest = new Request(UUID.randomUUID() ,Request.Types.ClientWannaJoinRoom);
+                    final Logger logger = getApplication().getLogger();
 
                     if (client.isRunning()) {
                         getApplication().getLogger().warning("Client is running");
@@ -117,6 +118,8 @@ public class JoinScene extends SceneBase implements Constant {
                     client.start(mWindowIPAddressInput.getAddress());
                     client.sendTCP(joinRequest);
                     resetTimeout();
+
+                    logger.log(Level.INFO, "Client sent \"ClientWannaJoinRoom\" request to server.");
 
                     // TODO: Let user know we are waiting response (eg. unable option)
 
@@ -212,13 +215,12 @@ public class JoinScene extends SceneBase implements Constant {
         final IClient client = getApplication().getClient();
         final Logger logger = getApplication().getLogger();
 
-        logger.log(Level.INFO, "checkJoin");
-
         for (Request request : requests) {
             if (request.getType() == Request.Types.ClientCanJoinRoom) {
                 client.setMyId(request.getClientID());
                 mTimeout = 0;
                 sceneManager.translationTo(new RoomScene(getApplication(), false));
+                logger.log(Level.INFO, "Client get \"ClientCanJoinRoom\" request from server.");
 
                 return true;
             }
