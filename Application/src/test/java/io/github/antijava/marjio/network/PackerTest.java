@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.common.input.StatusData;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
 
 import java.util.UUID;
 
@@ -14,11 +14,11 @@ import java.util.UUID;
  */
 public class PackerTest {
     Status st;
-    StatusData data;
+    SceneObjectStatus data;
 
     @Before
     public void setUp() throws Exception {
-        data = new StatusData();
+        data = new SceneObjectStatus();
         data.uuid = UUID.randomUUID();
         st = new Status(data, Status.Types.ClientMessage);
     }

@@ -3,13 +3,10 @@ package io.github.antijava.marjio.input;
 import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.input.*;
 import io.github.antijava.marjio.common.input.IKeyInfo.KeyState;
+import io.github.antijava.marjio.common.network.Packable;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -26,31 +23,49 @@ public final class Input implements IInput {
         sKeymap.put(Key.CROUCH, Key.DOWN);
     }
 
+    private boolean  mAnyKeyPressed;
     private Set<Key> mNextKeys;
     private Set<Key> mCurrentKeys;
     private Set<Key> mPreviousKeys;
     private Map<Key, Integer> mKeyRepeatCount;
 
-    private Vector<Status> mStatuses;
-    private Vector<Status> mStatusesCached;
-    private Vector<Request> mRequests;
-    private Vector<Request> mRequestsCached;
+    private Map<Class<? extends Packable>, List<Packable>> mNetWorkData;
+    private Map<Class<? extends Packable>, List<Packable>> mNetWorkDataCached;
 
     private ReadWriteLock mLock;
 
     public Input() {
+        mAnyKeyPressed = false;
+
         mNextKeys = EnumSet.noneOf(Key.class);
         mCurrentKeys = EnumSet.noneOf(Key.class);
         mPreviousKeys = EnumSet.noneOf(Key.class);
 
         mKeyRepeatCount = new EnumMap<>(Key.class);
 
-        mStatuses = new Vector<>();
-        mStatusesCached = new Vector<>();
-        mRequests = new Vector<>();
-        mRequestsCached = new Vector<>();
+        mNetWorkData = new HashMap<>();
+        mNetWorkDataCached = new HashMap<>();
+        
+        initNetWorkData();
 
         mLock = new ReentrantReadWriteLock();
+    }
+
+    private void initNetWorkData() {
+        try {
+            Class[] cArg = new Class[1];
+            cArg[0] = Class.class;
+            Method m = IInput.class.getMethod("getNetWorkData", cArg);
+            NetWorkData data = m.getAnnotation(NetWorkData.class);
+
+            for (Class c : data.value()) {
+                mNetWorkData.put(c, new Vector<>());
+                mNetWorkDataCached.put(c, new Vector<>());
+            }
+
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -58,7 +73,7 @@ public final class Input implements IInput {
         // Lock for swapping spaces
         mLock.writeLock().lock();
 
-        mPreviousKeys.retainAll(mNextKeys);
+        mPreviousKeys.clear();
         mPreviousKeys.addAll(mNextKeys);
 
         // Rolling optimized
@@ -66,21 +81,20 @@ public final class Input implements IInput {
         mPreviousKeys = mCurrentKeys;
         mCurrentKeys = mNextKeys;
         mNextKeys = tmpKeys;
-
-        // Switching using Vector for optimization
-        final Vector<Request> tmpRequest = mRequestsCached;
-        mRequestsCached = mRequests;
-        mRequests = tmpRequest;
-        mRequests.clear();
-
-        // Switching using Vector for optimization
-        final Vector<Status> tmpStatuses = mStatusesCached;
-        mStatusesCached = mStatuses;
-        mStatuses = tmpStatuses;
-        mStatuses.clear();
+        
+        for (final Class c : mNetWorkData.keySet()) {
+            final List<Packable> tempData = mNetWorkData.get(c);
+            
+            mNetWorkData.put(c, mNetWorkDataCached.get(c));
+            mNetWorkDataCached.put(c, tempData);
+            mNetWorkData.get(c).clear();
+        }
 
         // Unlock
         mLock.writeLock().unlock();
+
+        // If Any key Pressed then Exists some key not contain in PreviousKeys
+        mAnyKeyPressed = !mPreviousKeys.containsAll(mCurrentKeys);
 
         // Reset released key's repeat count
         mKeyRepeatCount.keySet().stream()
@@ -89,6 +103,8 @@ public final class Input implements IInput {
 
         for (final Key key : mCurrentKeys)
             mKeyRepeatCount.put(key, mKeyRepeatCount.getOrDefault(key, -1) + 1);
+
+
     }
 
     @Override
@@ -104,8 +120,13 @@ public final class Input implements IInput {
     public boolean isPressed(final Key k) {
         final Key key = getRealKey(k);
 
-        return key != Key.UNDEFINED &&
-                (!mPreviousKeys.contains(key) &&
+        if (key == Key.UNDEFINED)
+            return false;
+
+        if (key == Key.ANY)
+            return mAnyKeyPressed;
+
+        return (!mPreviousKeys.contains(key) &&
                 mCurrentKeys.contains(key));
     }
 
@@ -128,7 +149,7 @@ public final class Input implements IInput {
         final Key key = getRealKey(k);
         final int count = mKeyRepeatCount.getOrDefault(key, -1);
 
-        if (key == Key.UNDEFINED && count > -1) // Invalid key or not pressing
+        if (key == Key.UNDEFINED || count < 0) // Invalid key or not pressing
             return false;
 
         if (count == 0) // Just pressed, give it a repeat.
@@ -138,14 +159,27 @@ public final class Input implements IInput {
                 (0 == ((count - key_start_ticks) % key_repeat_ticks));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Status> getStatuses() {
-        return mStatusesCached;
+        return (List<Status>)getNetWorkData(Status.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<Request> getRequest() {
+        return (List<Request>)getNetWorkData(Request.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<SyncList> getSyncList() {
+        return (List<SyncList>)getNetWorkData(SyncList.class);
     }
 
     @Override
-    public List<Request> getRequest() {
-        return mRequestsCached;
+    public List<? extends Packable> getNetWorkData(Class c) {
+        return mNetWorkDataCached.getOrDefault(c, Collections.emptyList());
     }
 
     @Override
@@ -168,10 +202,12 @@ public final class Input implements IInput {
             case NetWorkClient:
             case NetworkServer: {
                 Object data = evt.getData();
-                if (data instanceof Status) {
-                    mStatuses.add((Status) data);
-                } else if (data instanceof Request) {
-                    mRequests.add((Request) data);
+                if (data != null) {
+                    mNetWorkData.forEach((klass, list) -> {
+                        if (klass.isAssignableFrom(data.getClass())) {
+                            list.add((Packable)(data));
+                        }
+                    });
                 }
                 break;
             }

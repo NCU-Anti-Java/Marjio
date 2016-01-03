@@ -5,6 +5,7 @@ import io.github.antijava.marjio.common.network.Packable;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.UUID;
 
 /**
  * Created by fntsr on 2015/12/23.
@@ -30,6 +31,13 @@ public interface IClient {
     void send(Packable packableObject) throws Exception;
 
     /**
+     * Send message to Server.
+     *
+     * @param packableObject information package
+     */
+    void sendTCP(Packable packableObject) throws Exception;
+
+    /**
      * Specific if this client is trying to connect or is connected.
      *
      * @return if client is running
@@ -42,4 +50,7 @@ public interface IClient {
      * @return if client connected to server
      */
     boolean isConnected();
+
+    void setMyId(UUID mMyId);
+    UUID getMyId();
 }
