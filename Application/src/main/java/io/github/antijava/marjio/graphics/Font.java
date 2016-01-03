@@ -3,7 +3,7 @@ package io.github.antijava.marjio.graphics;
 import io.github.antijava.marjio.common.graphics.IFont;
 
 /**
- * Created by Jason on 2015/12/28.
+ * @author Jason
  */
 public class Font implements IFont {
     private String mName;

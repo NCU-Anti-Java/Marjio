@@ -23,7 +23,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 /**
- * Created by Jason on 2015/12/26.
+ * @author Jason
+ * @author Davy
  */
 public class Bitmap implements IBitmap {
     private Graphics2D mAwtGraphics2D;
@@ -33,7 +34,9 @@ public class Bitmap implements IBitmap {
     private Font mAwtTextFont;
     private final FontRenderContext mAwtFontRenderContext;
 
+    // region Constructor
     public Bitmap(IGraphics graphics, int width, int height) {
+        // BufferedImage and Graphics2D
         mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         mAwtGraphics2D = mImage.createGraphics();
         mAwtGraphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -46,9 +49,9 @@ public class Bitmap implements IBitmap {
 
     public Bitmap(final IGraphics graphics, BufferedImage image) {
         this(graphics, image.getWidth(), image.getHeight());
-
         mAwtGraphics2D.drawImage(image, 0, 0, null);
     }
+    // endregion Constructor
 
     // region Drawing
     @Override
@@ -59,19 +62,27 @@ public class Bitmap implements IBitmap {
     }
 
     @Override
-    public void clearRect(int x, int y, int width, int height) {
+    public Rectangle measureText(CharSequence text, int lineHeight) {
         if (isDisposed())
             throw new ObjectDisposedException();
-        mAwtGraphics2D.clearRect(x, y, width, height);
+
+        final FontMetrics metrics = mAwtGraphics2D.getFontMetrics(mAwtTextFont);
+        return new Rectangle(metrics.stringWidth(text.toString()), metrics.getHeight());
     }
 
     @Override
-    public void clearRect(Rectangle rect) {
+    public void resize(int width, int height) {
         if (isDisposed())
             throw new ObjectDisposedException();
-        clearRect(rect.x, rect.y, rect.width, rect.height);
-    }
 
+        final Image scaledImage = mImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        mAwtGraphics2D = mImage.createGraphics();
+        mAwtGraphics2D.drawImage(scaledImage, 0, 0, null);
+    }
+    // endregion Drawing
+
+    // region Draw Text
     @Override
     public void drawText(CharSequence text, int x, int y, int maxWidth, int lineHeight, Color color, TextAlign align) {
         if (isDisposed())
@@ -140,16 +151,25 @@ public class Bitmap implements IBitmap {
     public void drawText(CharSequence text, Rectangle rect, int lineHeight) {
         drawText(text, rect, Color.BLACK, TextAlign.LEFT);
     }
+    // endregion Draw Text
 
+    // region Clear Rectangle
     @Override
-    public Rectangle measureText(CharSequence text, int lineHeight) {
+    public void clearRect(int x, int y, int width, int height) {
         if (isDisposed())
             throw new ObjectDisposedException();
-
-        final FontMetrics metrics = mAwtGraphics2D.getFontMetrics(mAwtTextFont);
-        return new Rectangle(metrics.stringWidth(text.toString()), metrics.getHeight());
+        mAwtGraphics2D.clearRect(x, y, width, height);
     }
 
+    @Override
+    public void clearRect(Rectangle rect) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
+        clearRect(rect.x, rect.y, rect.width, rect.height);
+    }
+    // endregion Clear Rectangle
+
+    // region Fill Rectangle
     @Override
     public void fillAll(Color color) {
         fillRect(0, 0, mImage.getWidth(), mImage.getHeight(), color);
@@ -168,23 +188,9 @@ public class Bitmap implements IBitmap {
     public void fillRect(Rectangle rect, Color color) {
         fillRect(rect.x, rect.y, rect.width, rect.height, color);
     }
+    // endregion Fill Rectangle
 
-    @Override
-    public Color getPixel(int x, int y) {
-        if (isDisposed())
-            throw new ObjectDisposedException();
-
-        return new Color(mImage.getRGB(x, y));
-    }
-
-    @Override
-    public void setPixel(int x, int y, Color color) {
-        if (isDisposed())
-            throw new ObjectDisposedException();
-
-        mImage.setRGB(x, y, color.toIntBits());
-    }
-
+    // region Block transfer
     @Override
     public void blt(int x, int y, IBitmap src, Rectangle srcRect, int opacity) {
         if (isDisposed())
@@ -248,18 +254,7 @@ public class Bitmap implements IBitmap {
     public void tileBlt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity) {
         tileBlt(rect.x, rect.y, rect.width, rect.height, src, srcRect, opacity);
     }
-
-    @Override
-    public void resize(int width, int height) {
-        if (isDisposed())
-            throw new ObjectDisposedException();
-
-        final Image scaledImage = mImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        mAwtGraphics2D = mImage.createGraphics();
-        mAwtGraphics2D.drawImage(scaledImage, 0, 0, null);
-    }
-    // endregion Drawing
+    // endregion Block Transfer
 
     // region Setter
     @Override
@@ -274,6 +269,14 @@ public class Bitmap implements IBitmap {
             fontStyle |= Font.ITALIC;
 
         mAwtTextFont = new Font(font.getName(), fontStyle, font.getSize());
+    }
+
+    @Override
+    public void setPixel(int x, int y, Color color) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
+
+        mImage.setRGB(x, y, color.toIntBits());
     }
     // endregion Setter
 
@@ -294,11 +297,20 @@ public class Bitmap implements IBitmap {
     }
 
     @Override
+    public Color getPixel(int x, int y) {
+        if (isDisposed())
+            throw new ObjectDisposedException();
+
+        return new Color(mImage.getRGB(x, y));
+    }
+
+    @Override
     public Rectangle getRect() {
         return new Rectangle(mImage.getWidth(), mImage.getHeight());
     }
     // endregion Getter
 
+    // region Disposable
     @Override
     public void dispose() {
         mAwtGraphics2D.dispose();
@@ -311,6 +323,7 @@ public class Bitmap implements IBitmap {
     public boolean isDisposed() {
         return mImage == null;
     }
+    // endregion Disposable
 
     // region Helper
     private java.awt.Color convertToAwtColor(Color color) {
