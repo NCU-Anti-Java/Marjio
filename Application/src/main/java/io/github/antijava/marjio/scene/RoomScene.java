@@ -101,13 +101,13 @@ public class RoomScene extends SceneBase implements Constant {
     private void checkKeyState() {
         final IInput input = getApplication().getInput();
 
-        if (input.isPressed(Key.LEFT) || input.isPressing(Key.LEFT)) {
+        if (input.isRepeat(Key.LEFT) || input.isPressed(Key.LEFT)) {
             if (--mCurrentChoice < 0)
                 mCurrentChoice = 0;
             mWindowCommand.setActive(false);
             mWindowPlayerList.setActive(true);
         }
-        else if(input.isPressed(Key.RIGHT) || input.isPressing(Key.RIGHT)) {
+        else if(input.isRepeat(Key.RIGHT) || input.isPressed(Key.RIGHT)) {
             if (++mCurrentChoice >= MENU_TEXT.length)
                 mCurrentChoice = MENU_TEXT.length - 1;
             mWindowCommand.setActive(true);
