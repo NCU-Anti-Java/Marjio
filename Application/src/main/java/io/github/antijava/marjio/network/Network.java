@@ -122,7 +122,10 @@ public class Network implements IClient, IServer, Constant {
             throw new UnsupportedOperationException();
         }
 
+        // If it unable to connect server, will throw IOException.
+        // Also not keep executing other statements
         mClient.start();
+
         mClient.addListener(new ClientReceiver(mApplication));
         mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
         mRunningFlag = true;

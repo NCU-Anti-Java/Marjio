@@ -12,15 +12,16 @@ import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowIPAddressInput;
-import sun.nio.cs.ext.ISCII91;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Join Scene that let client join server's game
+ *
  * Created by Zheng-Yuan on 12/24/2015.
  */
 public class JoinScene extends SceneBase implements Constant {
@@ -46,15 +47,17 @@ public class JoinScene extends SceneBase implements Constant {
 
         final IInput input = getApplication().getInput();
 
-        if(mTimeout > 0 && checkJoin()) {
+        // Check whether response of request is back
+        if (mTimeout > 0 && checkJoin()) {
             return;
         }
 
         mWindowBack.update();
         if (input.isPressed(Key.ENTER)) {
             if (mWindowCommand.isActive()) {
-                if (processOption())
+                if (processOption()) {
                     return;
+                }
             }
         }
         if (input.isRepeat(Key.LEFT)) {
@@ -94,34 +97,63 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowIPAddressInput.dispose();
     }
 
+    /**
+     * Do option execution
+     *
+     * @return does it do something
+     */
     private boolean processOption() {
         switch (mWindowCommand.getIndex()) {
+
+            // Confirm option, connect to server
             case 0: {
                 try {
                     final IClient client = getApplication().getClient();
                     final Request joinRequest = new Request(UUID.randomUUID() ,Request.Types.ClientWannaJoinRoom);
+
+                    if (client.isRunning()) {
+                        getApplication().getLogger().warning("Client is running");
+                    }
                     client.start(mWindowIPAddressInput.getAddress());
                     client.sendTCP(joinRequest);
-                    setTimeout();
-                    // TODO: Let user know we are waiting response
+                    resetTimeout();
+
+                    // TODO: Let user know we are waiting response (eg. unable option)
 
                     return true;
                 }
+
+                // Unable to connect server. throw by client.start
+                catch (IOException e) {
+                    final Logger logger = getApplication().getLogger();
+                    logger.info(e.getMessage());
+
+                    // TODO: Let user know connection failed
+                }
+
+                // If there got exception, means the program have something wrong
                 catch (Exception e) {
                     e.printStackTrace();
-                    // TODO: Show Error.
                 }
+
                 return false;
             }
+
+            // Cancel option, return to main scene
             case 1: {
                 final ISceneManager sceneManager = getApplication().getSceneManager();
                 sceneManager.translationTo(new MainScene(getApplication(), 1));
+
                 return true;
             }
         }
+
         return false;
     }
 
+    /**
+     * Create windows
+     */
     private void initWindows() {
         final IApplication application = getApplication();
 
@@ -149,6 +181,9 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowIPAddressInput.setActive(true);
     }
 
+    /**
+     * Move windows to specify location
+     */
     private void moveWindows(final int x, final int y) {
         mWindowBack.setX(x);
         mWindowBack.setY(y);
@@ -158,12 +193,19 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowCommand.setY(y);
     }
 
-    private void setTimeout() {
+    /**
+     * Reset timeout of request waiting response
+     */
+    private void resetTimeout() {
         mTimeout = DEFAULT_TIMEOUT;
     }
 
+    /**
+     * Check if server give response let client know it can join room
+     *
+     * @return if it get specify response
+     */
     private boolean checkJoin() {
-
         final ISceneManager sceneManager = getApplication().getSceneManager();
         final IInput input = getApplication().getInput();
         final List<Request> requests = input.getRequest();
@@ -177,10 +219,12 @@ public class JoinScene extends SceneBase implements Constant {
                 client.setMyId(request.getClientID());
                 mTimeout = 0;
                 sceneManager.translationTo(new RoomScene(getApplication(), false));
+
                 return true;
             }
         }
         mTimeout--;
+
         return false;
     }
 }
