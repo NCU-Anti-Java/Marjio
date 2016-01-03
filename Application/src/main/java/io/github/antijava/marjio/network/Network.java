@@ -59,6 +59,8 @@ public class Network implements IClient, IServer, Constant {
         }
 
         mServer.start();
+        mApplication.getLogger().info("Server started.");
+
         mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
         mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
         mRunningFlag = true;
@@ -122,7 +124,11 @@ public class Network implements IClient, IServer, Constant {
             throw new UnsupportedOperationException();
         }
 
+        // If it unable to connect server, will throw IOException.
+        // Also not keep executing other statements
         mClient.start();
+        mApplication.getLogger().info("Client started.");
+
         mClient.addListener(new ClientReceiver(mApplication));
         mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
         mRunningFlag = true;
@@ -169,8 +175,10 @@ public class Network implements IClient, IServer, Constant {
 
         if (mIsServerFlag) {
             mServer.stop();
+            mApplication.getLogger().info("Server stopped.");
         } else {
             mClient.stop();
+            mApplication.getLogger().info("Client stopped.");
         }
     }
 
