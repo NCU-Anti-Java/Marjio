@@ -16,6 +16,10 @@ import java.util.UUID;
 public class SyncList implements Packable {
 
     UUID mId;
+    /**
+     *  If you want to change back to Object,
+     *   please see Status.
+     **/
     ArrayList mData;
 
     public SyncList() {}
