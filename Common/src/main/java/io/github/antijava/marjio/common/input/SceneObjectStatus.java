@@ -1,11 +1,12 @@
 package io.github.antijava.marjio.common.input;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Created by Date on 2015/12/29.
  */
-public class SceneObjectStatus {
+public class SceneObjectStatus implements Serializable {
     public enum Types {
         Player,
         Block,

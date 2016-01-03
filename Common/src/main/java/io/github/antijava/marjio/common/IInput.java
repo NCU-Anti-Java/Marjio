@@ -1,11 +1,10 @@
 package io.github.antijava.marjio.common;
 
-import io.github.antijava.marjio.common.input.Event;
-import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.Request;
-import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.*;
+import io.github.antijava.marjio.common.network.Packable;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Created by fntsr on 2015/12/23.
@@ -32,6 +31,10 @@ public interface IInput {
 
     List<Status> getStatuses();
     List<Request> getRequest();
+
+
+    @NetWorkData({Status.class, Request.class})
+    List<? extends Packable> getNetWorkData(Class c);
 
     void triggerEvent(Event evt);
 }
