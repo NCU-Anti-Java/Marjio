@@ -64,7 +64,6 @@ public class RoomScene extends SceneBase implements Constant {
             mWindowCommand.update();
             mWindowPlayerList.update();
             checkKeyState();
-            checkStatus();
 
             if (mIsServer && getApplication().getServer().isRunning()) {
                 checkClientRequest();
@@ -180,10 +179,6 @@ public class RoomScene extends SceneBase implements Constant {
                 break;
             }
         }
-    }
-
-    private void checkStatus () {
-        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
     }
     // endregion Common
 
