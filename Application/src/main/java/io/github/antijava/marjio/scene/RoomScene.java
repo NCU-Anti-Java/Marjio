@@ -120,6 +120,15 @@ public class RoomScene extends SceneBase implements Constant {
 
     private void select() {
         switch(mCurrentChoice) {
+            case START_GAME: {
+                if(mIsServer) {
+                    final Request request = new Request(Request.Types.ClientCanStartGame);
+                    getApplication().getServer().broadcastTCP(request);
+                    getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
+                }
+                break;
+            }
+
             case EXIT_ROOM: {
                 final ISceneManager sceneManager = getApplication().getSceneManager();
 
@@ -145,14 +154,6 @@ public class RoomScene extends SceneBase implements Constant {
                     client.stop();
                 }
                 sceneManager.translationTo(new MainScene(getApplication()));
-                break;
-            }
-            case START_GAME: {
-                if(mIsServer) {
-                    final Request request = new Request(Request.Types.ClientCanStartGame);
-                    getApplication().getServer().broadcastTCP(request);
-                    getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
-                }
                 break;
             }
         }
