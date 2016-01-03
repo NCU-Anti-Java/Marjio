@@ -176,7 +176,7 @@ public class RoomScene extends SceneBase implements Constant {
             mWindowCommand.setActive(true);
             mWindowPlayerList.setActive(false);
         }
-        else if(input.isPressed(Key.ENTER) || input.isPressing(Key.ENTER)) {
+        else if(input.isPressed(Key.ENTER)) {
             mCurrentChoice = mWindowCommand.getIndex();
             select();
         }

@@ -71,6 +71,8 @@ public class Player extends SceneObjectObjectBase implements Constant {
     double mVelocityX;
     double mVelocityXModify;
     double mVelocityY;
+    double mVelocityYModify;
+
 
     double mAccelerationX;
     double mAccelerationY;
@@ -102,6 +104,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mHave = null;
 
         mVelocityXModify = 1.0;
+        mVelocityYModify = 1.0;
 
         if (!sStyleLoaded) {
             final ResourcesManager resourceManager = ((Application)application).getResourcesManager();

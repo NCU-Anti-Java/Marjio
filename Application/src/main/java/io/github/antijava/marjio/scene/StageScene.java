@@ -7,6 +7,7 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 import io.github.antijava.marjio.common.input.*;
 
+import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
@@ -17,6 +18,7 @@ import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,20 +52,43 @@ public class StageScene extends SceneBase implements Constant {
 
         mMap = new SceneMap(application, stage);
 
-        GameViewPort = graphics.createViewport();
+        GameViewPort = application.getGraphics().getDefaultViewport();
 
         mTick = - START_GAME_TICKS;
 
-        mTimer = new SpriteBase(application.getGraphics().getDefaultViewport());
+        mTimer = new SpriteBase(GameViewPort);
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
 
         mIsServer = IsServer;
+        mPlayers = new HashMap<>();
+
+        final Logger logger = application.getLogger();
 
         if (mIsServer) {
             mYourPlayerID = application.getServer().getMyId();
+            mPlayers.put(mYourPlayerID, new Player(application,
+                    GameViewPort, mYourPlayerID));
 
+            logger.info("Server : " + mYourPlayerID.toString());
+
+            final List<ClientInfo> infos = application.getServer().getClients();
+
+            for (final ClientInfo info : infos) {
+                mPlayers.put(info.getClientID(), new Player(application,
+                        GameViewPort,
+                        info.getClientID()));
+                logger.info("player id: " + info.getClientID());
+            }
         }
+        else {
+            logger.info("Client : " + mYourPlayerID.toString());
+            mYourPlayerID = application.getClient().getMyId();
+            mPlayers.put(mYourPlayerID, new Player(application,
+                        GameViewPort,
+                        mYourPlayerID));
+        }
+
 /*
 
 
@@ -84,7 +109,7 @@ public class StageScene extends SceneBase implements Constant {
     @Override
     public void dispose() {
         super.dispose();
-
+        //mPlayers.values().forEach(Player::dispose);
         //ba.dispose();
     }
 
@@ -106,43 +131,59 @@ public class StageScene extends SceneBase implements Constant {
                 reqs.forEach(tick_req -> {
                     tick_req.setReceiveTime(mTick);
                     try {
-                        server.send(tick_req, tick_req.getClientID());
+                        server.broadcast(tick_req);
                     } catch (Exception e) {
                     }
                 });
+
+                TickRequest tickRequest = new TickRequest(mTick);
+                tickRequest.setClientID(mYourPlayerID);
+
+                try {
+                    server.broadcast(tickRequest);
+                } catch (Exception e) {
+
+                }
+
+
             } else {
                 final IClient client = getApplication().getClient();
                 final List<TickRequest> reqs = getApplication()
                                             .getInput()
                                             .getTickRequest();
 
-                TickRequest tick_req = null;
-
-
                 /**
                  * find the newest ticks in TickRequests
                  * */
-                for (TickRequest req : reqs) {
-                    if (tick_req == null) {
-                        tick_req = req;
-                        continue;
-                    }
+                Optional<TickRequest> tick_req = reqs
+                        .stream()
+                        .filter(req -> req.getClientID().compareTo(mYourPlayerID) == 0)
+                        .max((q1, q2) -> Integer.compare(q1.getReceiveTime(), q2.getReceiveTime()));
 
-                    if (tick_req.getReceiveTime() < req.getReceiveTime()) {
-                        tick_req = req;
-                    }
-                }
+                if (!reqs.isEmpty())
+                    reqs.stream().filter(req ->
+                            req.getClientID().compareTo(mYourPlayerID) != 0 &&
+                            !mPlayers.containsKey(req.getClientID())
+                    ).forEach(req -> {
+                        mPlayers.put(req.getClientID(), new Player(
+                                getApplication(), GameViewPort, req.getClientID()
+                        ));
+                    });
 
-                if (tick_req == null) {
-                    tick_req = new TickRequest(mTick);
-                    tick_req.setClientID(mYourPlayerID);
+
+                TickRequest tickRequest;
+
+                if (tick_req.isPresent()) {
+                    tickRequest = tick_req.get();
+                    mTick = tickRequest.getNewTime(mTick);
+                    tickRequest.setStartTime(mTick);
                 } else {
-                    mTick = tick_req.getNewTime(mTick);
-                    tick_req.setStartTime(mTick);
+                    tickRequest = new TickRequest(mTick);
+                    tickRequest.setClientID(mYourPlayerID);
                 }
 
                 try {
-                    client.send(tick_req);
+                    client.send(tickRequest);
                 } catch (Exception e) {
 
                 }
@@ -340,17 +381,18 @@ public class StageScene extends SceneBase implements Constant {
         /**
          * time synchronized for players in client
          * */
+        if (!mIsServer) {
+            if (mPlayers.get(mYourPlayerID).isStatusUpdate()) {
+                final int recieve_tick = mPlayers.get(mYourPlayerID).getTick();
+                players.stream()
+                        .filter(p -> !p.isStatusUpdate())
+                        .forEach(p -> p.setTick(recieve_tick));
 
-        if (mPlayers.get(mYourPlayerID).isStatusUpdate()) {
-            final int recieve_tick = mPlayers.get(mYourPlayerID).getTick();
-            players.stream()
-                    .filter(p -> !p.isStatusUpdate())
-                    .forEach(p -> p.setTick(recieve_tick));
-
-            mTick = Math.max(recieve_tick + (mTick - send_tick) / 2,
-                            last_recieve_tick);
-        } else {
-            mTick = Math.max(mTick, last_recieve_tick);
+                mTick = Math.max(recieve_tick + (mTick - send_tick) / 2,
+                        last_recieve_tick);
+            } else {
+                mTick = Math.max(mTick, last_recieve_tick);
+            }
         }
 
     }
