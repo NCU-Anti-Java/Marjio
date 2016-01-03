@@ -26,15 +26,17 @@ public class Network implements IClient, IServer, Constant {
     // Common Fields
     private IApplication mApplication;
     private boolean mRunningFlag;
-    private boolean mConnectedFlag;
     private boolean mIsServerFlag;
-    private Server mServer;
-    private Client mClient;
+    private UUID mMyId;
 
     // Server Fields
-    private UUID mMyId;
+    private Server mServer;
     private List<ClientInfo> mClientList;
     private HashMap<UUID, Connection> mConnectionMap;
+
+    // Client Fields
+    private Client mClient;
+    private boolean mConnectedFlag;
 
     public Network(IApplication application) {
         mApplication = application;
@@ -151,7 +153,7 @@ public class Network implements IClient, IServer, Constant {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
-        
+
         return mConnectedFlag;
     }
     // endregion ClientSide(OtherPlayer)
