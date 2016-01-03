@@ -12,7 +12,9 @@ import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowIPAddressInput;
+import sun.nio.cs.ext.ISCII91;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -25,6 +27,10 @@ public class JoinScene extends SceneBase implements Constant {
     private WindowBase mWindowBack;
     private WindowIPAddressInput mWindowIPAddressInput;
     private WindowCommand mWindowCommand;
+
+    // unit: how many frame
+    private int mTimeout = 0;
+    private final static int DEFAULT_TIMEOUT = 600;
 
     public JoinScene(IApplication application) {
         super(application);
@@ -39,6 +45,10 @@ public class JoinScene extends SceneBase implements Constant {
         super.update();
 
         final IInput input = getApplication().getInput();
+
+        if(mTimeout > 0 && checkJoin()) {
+            return;
+        }
 
         mWindowBack.update();
         if (input.isPressed(Key.ENTER)) {
@@ -75,6 +85,32 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowCommand.update();
     }
 
+    private void setTimeout() {
+        mTimeout = DEFAULT_TIMEOUT;
+    }
+
+    private boolean checkJoin() {
+
+        final ISceneManager sceneManager = getApplication().getSceneManager();
+        final IInput input = getApplication().getInput();
+        final List<Request> requests = input.getRequest();
+        final IClient client = getApplication().getClient();
+        final Logger logger = getApplication().getLogger();
+
+        logger.log(Level.INFO, "checkJoin");
+
+        for (Request request : requests) {
+            if (request.getType() == Request.Types.ClientCanJoinRoom) {
+                client.setMyId(request.getClientID());
+                mTimeout = 0;
+                sceneManager.translationTo(new RoomScene(getApplication(), false));
+                return true;
+            }
+        }
+        mTimeout--;
+        return false;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
@@ -92,9 +128,9 @@ public class JoinScene extends SceneBase implements Constant {
                     final Request joinRequest = new Request(UUID.randomUUID() ,Request.Types.ClientWannaJoinRoom);
                     client.start(mWindowIPAddressInput.getAddress());
                     client.sendTCP(joinRequest);
+                    setTimeout();
                     // TODO: Let user know we are waiting response
-                    Thread thread = new JoinThread();
-                    thread.start();
+
                     return true;
                 }
                 catch (Exception e) {
@@ -148,41 +184,4 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowCommand.setY(y);
     }
 
-    private class JoinThread extends Thread {
-        final ISceneManager sceneManager = getApplication().getSceneManager();
-        final IClient client= getApplication().getClient();
-        final IInput input = getApplication().getInput();
-        final Logger logger= getApplication().getLogger();
-        boolean waitingFlag = true;
-        final int timeOut = 1000;
-        long startTime = System.currentTimeMillis();
-
-        @Override
-        public void run() {
-            logger.info("Connection request start");
-            try {
-                while (waitingFlag) {
-                    // if Timeout
-                    if (System.currentTimeMillis() - startTime > timeOut) {
-                        waitingFlag = false;
-                    }
-                    final List<Request> requests = input.getRequest();
-
-                    for (Request request : requests ) {
-                        if (request.getType() == Request.Types.ClientCanJoinRoom) {
-                            sceneManager.translationTo(new RoomScene(getApplication(), false));
-                            client.setMyId(request.getClientID());
-
-                            logger.log(Level.WARNING, "Connection request success");
-                        }
-                    }
-                }
-                client.stop();
-                logger.info("Connection request failed");
-                // TODO: Let user know we are timeout, can keep do something
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
