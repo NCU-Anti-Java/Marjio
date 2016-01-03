@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Created by firejox on 2015/12/25.
  */
-public final class Input implements IInput {
+public final class Input implements IInput, IKeyInput {
     static final Map<Key, Key> sKeymap = new EnumMap<>(Key.class);
 
     static {
@@ -31,6 +31,9 @@ public final class Input implements IInput {
 
     private Map<Class<? extends Packable>, List<Packable>> mNetWorkData;
     private Map<Class<? extends Packable>, List<Packable>> mNetWorkDataCached;
+
+    private Vector<TickRequest> mTickRequests;
+    private Vector<TickRequest> mTickRequestsCached;
 
     private ReadWriteLock mLock;
 
@@ -81,7 +84,8 @@ public final class Input implements IInput {
         mPreviousKeys = mCurrentKeys;
         mCurrentKeys = mNextKeys;
         mNextKeys = tmpKeys;
-        
+
+
         for (final Class c : mNetWorkData.keySet()) {
             final List<Packable> tempData = mNetWorkData.get(c);
             
@@ -140,8 +144,24 @@ public final class Input implements IInput {
     }
 
     @Override
-    public boolean isTrigger(Key key) {
+    public boolean isTrigger(final Key key) {
         return isPressed(key) || isReleased(key);
+    }
+
+    @Override
+    public boolean isKeyUp(final Key k) {
+        final Key key = getRealKey(k);
+
+        return key != Key.UNDEFINED &&
+                !mCurrentKeys.contains(key);
+    }
+
+    @Override
+    public boolean isKeyDown(Key k) {
+        final Key key = getRealKey(k);
+
+        return key != Key.UNDEFINED &&
+                mCurrentKeys.contains(k);
     }
 
     @Override
@@ -183,6 +203,11 @@ public final class Input implements IInput {
     }
 
     @Override
+    public List<TickRequest> getTickRequest() {
+        return mTickRequestsCached;
+    }
+
+    @Override
     public void triggerEvent(Event evt) {
         mLock.readLock().lock();
 
@@ -202,6 +227,7 @@ public final class Input implements IInput {
             case NetWorkClient:
             case NetworkServer: {
                 Object data = evt.getData();
+
                 if (data != null) {
                     mNetWorkData.forEach((klass, list) -> {
                         if (klass.isAssignableFrom(data.getClass())) {

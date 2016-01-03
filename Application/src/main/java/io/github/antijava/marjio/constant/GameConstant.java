@@ -11,4 +11,6 @@ public interface GameConstant {
     long FRAMERATE = 1_000_000_000L / FPS;
     int GAME_WIDTH = 800;
     int GAME_HEIGHT = 600;
+    int START_GAME_COUNTER = 5;
+    int START_GAME_TICKS = START_GAME_COUNTER * FPS;
 }

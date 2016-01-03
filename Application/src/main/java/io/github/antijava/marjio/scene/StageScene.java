@@ -5,9 +5,8 @@ import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
-import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.common.input.SceneObjectStatus;
+import io.github.antijava.marjio.common.input.*;
+
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
@@ -19,40 +18,57 @@ import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
  */
 public class StageScene extends SceneBase implements Constant {
-    private final static int START_GAME_COUNTER = 5;
+
     private final Viewport GameViewPort;
     private SceneMap mMap;
     UUID mYourPlayerID;
     Map<UUID, Player> mPlayers;
 
     private final Sprite mTimer;
-    private int mCountDown;
+    private int mTick;
 
 
     boolean mIsServer;
-    
-    public StageScene(IApplication application, boolean isServer, int stage) {
+
+    /*
+     //TODO: fake data
+    final WindowBase ba;
+    final Player p;
+*/
+
+
+
+    public StageScene(IApplication application, int stage) {
         super(application);
         final IGraphics graphics = application.getGraphics();
 
         mMap = new SceneMap(application, stage);
 
-        mCountDown = START_GAME_COUNTER * FPS;
         GameViewPort = graphics.createViewport();
+
+        mTick = - START_GAME_TICKS;
 
         mTimer = new SpriteBase(application.getGraphics().getDefaultViewport());
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
 
+        mIsServer = !application.getServer().getClients().isEmpty();
 
+        if (mIsServer) {
+            mYourPlayerID = application.getServer().getMyId();
+
+        }
 /*
-         //TODO: Fake data
 
+
+         //TODO: Fake data
+        mIsServer = true;
         ba = new WindowBase(getApplication(), PLAYER_SIZE, PLAYER_SIZE);
         mYourPlayerID = UUID.randomUUID();
 
@@ -61,12 +77,14 @@ public class StageScene extends SceneBase implements Constant {
 
         mPlayers = new HashMap<>();
         mPlayers.put(mYourPlayerID, p);
-*/
+        */
+
     }
 
     @Override
     public void dispose() {
         super.dispose();
+
         //ba.dispose();
     }
 
@@ -75,219 +93,342 @@ public class StageScene extends SceneBase implements Constant {
         super.update();
 
 
-        if (mCountDown > 0) {
+        if (mTick < 0) {
 
             // TODO: If you are client, you should receive server's count down time.
-            mCountDown--;
+            // Hint: NTP, Clock synchronization
+            if (mIsServer) {
+                IServer server = getApplication().getServer();
+                List<TickRequest> reqs = getApplication()
+                                            .getInput()
+                                            .getTickRequest();
+
+                reqs.forEach(tick_req -> {
+                    tick_req.setReceiveTime(mTick);
+                    try {
+                        server.send(tick_req, tick_req.getClientID());
+                    } catch (Exception e) {
+                    }
+                });
+            } else {
+                final IClient client = getApplication().getClient();
+                final List<TickRequest> reqs = getApplication()
+                                            .getInput()
+                                            .getTickRequest();
+
+                TickRequest tick_req = null;
+
+
+                /**
+                 * find the newest ticks in TickRequests
+                 * */
+                for (TickRequest req : reqs) {
+                    if (tick_req == null) {
+                        tick_req = req;
+                        continue;
+                    }
+
+                    if (tick_req.getReceiveTime() < req.getReceiveTime()) {
+                        tick_req = req;
+                    }
+                }
+
+                if (tick_req == null) {
+                    tick_req = new TickRequest(mTick);
+                    tick_req.setClientID(mYourPlayerID);
+                } else {
+                    mTick = tick_req.getNewTime(mTick);
+                    tick_req.setStartTime(mTick);
+                }
+
+                try {
+                    client.send(tick_req);
+                } catch (Exception e) {
+
+                }
+            }
+
             mTimer.getBitmap().clear();
             mTimer.getBitmap().setFont(new Font("Consolas", 48, false, true));
             mTimer.getBitmap().drawText(
-                    Integer.toString(mCountDown / FPS), 0, 0,
+                    Integer.toString((-mTick) / FPS), 0, 0,
                     GAME_WIDTH, GAME_HEIGHT, Color.WHITE, IBitmap.TextAlign.CENTER);
             mTimer.update();
 
+            mTick++;
+
             return ;
-        } else if (mCountDown == 0) {
+        } else if (mTick == 0) {
             mTimer.getBitmap().clear();
             mTimer.update();
-
-            mCountDown--;
         }
 
-        mPlayers.values().forEach(Player::preUpdate);
+        final Player player = mPlayers.get(mYourPlayerID);
+        final IKeyInput input = (IKeyInput)getApplication().getInput();
+        final Collection<Player> players = mPlayers.values();
 
-        checkKeyState();
-        checkStatus();
-        solveBumps();
+        players.forEach(Player::preUpdate);
 
-        mPlayers.values().forEach(Player::update);
+        checkStatus(players);
+        checkKeyState(input, player);
+        solveBumps(players);
 
-/*
-        //TODO: fake
+        players.forEach(Player::update);
+
+        //TODO : slide viewport when player is running
+
+
+        /*
+        //TODO: fake data
          ba.setX(p.getX());
          ba.setY(p.getY());
          ba.update();
-*/
+        */
 
-        //getApplication().getLogger().info(p.toString());
+        if (mIsServer) {
+            IServer server = getApplication().getServer();
+            SceneObjectStatus data = player.getStatus();
+            data.send_tick = data.recieve_tick = mTick;
 
-        if (!mIsServer) {
-            IClient client = getApplication().getClient();
-            SceneObjectStatus data = mPlayers.get(mYourPlayerID).getStatusData();
+            data.setType(Status.Types.ServerMessage);
 
             try {
-                client.send(new Status(data, Status.Types.ClientMessage));
+                server.broadcast(data);
             } catch (Exception e) {
+
             }
+
+        } else {
+            IClient client = getApplication().getClient();
+            SceneObjectStatus data = player.getStatus();
+
+            for (final Key key : Player.action_keys) {
+                if (input.isPressed(key))
+                    data.pressed.add(key);
+                else if (input.isPressing(key))
+                    data.pressing.add(key);
+                else if (input.isReleased(key))
+                    data.isReleased(key);
+
+                if (input.isRepeat(key))
+                    data.isRepeat(key);
+            }
+
+            data.setType(Status.Types.ClientMessage);
+            data.send_tick = mTick;
+
+            try {
+                client.send(data);
+            } catch (Exception e) {
+
+            }
+
         }
+
+        mTick++;
+    }
+
+    private void checkDead(final Collection<Player> players) {
+        players.forEach(p -> {
+            final int x = (int) Math.round (
+                    (double)p.getNextX() / BLOCK_SIZE);
+
+            final int y = (int) Math.round (
+                    (double)p.getNextY() / BLOCK_SIZE);
+
+            if (!mMap.isInMap(y, x)) {
+                if (y > 0) { //drop in hole
+                    p.reset();
+                } else if (y < -1000) { //fly to death, it means you
+                    p.reset();          // leave the atmosphere
+                } else if (x < 0) { //prevent move out of start line
+                    p.setX(0);
+                    p.setVelocityX(0.0);
+                }
+            }
+
+        });
+
     }
 
     public List<Status> getValidStatuses() {
-        return getApplication()
+        final Stream<Status> statuses = getApplication()
                 .getInput()
                 .getStatuses()
                 .stream()
-                .filter(st -> st.getData() instanceof SceneObjectStatus &&
-                        mPlayers.containsKey(((SceneObjectStatus)st.getData()).uuid))
-                .collect(Collectors.toList());
+                .filter(st -> mPlayers.containsKey(st.getClientID()));
+
+        if (mIsServer)
+            return statuses
+                    .sorted((st, st2) ->
+                            ((SceneObjectStatus)st).send_tick > ((SceneObjectStatus)st2).send_tick ? 1 : -1)
+                    .collect(Collectors.toList());
+        else
+            return statuses
+                    .sorted((st, st2) ->
+                            ((SceneObjectStatus)st).recieve_tick > ((SceneObjectStatus)st2).recieve_tick ? 1 : -1)
+                    .collect(Collectors.toList());
+
     }
 
-    public void checkStatus () {
-        List<Status> fetchedStatus = getValidStatuses();
-        final IServer server = getApplication().getServer();
+    public void checkStatus (final Collection<Player> players) {
 
-        for (Status st : fetchedStatus) {
-            SceneObjectStatus data = (SceneObjectStatus) st.getData();
-            Player player = mPlayers.get(data.uuid);
+        final List<Status> fetchedStatus = getValidStatuses();
+        final IServer server = getApplication().getServer();
+        int send_tick = 0;
+        final int last_recieve_tick =
+                fetchedStatus.isEmpty() ? 0 :
+                        ((SceneObjectStatus)fetchedStatus.get(fetchedStatus.size() -1)).recieve_tick;
+
+        for (final Status st : fetchedStatus) {
+            Player player = mPlayers.get(st.getClientID());
+
 
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
-                        if (player.isValidData(data)) {
-                            player.preUpdateStatusData(data);
+                        final boolean check = player.isValidData((SceneObjectStatus) st);
 
-                            final Status new_st = new Status(data,
-                                    Status.Types.ServerMessage);
+                        if (check)
+                            checkKeyState((SceneObjectStatus)st, player);
 
-                            if (mIsServer) {
-                                try {
-                                    server.broadcast(new_st);
+                        final SceneObjectStatus new_st = player.getStatus();
 
-                                } catch (Exception ex) {
+                        new_st.send_tick = ((SceneObjectStatus)st).send_tick;
+                        new_st.recieve_tick = mTick;
+                        new_st.query = check;
 
-                                }
+                        try {
+                            if (check) {
+                                new_st.setType(Status.Types.ServerMessage);
+                                server.send(new_st, player.getmId());
+                            } else {
+                                new_st.setType(Status.Types.ServerVerification);
+                                server.broadcast(new_st);
                             }
 
-                        } else {
-                            data = player.getStatusData();
-                            data.query = false;
-                            final Status new_st = new Status(data,
-                                    Status.Types.ServerVerification);
+                        } catch (Exception ex) {
 
-                            // TODO: Server send to client verify message
-
-                            /*try {
-                                server.send(new_st, player.getId());
-
-                            } case (Exception ex) {
-
-                            }*/
                         }
                     }
                     break;
                 }
 
                 case ServerMessage: {
-                    if (data.uuid != mYourPlayerID)
-                        player.preUpdateStatusData(data);
+                    player.preUpdateStatus((SceneObjectStatus)st);
+
+                    if (player.getmId().equals(mYourPlayerID))
+                        send_tick = ((SceneObjectStatus)st).send_tick;
 
                     break;
                 }
 
                 case ServerVerification: {
-                    if (!data.query)
-                        player.preUpdateStatusData(data);
+                    if (!((SceneObjectStatus)st).query) {
+                        player.preUpdateStatus((SceneObjectStatus)st);
 
+                        send_tick = ((SceneObjectStatus)st).send_tick;
+                    }
                     break;
                 }
 
             }
 
         }
+
+
+        /**
+         * time synchronized for players in client
+         * */
+
+        if (mPlayers.get(mYourPlayerID).isStatusUpdate()) {
+            final int recieve_tick = mPlayers.get(mYourPlayerID).getTick();
+            players.stream()
+                    .filter(p -> !p.isStatusUpdate())
+                    .forEach(p -> p.setTick(recieve_tick));
+
+            mTick = Math.max(recieve_tick + (mTick - send_tick) / 2,
+                            last_recieve_tick);
+        } else {
+            mTick = Math.max(mTick, last_recieve_tick);
+        }
+
     }
 
-    private void checkKeyState() {
-        IInput input = getApplication().getInput();
-
-        Player player = mPlayers.get(mYourPlayerID);
+    private void checkKeyState(IKeyInput input, Player player) {
 
         if (input.isPressed(Key.MOVE_LEFT)) {
             player.addAccelerationX(-0.5);
         }
-        else if (input.isRepeat(Key.MOVE_LEFT) && !input.isPressed(Key.MOVE_RIGHT)) {
+        else if (input.isRepeat(Key.MOVE_LEFT)) {
             player.setVelocityX(-6.0);
             player.setAccelerationX(-PhysicsConstant.friction - 1e-5);
         }
-        else if (input.isReleased(Key.MOVE_LEFT)) {
-            player.setAccelerationX(0.0);
-        }
 
         if (input.isPressed(Key.MOVE_RIGHT)) {
-            player.addAccelerationX(0.5);
+            player.setAccelerationX(0.5);
         }
-        else if (input.isRepeat(Key.MOVE_RIGHT) && !input.isPressed(Key.MOVE_LEFT)) {
+        else if (input.isRepeat(Key.MOVE_RIGHT)) {
             player.setVelocityX(6.0);
             player.setAccelerationX(PhysicsConstant.friction + 1e-5);
         }
-        else if (input.isReleased(Key.MOVE_RIGHT)) {
-            player.setAccelerationX(0.0);
-        }
 
-        if (input.isPressing(Key.MOVE_LEFT) && input.isPressing(Key.MOVE_RIGHT)) {
+
+        if (input.isKeyDown(Key.MOVE_LEFT) &&
+                input.isKeyDown(Key.MOVE_RIGHT)) {
             player.setAccelerationX(0.0);
             player.setVelocityX(0.0);
+        } else if (input.isKeyUp(Key.MOVE_LEFT) &&
+                input.isKeyUp(Key.MOVE_RIGHT)) {
+            player.setAccelerationX(0.0);
         }
 
 
         if (input.isRepeat(Key.JUMP)) {
-            try {
+            final int x = (int)Math.round((double)player.getX() / BLOCK_SIZE);
+            final int y = (int)Math.round((double) player.getY() / BLOCK_SIZE) + 1;
 
-                Block block = mMap.getBlock(
-                        (int)Math.round(
-                                (double) player.getY() / BLOCK_SIZE) + 1,
-                        (int)Math.round((double)player.getX() / BLOCK_SIZE));
-
-                // prevent gravity problem
-                if (block.getType() != Block.Type.AIR) {
-                    player.setVelocityY(-20.0);
-                    player.addAccelerationY(0.0);
-                }
-            } catch (Exception ex) {
-
+            if (mMap.isInMap(y, x) &&
+                    mMap.getBlock(y, x).getType() != Block.Type.AIR) {
+                player.setVelocityY(-20.0);
+                player.addAccelerationY(0.0);
             }
 
         }
 
     }
 
-    private void solveBumps() {
-
-        //TODO: Elastic collision for each player
-
-        List<Player> players = new ArrayList<>(mPlayers.values());
-
-        for (Player p : players)
-            p.normalizeVelocity((double)BLOCK_SIZE/2.0 - 1.0);
-
-        for (int i = 0; i < players.size(); i++) {
-            for (int j = i+1; j < players.size(); j++) {
-                Player pi = players.get(i);
-                Player pj = players.get(j);
-
-                final double dx =
-                        (double)(pi.getNextX() - pj.getNextY()) / PLAYER_SIZE;
-                final double dy =
-                        (double)(pi.getNextY() - pj.getNextY()) / PLAYER_SIZE;
+    private void solveBumps(final Collection<Player> players) {
+        final Stream<Player> s_players = players.stream();
 
 
-                if (magicbumpTest(dx, dy)) {
-                    double tvx = pi.getVelocityX();
-                    double tvy = pi.getVelocityY();
+        /*
+        //TODO: BUG need fix
+        //time synchronized for players in client
 
-                    pi.setVelocityY(pj.getVelocityY());
-                    pi.setVelocityX(pj.getVelocityY());
+        while (s_players.anyMatch(p -> p.getTick() < mTick))
+            s_players.filter(p -> p.getTick() < mTick)
+                    .sorted((player1, player2) -> {
+                        if (player1.getX() == player2.getX())
+                            return (player1.getY() > player2.getY()) ? 1 : -1;
+                        else
+                            return (player1.getX() > player2.getX()) ? 1 : -1;
+                    })
+                    .forEach(p -> {
+                        solveBumpBlock(p);
+                        p.update();
+                        p.preUpdate();
+                    });
+                    */
 
-                    pj.setVelocityX(tvx);
-                    pj.setVelocityY(tvy);
-                }
-            }
-
-        }
-
-        for (Player player : mPlayers.values()) {
-
-            solveBumpBlock(player);
-        }
+        s_players
+                .sorted((player1, player2) -> {
+                        if (player1.getX() == player2.getX())
+                            return (player1.getY() > player2.getY()) ? 1 : -1;
+                        else
+                            return (player1.getX() > player2.getX()) ? 1 : -1;
+                    })
+                .forEach(this::solveBumpBlock);
 
     }
 
@@ -320,18 +461,18 @@ public class StageScene extends SceneBase implements Constant {
 
                         player.setVelocityX(nvx);
 
-                        player.setAccelerationX(-nvx);
+                        player.setAccelerationX(0.0);
 
                     } else if (b.getX() <= player.getX() - BLOCK_SIZE) {
                         final double nvx = b.getX() - player.getX() + BLOCK_SIZE;
 
                         player.setVelocityX(nvx);
 
-                        player.setAccelerationX(-nvx);
+                        player.setAccelerationX(0.0);
                     } else {
                         player.setVelocityX(-vx);
-                        player.setX((int) Math
-                                .round((double) player.getX() / BLOCK_SIZE)
+                        player.setX((int)
+                                Math.round((double) player.getX() / BLOCK_SIZE)
                                 * BLOCK_SIZE);
                     }
                 }
@@ -342,7 +483,7 @@ public class StageScene extends SceneBase implements Constant {
 
                         player.setVelocityY(nvy);
 
-                        player.setAccelerationY(-PhysicsConstant.gravity - 0.5);
+                        player.setAccelerationY(-PhysicsConstant.gravity);
 
                     } else if (b.getY() < player.getY() - BLOCK_SIZE) {
                         final double nvy = b.getY() - player.getY() + BLOCK_SIZE;
@@ -368,7 +509,6 @@ public class StageScene extends SceneBase implements Constant {
     }
 
     public static boolean magicbumpTest(double dx, double dy) {
-
 
         return ((dx*dx*dx*dx) + (dy*dy*dy*dy)) <= 1.0D;
     }

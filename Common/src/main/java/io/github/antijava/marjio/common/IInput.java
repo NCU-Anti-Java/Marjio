@@ -25,6 +25,9 @@ public interface IInput {
     boolean isReleased(Key key);
     boolean isTrigger(Key key);
 
+    boolean isKeyUp(Key key);
+    boolean isKeyDown(Key Key);
+
     /**
      * with key pressed for a while then key is repeat.
      * */
@@ -32,11 +35,12 @@ public interface IInput {
 
     List<Status> getStatuses();
     List<Request> getRequest();
+    List<TickRequest> getTickRequest();
 
     List<SyncList> getSyncList();
 
 
-    @NetWorkData({Status.class, Request.class, SyncList.class})
+    @NetWorkData({Status.class, Request.class, SyncList.class, TickRequest.class})
     List<? extends Packable> getNetWorkData(Class c);
 
     void triggerEvent(Event evt);

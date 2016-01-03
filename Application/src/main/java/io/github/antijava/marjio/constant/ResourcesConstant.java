@@ -6,4 +6,5 @@ package io.github.antijava.marjio.constant;
 public interface ResourcesConstant {
     String RESOURCE_WINDOWSKIN_PATH = "windowskin/";
     String RESOURCE_TILEMAP_PATH = "tilemap/";
+    String RESOURCE_MARIO_PATH = "mario/";
 }
