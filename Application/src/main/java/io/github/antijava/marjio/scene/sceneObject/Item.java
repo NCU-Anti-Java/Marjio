@@ -36,7 +36,7 @@ public class Item extends SceneObjectObjectBase {
         IBitmap bitmap;
         switch (type) {
             case TrapTool:
-                mName = "Trap";
+                mName = "Trap Tool";
                 bitmap = rm.tile("default.png", 18, 6);
                 bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
                 break;
