@@ -47,19 +47,6 @@ public class RoomScene extends SceneBase implements Constant {
                 e.printStackTrace();
             }
         }
-
-
-    }
-
-    private void initWindows() {
-        final IApplication application = getApplication();
-
-        mWindowCommand = new WindowCommand(application, 180, MENU_TEXT);
-        mWindowCommand.setActive(true);
-        mWindowPlayerList = new WindowPlayerList(application, 600, 570);
-
-        mWindowCommand.setX(600);
-        mWindowCommand.setY(490);
     }
 
     @Override
@@ -78,89 +65,34 @@ public class RoomScene extends SceneBase implements Constant {
                 updatePlayerList();
                 checkServerStatus();
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void checkServerStatus() throws Exception {
-        final IInput input = getApplication().getInput();
-        final ISceneManager sceneManager = getApplication().getSceneManager();
-        List<Request> requests = input.getRequest();
+    @Override
+    public void dispose() {
 
-        for (Request request : requests) {
-            if(request.getType() == Request.Types.ServerCancelRoom) {
-                sceneManager.translationTo(new MainScene(getApplication()));
-                break;
-            } else if (request.getType() == Request.Types.ClientCanStartGame) {
-                sceneManager.translationTo(new StageScene(getApplication(), false, 1));
-                break;
-            }
-        }
-    }
-
-    private void broadcastPlayerList() throws Exception {
-        // TODO: broadcast player list
-        ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
-        SyncList syncList = new SyncList(playerList);
-        getApplication().getServer().broadcastTCP(syncList);
-    }
-
-    private void updatePlayerList() {
-        // TODO: get input and update list
-        final IInput input = getApplication().getInput();
-
-        List<SyncList> syncLists = input.getSyncList();
-
-        for (SyncList syncList : syncLists) {
-            mWindowPlayerList.updatePlayerList((List<String>)syncList.getData());
-        }
+        super.dispose();
+        mWindowPlayerList.dispose();
+        mWindowCommand.dispose();
     }
 
     /**
-     * Check if there has client wanna join or exit
-     * @throws Exception
+     * Create windows
      */
-    private void checkClientRequest() throws Exception {
-        final IInput input = getApplication().getInput();
-        final IServer server = getApplication().getServer();
+    private void initWindows() {
+        final IApplication application = getApplication();
 
-        List<Request> requests = input.getRequest();
-        List<ClientInfo> clients = server.getClients();
+        mWindowCommand = new WindowCommand(application, 180, MENU_TEXT);
+        mWindowCommand.setActive(true);
+        mWindowPlayerList = new WindowPlayerList(application, 600, 570);
 
-        for (Request request : requests) {
-
-            // Find request is asked from which client
-            getApplication().getLogger().log(Level.INFO, request.getClientID().toString());
-            ClientInfo client = null;
-            for (ClientInfo clientInfo : clients) {
-                if (clientInfo.getClientID().equals(request.getClientID())) {
-                    client = clientInfo;
-                }
-            }
-            if (client == null) {
-                return;
-            }
-
-            // Client Join
-            if (request.getType() == Request.Types.ClientWannaJoinRoom) {
-                server.sendTCP(new Request(Request.Types.ClientCanJoinRoom), client.getClientID());
-                client.setIsJoined(true);
-                mWindowPlayerList.addPlayer(client.getClientID().toString());
-            }
-
-            // Client Exit
-            else if (request.getType() == Request.Types.ClientWannaExitRoom) {
-                getApplication().getLogger().log(Level.INFO, "del!!!");
-                client.setIsJoined(false);
-                mWindowPlayerList.delPlayer(client.getClientID().toString());
-            }
-            broadcastPlayerList();
-        }
+        mWindowCommand.setX(600);
+        mWindowCommand.setY(490);
     }
 
+    // region Common
     private void checkKeyState() {
         final IInput input = getApplication().getInput();
 
@@ -180,10 +112,6 @@ public class RoomScene extends SceneBase implements Constant {
             mCurrentChoice = mWindowCommand.getIndex();
             select();
         }
-    }
-
-    public void checkStatus () {
-        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
     }
 
     private void select() {
@@ -246,11 +174,92 @@ public class RoomScene extends SceneBase implements Constant {
         }
     }
 
-    @Override
-    public void dispose() {
-
-        super.dispose();
-        mWindowPlayerList.dispose();
-        mWindowCommand.dispose();
+    private void checkStatus () {
+        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
     }
+    // endregion Common
+
+    // region ServerSideOnly
+    private void broadcastPlayerList() throws Exception {
+        // TODO: broadcast player list
+        ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
+        SyncList syncList = new SyncList(playerList);
+        getApplication().getServer().broadcastTCP(syncList);
+    }
+
+    /**
+     * Check if there has client wanna join or exit
+     * @throws Exception
+     */
+    private void checkClientRequest() throws Exception {
+        final IInput input = getApplication().getInput();
+        final IServer server = getApplication().getServer();
+
+        List<Request> requests = input.getRequest();
+        List<ClientInfo> clients = server.getClients();
+
+        for (Request request : requests) {
+
+            // Find request is asked from which client
+            getApplication().getLogger().log(Level.INFO, request.getClientID().toString());
+            ClientInfo client = null;
+            for (ClientInfo clientInfo : clients) {
+                if (clientInfo.getClientID().equals(request.getClientID())) {
+                    client = clientInfo;
+                }
+            }
+            if (client == null) {
+                return;
+            }
+
+            // Client Join
+            if (request.getType() == Request.Types.ClientWannaJoinRoom) {
+                server.sendTCP(new Request(Request.Types.ClientCanJoinRoom), client.getClientID());
+                client.setIsJoined(true);
+                mWindowPlayerList.addPlayer(client.getClientID().toString());
+            }
+
+            // Client Exit
+            else if (request.getType() == Request.Types.ClientWannaExitRoom) {
+                getApplication().getLogger().log(Level.INFO, "del!!!");
+                client.setIsJoined(false);
+                mWindowPlayerList.delPlayer(client.getClientID().toString());
+            }
+            broadcastPlayerList();
+        }
+    }
+    // endregion ServerSideOnly
+
+    // region ClientSideOnly
+    /**
+     *
+     * @throws Exception
+     */
+    private void checkServerStatus() throws Exception {
+        final IInput input = getApplication().getInput();
+        final ISceneManager sceneManager = getApplication().getSceneManager();
+        List<Request> requests = input.getRequest();
+
+        for (Request request : requests) {
+            if(request.getType() == Request.Types.ServerCancelRoom) {
+                sceneManager.translationTo(new MainScene(getApplication()));
+                break;
+            } else if (request.getType() == Request.Types.ClientCanStartGame) {
+                sceneManager.translationTo(new StageScene(getApplication(), false, 1));
+                break;
+            }
+        }
+    }
+
+    private void updatePlayerList() {
+        // TODO: get input and update list
+        final IInput input = getApplication().getInput();
+
+        List<SyncList> syncLists = input.getSyncList();
+
+        for (SyncList syncList : syncLists) {
+            mWindowPlayerList.updatePlayerList((List<String>)syncList.getData());
+        }
+    }
+    // endregion ClientSideOnly
 }
