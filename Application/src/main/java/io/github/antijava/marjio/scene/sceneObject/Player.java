@@ -25,6 +25,7 @@ import java.util.*;
 public class Player extends SceneObjectObjectBase implements Constant {
     public static final double VELOCITY_LIMIT =
             (double)BLOCK_SIZE / 2.0D - 1.0D;
+    public static final double HUMAN_LIMTT = 6.0;
 
     public static final Key[] action_keys = {
        Key.MOVE_LEFT, Key.MOVE_RIGHT, Key.JUMP, Key.CAST
@@ -143,8 +144,8 @@ public class Player extends SceneObjectObjectBase implements Constant {
     @Override
     public void update() {
 
-        mX += Math.round(mVelocityX);
-        mY += Math.round(mVelocityY);
+        mX = getNextX();
+        mY = getNextY();
 
         super.setX(mX);
         super.setY(mY);
@@ -159,7 +160,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
         updateAnimation();
     }
 
-    public UUID getmId() {
+    public UUID getId() {
         return mId;
     }
 
@@ -171,7 +172,6 @@ public class Player extends SceneObjectObjectBase implements Constant {
         return mTick;
 
     }
-
 
     @Override
     public void setX(int x)  {
@@ -207,11 +207,25 @@ public class Player extends SceneObjectObjectBase implements Constant {
     }
 
     public double getVelocityY (){
-        return mVelocityY;
+        return mVelocityY * mVelocityYModify;
     }
 
     public void setVelocityX (double vx) {
         mVelocityX = vx;
+    }
+
+    public void setVelocityXWithModify(double vx) {
+        if (mVelocityXModify < 0.01)
+            mVelocityX = 0.0;
+        else
+            mVelocityX = vx / mVelocityXModify;
+    }
+
+    public void setVelocityYWithModify(double vy) {
+        if (mVelocityYModify < 0.01)
+            mVelocityY = 0.0;
+        else
+            mVelocityY = vy / mVelocityYModify;
     }
 
     public void setVelocityY (double vy) {
@@ -243,6 +257,15 @@ public class Player extends SceneObjectObjectBase implements Constant {
         else
             mVelocityX = Math.signum(mVelocityX) *
                     (Math.abs(mVelocityX) - PhysicsConstant.friction);
+
+        if (mVelocityX > 0)
+            mVelocityX = Math.min(HUMAN_LIMTT, mVelocityX);
+        else
+            mVelocityX = Math.max(-HUMAN_LIMTT, mVelocityX);
+
+        if (Math.abs(Math.abs(mVelocityX) - HUMAN_LIMTT) < 0.01)
+            mAccelerationX = Math.signum(mVelocityX) *
+                    (PhysicsConstant.friction - 1e-5);
 
         mVelocityY += mAccelerationY + PhysicsConstant.gravity;
     }

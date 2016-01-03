@@ -12,6 +12,9 @@ public interface IKeyInput {
 
     boolean isReleased(Key key);
 
+    /**
+     * with key pressed for a while then key is repeat.
+     * */
     boolean isRepeat(Key key);
 
     boolean isKeyUp(Key key);
