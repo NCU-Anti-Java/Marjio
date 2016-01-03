@@ -67,7 +67,6 @@ public class RoomScene extends SceneBase implements Constant {
 
             if (mIsServer && getApplication().getServer().isRunning()) {
                 checkClientRequest();
-                //broadcastPlayerList();
             } else {
                 updatePlayerList();
                 checkServerStatus();
@@ -228,6 +227,7 @@ public class RoomScene extends SceneBase implements Constant {
                 client.setIsJoined(false);
                 mWindowPlayerList.delPlayer(client.getClientID().toString());
             }
+
             broadcastPlayerList();
         }
     }
