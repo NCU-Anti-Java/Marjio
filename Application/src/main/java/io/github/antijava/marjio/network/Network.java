@@ -58,10 +58,10 @@ public class Network implements IClient, IServer, Constant {
             throw new UnsupportedOperationException();
         }
 
+        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
         mServer.start();
         mApplication.getLogger().info("Server started.");
 
-        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
         mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
         mRunningFlag = true;
         mIsServerFlag = true;
