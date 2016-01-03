@@ -38,6 +38,9 @@ public final class Input implements IInput {
     private Vector<Request> mRequests;
     private Vector<Request> mRequestsCached;
 
+    private Vector<SyncList> mSyncList;
+    private Vector<SyncList> mSyncListCached;
+
     private ReadWriteLock mLock;
 
     public Input() {
@@ -53,6 +56,8 @@ public final class Input implements IInput {
         mStatusesCached = new Vector<>();
         mRequests = new Vector<>();
         mRequestsCached = new Vector<>();
+        mSyncList = new Vector<>();
+        mSyncListCached = new Vector<>();
 
         mLock = new ReentrantReadWriteLock();
     }
@@ -82,6 +87,12 @@ public final class Input implements IInput {
         mStatusesCached = mStatuses;
         mStatuses = tmpStatuses;
         mStatuses.clear();
+
+        // Switching using Vector for optimization
+        final Vector<SyncList> tmpSyncList = mSyncListCached;
+        mSyncListCached = mSyncList;
+        mSyncList = tmpSyncList;
+        mSyncList.clear();
 
         // Unlock
         mLock.writeLock().unlock();
@@ -163,6 +174,9 @@ public final class Input implements IInput {
     }
 
     @Override
+    public List<SyncList> getSyncList() { return mSyncListCached; }
+
+    @Override
     public void triggerEvent(Event evt) {
         mLock.readLock().lock();
 
@@ -186,6 +200,8 @@ public final class Input implements IInput {
                     mStatuses.add((Status) data);
                 } else if (data instanceof Request) {
                     mRequests.add((Request) data);
+                } else if (data instanceof SyncList) {
+                    mSyncList.add((SyncList) data);
                 }
                 break;
             }

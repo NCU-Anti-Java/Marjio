@@ -13,6 +13,7 @@ import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowIPAddressInput;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -165,7 +166,9 @@ public class JoinScene extends SceneBase implements Constant {
                     if (System.currentTimeMillis() - startTime > timeOut) {
                         waitingFlag = false;
                     }
-                    for (Request request : input.getRequest() ) {
+                    final List<Request> requests = input.getRequest();
+
+                    for (Request request : requests ) {
                         if (request.getType() == Request.Types.ClientCanJoinRoom) {
                             sceneManager.translationTo(new RoomScene(getApplication(), false));
                             client.setMyId(request.getClientID());

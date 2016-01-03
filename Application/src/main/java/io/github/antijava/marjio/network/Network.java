@@ -129,7 +129,7 @@ public class Network implements IClient, IServer, Constant {
 
     @Override
     public void broadcast(Packable packableObj) throws Exception {
-        mServer.sendToAllUDP(packableObj);
+        mServer.sendToAllUDP(Packer.PackableToData(packableObj));
     }
 
     @Override

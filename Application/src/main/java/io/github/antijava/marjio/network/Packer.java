@@ -1,16 +1,12 @@
 package io.github.antijava.marjio.network;
 
-import io.github.antijava.marjio.common.input.Event;
-import io.github.antijava.marjio.common.input.Request;
-import io.github.antijava.marjio.common.input.SceneObjectStatus;
-import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.common.network.PackData;
-import io.github.antijava.marjio.common.network.Packable;
-import io.github.antijava.marjio.common.network.RequestData;
-import io.github.antijava.marjio.common.network.StatusData;
+import io.github.antijava.marjio.common.input.*;
+import io.github.antijava.marjio.common.network.*;
 
 import javax.xml.crypto.Data;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,6 +30,8 @@ public class Packer {
             return DataToRequest((RequestData) data);
         } else if (data instanceof StatusData) {
             return DataToStatus((StatusData) data);
+        } else if (data instanceof SyncListData) {
+            return DataToSyncList((SyncListData) data);
         }
 
         throw new IllegalArgumentException();
@@ -45,11 +43,22 @@ public class Packer {
             return RequestToData((Request) packableObj);
         } else if (packableObj instanceof Status) {
             return StatustToData((Status) packableObj);
+        } else if (packableObj instanceof SyncList) {
+            return SyncListToData((SyncList) packableObj);
         }
 
         throw new IllegalArgumentException();
     }
 
+    public static SyncListData SyncListToData(SyncList syncList) {
+        SyncListData data = new SyncListData();
+        data.playerList = (ArrayList)syncList.getData();
+        return data;
+    }
+
+    public static SyncList DataToSyncList(SyncListData data) {
+        return new SyncList(data.playerList);
+    }
 
     public static RequestData RequestToData(Request request) {
         RequestData data = new RequestData();

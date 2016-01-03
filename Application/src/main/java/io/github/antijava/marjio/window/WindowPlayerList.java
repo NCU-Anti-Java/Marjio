@@ -58,6 +58,13 @@ public class WindowPlayerList extends WindowSelectableBase {
         refresh();
     }
 
+    public void delPlayer(final String player) {
+        System.out.println(player);
+        mPlayerList.removeIf(s -> player.equals(s));
+        setItemMax(mPlayerList.size());
+        refresh();
+    }
+
     public List<String> getPlayerList() {
         return mPlayerList;
     }
