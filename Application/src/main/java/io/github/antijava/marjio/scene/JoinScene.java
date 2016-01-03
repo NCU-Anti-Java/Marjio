@@ -85,32 +85,6 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowCommand.update();
     }
 
-    private void setTimeout() {
-        mTimeout = DEFAULT_TIMEOUT;
-    }
-
-    private boolean checkJoin() {
-
-        final ISceneManager sceneManager = getApplication().getSceneManager();
-        final IInput input = getApplication().getInput();
-        final List<Request> requests = input.getRequest();
-        final IClient client = getApplication().getClient();
-        final Logger logger = getApplication().getLogger();
-
-        logger.log(Level.INFO, "checkJoin");
-
-        for (Request request : requests) {
-            if (request.getType() == Request.Types.ClientCanJoinRoom) {
-                client.setMyId(request.getClientID());
-                mTimeout = 0;
-                sceneManager.translationTo(new RoomScene(getApplication(), false));
-                return true;
-            }
-        }
-        mTimeout--;
-        return false;
-    }
-
     @Override
     public void dispose() {
         super.dispose();
@@ -184,4 +158,29 @@ public class JoinScene extends SceneBase implements Constant {
         mWindowCommand.setY(y);
     }
 
+    private void setTimeout() {
+        mTimeout = DEFAULT_TIMEOUT;
+    }
+
+    private boolean checkJoin() {
+
+        final ISceneManager sceneManager = getApplication().getSceneManager();
+        final IInput input = getApplication().getInput();
+        final List<Request> requests = input.getRequest();
+        final IClient client = getApplication().getClient();
+        final Logger logger = getApplication().getLogger();
+
+        logger.log(Level.INFO, "checkJoin");
+
+        for (Request request : requests) {
+            if (request.getType() == Request.Types.ClientCanJoinRoom) {
+                client.setMyId(request.getClientID());
+                mTimeout = 0;
+                sceneManager.translationTo(new RoomScene(getApplication(), false));
+                return true;
+            }
+        }
+        mTimeout--;
+        return false;
+    }
 }
