@@ -36,7 +36,7 @@ public class StageScene extends SceneBase implements Constant {
 
     boolean mIsServer;
     
-    public StageScene(IApplication application, int stage) {
+    public StageScene(IApplication application, boolean isServer, int stage) {
         super(application);
         final IGraphics graphics = application.getGraphics();
 
