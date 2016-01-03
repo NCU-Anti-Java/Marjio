@@ -14,8 +14,10 @@ import io.github.antijava.marjio.common.network.ClientInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Zheng-Yuan on 12/27/2015.
@@ -36,22 +38,28 @@ public class RoomScene extends SceneBase implements Constant {
         mCurrentChoice = 0;
 
         initWindows();
-
-        if (mIsServer) {
-            try {
-                application.getServer().start();
-                mWindowPlayerList.addPlayer(getApplication().getServer().getMyId().toString());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     @Override
     public void update() {
         super.update();
+
+        if (mIsServer && !getApplication().getServer().isRunning()) {
+            try {
+                getApplication().getServer().start();
+                mWindowPlayerList.addPlayer(getApplication().getServer().getMyId().toString());
+            } catch (IOException e) {
+                final Logger logger = getApplication().getLogger();
+                final ISceneManager sceneManager = getApplication().getSceneManager();
+
+                // TODO: Let user know the port of game use is occupied, so we can't start server
+
+                logger.info("Host game failed. The port of game using is occupied.");
+                sceneManager.translationTo(new MainScene(getApplication()));
+                return;
+            }
+        }
+
         try {
             mWindowCommand.update();
             mWindowPlayerList.update();

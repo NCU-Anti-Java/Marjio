@@ -16,7 +16,7 @@ public interface IServer {
     /**
      * Start to listen on socket.
      */
-    void start() throws InterruptedException, UnsupportedOperationException, IOException;
+    void start() throws IOException;
 
     /**
      * Stop listening.
