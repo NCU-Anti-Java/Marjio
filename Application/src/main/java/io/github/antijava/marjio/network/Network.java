@@ -162,7 +162,7 @@ public class Network implements IClient, IServer, Constant {
     @Override
     public void stop() throws InterruptedException, UnsupportedOperationException {
         if (!mRunningFlag) {
-            return;
+            throw new UnsupportedOperationException();
         }
 
         mRunningFlag = false;
