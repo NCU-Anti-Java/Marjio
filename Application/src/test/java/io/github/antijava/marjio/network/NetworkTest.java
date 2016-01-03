@@ -211,6 +211,7 @@ public class NetworkTest implements Constant{
                         Assert.assertTrue(a.get(i).equals(mSyncList.getData().get(i)));
                     }
 
+                    return;
                 }
                 Assert.assertTrue(false);
             }
