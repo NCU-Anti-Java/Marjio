@@ -71,7 +71,7 @@ public class RoomScene extends SceneBase implements Constant {
             checkKeyState();
             checkStatus();
 
-            if (mIsServer) {
+            if (mIsServer && getApplication().getServer().isRunning()) {
                 checkClientRequest();
                 //broadcastPlayerList();
             } else {
