@@ -32,8 +32,6 @@ public final class Input implements IInput, IKeyInput {
     private Map<Class<? extends Packable>, List<Packable>> mNetWorkData;
     private Map<Class<? extends Packable>, List<Packable>> mNetWorkDataCached;
 
-    private Vector<TickRequest> mTickRequests;
-    private Vector<TickRequest> mTickRequestsCached;
 
     private ReadWriteLock mLock;
 
@@ -204,7 +202,7 @@ public final class Input implements IInput, IKeyInput {
 
     @Override
     public List<TickRequest> getTickRequest() {
-        return mTickRequestsCached;
+        return (List<TickRequest>)getNetWorkData(TickRequest.class);
     }
 
     @Override
