@@ -76,7 +76,7 @@ public class RoomScene extends SceneBase implements Constant {
                 //broadcastPlayerList();
             } else {
                 updatePlayerList();
-                checkServerCacnel();
+                checkServerStatus();
             }
 
 
@@ -85,7 +85,7 @@ public class RoomScene extends SceneBase implements Constant {
         }
     }
 
-    private void checkServerCacnel() throws Exception {
+    private void checkServerStatus() throws Exception {
         final IInput input = getApplication().getInput();
         final ISceneManager sceneManager = getApplication().getSceneManager();
         List<Request> requests = input.getRequest();
@@ -93,6 +93,9 @@ public class RoomScene extends SceneBase implements Constant {
         for (Request request : requests) {
             if(request.getType() == Request.Types.ServerCancelRoom) {
                 sceneManager.translationTo(new MainScene(getApplication()));
+                break;
+            } else if (request.getType() == Request.Types.ClientCanStartGame) {
+                sceneManager.translationTo(new StageScene(getApplication(), false, 1));
                 break;
             }
         }
@@ -230,6 +233,13 @@ public class RoomScene extends SceneBase implements Constant {
                 // TODO: Only server can start game, then server broadcast to clients to start game.
                 if(mIsServer) {
 
+                    try {
+                        Request request = new Request(Request.Types.ClientCanStartGame);
+                        getApplication().getServer().broadcastTCP(request);
+                        getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             }
