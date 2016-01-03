@@ -26,14 +26,17 @@ public class Network implements IClient, IServer, Constant {
     // Common Fields
     private IApplication mApplication;
     private boolean mRunningFlag;
-    private boolean mConnectedFlag;
-    private Server mServer;
-    private Client mClient;
+    private boolean mIsServerFlag;
+    private UUID mMyId;
 
     // Server Fields
-    private UUID mMyId;
+    private Server mServer;
     private List<ClientInfo> mClientList;
     private HashMap<UUID, Connection> mConnectionMap;
+
+    // Client Fields
+    private Client mClient;
+    private boolean mConnectedFlag;
 
     public Network(IApplication application) {
         mApplication = application;
@@ -46,49 +49,127 @@ public class Network implements IClient, IServer, Constant {
 
         mServer.getKryo().register(byte[].class);
         mClient.getKryo().register(byte[].class);
-
     }
 
+    // region ServerSide(Host)
     @Override
-    public void start() {
+    public void start() throws IOException {
         if (mRunningFlag) {
             throw new UnsupportedOperationException();
         }
 
-        try {
-            mServer.start();
-            mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
-            mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
-            mRunningFlag = true;
-            mMyId = UUID.randomUUID();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        mServer.start();
+        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
+        mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
+        mRunningFlag = true;
+        mIsServerFlag = true;
+        mMyId = UUID.randomUUID();
     }
 
+    @Override
+    public void send(Packable packableObj, UUID clientID) throws Exception {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        Connection connection = mConnectionMap.get(clientID);
+        connection.sendUDP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public void sendTCP(Packable packableObj) throws Exception {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        mApplication.getLogger().info("Client send message");
+        mClient.sendTCP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public void broadcast(Packable packableObj) throws Exception {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    // server only
+    @Override
+    public void broadcastTCP(Packable packableObject) throws Exception {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        mServer.sendToAllTCP(Packer.PackabletoByteArray(packableObject));
+    }
+
+    @Override
+    public List<ClientInfo> getClients() {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        return mClientList;
+    }
+    // endregion ServerSide(Host)
+
+    // region ClientSide(OtherPlayer)
     @Override
     public void start(InetAddress hostAddress) throws IOException {
         if (mRunningFlag) {
             throw new UnsupportedOperationException();
         }
 
-        try {
-            mClient.start();
-            mClient.addListener(new ClientReceiver(mApplication));
-            mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
-
-            mRunningFlag = true;
-        } catch (IOException e) {
-            throw e;
-        }
+        mClient.start();
+        mClient.addListener(new ClientReceiver(mApplication));
+        mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
+        mRunningFlag = true;
+        mIsServerFlag = false;
     }
 
     @Override
+    public void send(Packable packableObj) throws Exception {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        mClient.sendUDP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        Connection connection = mConnectionMap.get(clientID);
+        connection.sendTCP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public boolean isConnected() {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
+        return mConnectedFlag;
+    }
+    // endregion ClientSide(OtherPlayer)
+
+    // region BothSide
+    @Override
     public void stop() throws InterruptedException, UnsupportedOperationException {
+        if (!mRunningFlag) {
+            throw new UnsupportedOperationException();
+        }
+
         mRunningFlag = false;
-        mServer.stop();
-        if (mClient != null) {
+
+        if (mIsServerFlag) {
+            mServer.stop();
+        } else {
             mClient.stop();
         }
     }
@@ -99,57 +180,13 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public boolean isConnected() {
-        return mConnectedFlag;
-    }
-
-    @Override
-    public void send(Packable packableObj) throws Exception {
-        mClient.sendUDP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void sendTCP(Packable packableObj) throws Exception {
-        mApplication.getLogger().info("Client send message");
-        mClient.sendTCP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void send(Packable packableObj, UUID clientID) throws Exception {
-        Connection connection = mConnectionMap.get(clientID);
-        connection.sendUDP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
-        Connection connection = mConnectionMap.get(clientID);
-        connection.sendTCP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void broadcast(Packable packableObj) throws Exception {
-        mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void broadcastTCP(Packable packableObject) throws Exception {
-        mServer.sendToAllTCP(Packer.PackabletoByteArray(packableObject));
-    }
-
-    @Override
-    public List<ClientInfo> getClients() {
-        return mClientList;
-    }
-
-    @Override
     public void setMyId(UUID mMyId) {
         this.mMyId = mMyId;
     }
 
     @Override
     public UUID getMyId() {
-
         return mMyId;
     }
-
+    // endregion BothSide
 }
