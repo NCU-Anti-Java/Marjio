@@ -35,6 +35,7 @@ public class JoinScene extends SceneBase implements Constant {
 
     public JoinScene(IApplication application) {
         super(application);
+        application.getLogger().info("Enter JoinScene");
 
         initWindows();
         moveWindows((GAME_WIDTH - mWindowBack.getWidth()) / 2,
@@ -92,6 +93,7 @@ public class JoinScene extends SceneBase implements Constant {
     public void dispose() {
         super.dispose();
 
+        getApplication().getLogger().info("Leave JoinScene");
         mWindowBack.dispose();
         mWindowCommand.dispose();
         mWindowIPAddressInput.dispose();
@@ -123,7 +125,7 @@ public class JoinScene extends SceneBase implements Constant {
                     mWindowCommand.setActive(false);
                     mWindowIPAddressInput.setActive(false);
 
-                    logger.log(Level.INFO, "Client sent \"ClientWannaJoinRoom\" request to server.");
+                    logger.info("Client sent \"ClientWannaJoinRoom\" request to server.");
 
                     return true;
                 }
@@ -131,7 +133,7 @@ public class JoinScene extends SceneBase implements Constant {
                 // Unable to connect server. throw by client.start
                 catch (IOException e) {
                     final Logger logger = getApplication().getLogger();
-                    logger.info(e.getMessage());
+                    logger.info(e.getMessage() + " and stopped client.");
 
                     // TODO: Let user know connection failed
                 }
@@ -222,7 +224,7 @@ public class JoinScene extends SceneBase implements Constant {
                 client.setMyId(request.getClientID());
                 mResponseTimeout = 0;
                 sceneManager.translationTo(new RoomScene(getApplication(), false));
-                logger.log(Level.INFO, "Client get \"ClientCanJoinRoom\" request from server.");
+                logger.info("Client get \"ClientCanJoinRoom\" request from server.");
 
                 return true;
             }
@@ -230,6 +232,7 @@ public class JoinScene extends SceneBase implements Constant {
         mResponseTimeout--;
 
         if (mResponseTimeout == 0) {
+            logger.info("Client waiting response time out ");
             mWindowCommand.setActive(true);
             try {
                 client.stop();
