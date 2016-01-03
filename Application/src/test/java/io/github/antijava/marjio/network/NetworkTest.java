@@ -1,8 +1,5 @@
 package io.github.antijava.marjio.network;
 
-import com.esotericsoftware.kryo.serializers.ExternalizableSerializer;
-import com.esotericsoftware.kryo.serializers.JavaSerializer;
-
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -13,8 +10,6 @@ import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.common.network.RequestData;
-import io.github.antijava.marjio.common.network.StatusData;
 import io.github.antijava.marjio.constant.Constant;
 import org.junit.After;
 import org.junit.Assert;

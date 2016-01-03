@@ -1,21 +1,13 @@
 package io.github.antijava.marjio.network;
 
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.ExternalizableSerializer;
-import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.JsonSerialization;
 import com.esotericsoftware.kryonet.Server;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.IClient;
 import io.github.antijava.marjio.common.IServer;
-import io.github.antijava.marjio.common.input.Request;
-import io.github.antijava.marjio.common.input.SceneObjectStatus;
-import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.common.network.Packable;
-import io.github.antijava.marjio.common.network.RequestData;
 import io.github.antijava.marjio.constant.Constant;
 
 import java.io.IOException;
@@ -55,19 +47,6 @@ public class Network implements IClient, IServer, Constant {
         mServer.getKryo().register(byte[].class);
         mClient.getKryo().register(byte[].class);
 
-        /*
-        mServer.getKryo().register(Request.class, new JavaSerializer());
-        mServer.getKryo().register(Status.class, new ExternalizableSerializer());
-        mServer.getKryo().register(SceneObjectStatus.class, new JavaSerializer());
-        */
-        //mServer.getKryo().register(Status.class);
-
-        /*
-        mClient.getKryo().register(Request.class, new JavaSerializer());
-        mClient.getKryo().register(Status.class, new ExternalizableSerializer());
-        mClient.getKryo().register(SceneObjectStatus.class, new JavaSerializer());
-        */
-        //mClient.getKryo().register(Status.class);
 
     }
 

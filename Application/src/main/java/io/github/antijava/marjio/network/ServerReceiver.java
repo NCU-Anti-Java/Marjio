@@ -4,9 +4,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.input.Event;
-import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.network.ClientInfo;
-import io.github.antijava.marjio.common.network.PackData;
 import io.github.antijava.marjio.common.network.Packable;
 
 import java.util.HashMap;
@@ -30,7 +28,6 @@ public class ServerReceiver extends Listener{
     @Override
     public void received (Connection connection, Object object) {
         if (object instanceof byte[]) {
-            //PackData data = (PackData) object;
             Packable packableObj = Packer.ByteArraytoPackable((byte[])object);
             UUID uuid;
 
