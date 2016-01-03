@@ -59,17 +59,16 @@ public class RoomScene extends SceneBase implements Constant {
             }
         }
 
-
-        mWindowCommand.update();
-        mWindowPlayerList.update();
-        checkKeyState();
-
         if (mIsServer) {
             checkClientRequest();
         } else {
             updatePlayerList();
             checkServerStatus();
         }
+
+        mWindowCommand.update();
+        mWindowPlayerList.update();
+        checkKeyState();
     }
 
     @Override
