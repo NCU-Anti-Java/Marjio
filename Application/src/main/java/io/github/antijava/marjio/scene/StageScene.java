@@ -32,8 +32,9 @@ public class StageScene extends SceneBase implements Constant {
     private final Sprite mTimer;
     private int mCountDown;
 
-    private final Sprite mItemSlot;
-    private final Sprite mItemSlotText;
+    private final Sprite mItemSlot; // Item slot background
+    private final Sprite mItemSlotText; // Text above item slot
+    private Sprite mItemOwned; // Item owned by player
 
     boolean mIsServer;
     
@@ -69,6 +70,12 @@ public class StageScene extends SceneBase implements Constant {
         mItemSlotText.setY(30);
         mItemSlotText.setZ(99);
 
+        // Item owned by player
+        mItemOwned = new SpriteBase(graphics.getDefaultViewport());
+        mItemOwned.setBitmap(graphics.createBitmap(BLOCK_SIZE, BLOCK_SIZE));
+        mItemOwned.setX(30);
+        mItemOwned.setY(50);
+        mItemOwned.setZ(99);
 /*
          //TODO: Fake data
 
@@ -96,6 +103,7 @@ public class StageScene extends SceneBase implements Constant {
         // Draw item slot
         mItemSlot.update();
         mItemSlotText.update();
+        mItemOwned.update();
 
 
         if (mCountDown > 0) {
