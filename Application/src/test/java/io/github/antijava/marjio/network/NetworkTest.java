@@ -10,11 +10,14 @@ import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.SyncList;
 import io.github.antijava.marjio.constant.Constant;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -26,6 +29,7 @@ public class NetworkTest implements Constant{
 
     private SceneObjectStatus mPlayerStatus;
     private Status mStatus;
+    private SyncList mSyncList;
 
     @Before
     public void setUp() throws Exception {
@@ -40,6 +44,7 @@ public class NetworkTest implements Constant{
         mPlayerStatus.ay = 88;
 
         mStatus = new Status(mPlayerStatus, Status.Types.ClientMessage);
+        mSyncList = new SyncList(genArrayList());
     }
 
     @After
@@ -172,5 +177,60 @@ public class NetworkTest implements Constant{
         client.close();
         server.close();
     }
+
+    public ArrayList<String> genArrayList() {
+        ArrayList<String> s = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++)
+            s.add(UUID.randomUUID().toString());
+
+        return s;
+    }
+
+    @Test
+    public void testKryoSendSyncList() throws Exception {
+        SyncList a = new SyncList(genArrayList());
+        Client client = new Client(16384, 8192);
+        client.getKryo().register(byte[].class);
+        Server server = new Server(16384, 8192);
+        server.getKryo().register(byte[].class);
+
+
+        server.start();
+        server.bind(NET_TCP_PORT, NET_UDP_PORT);
+        server.addListener(new Listener() {
+            @Override
+            public void received (Connection connection, Object object) {
+                if (object instanceof byte[]) {
+                    SyncList receiveList = (SyncList) Packer.ByteArraytoPackable((byte[])object);
+
+                    ArrayList a = receiveList.getData();
+                    // TODO: More accurately compare with status.equals(anotherStatus);
+
+                    for (int i = 0 ; i < 10; i++) {
+                        Assert.assertTrue(a.get(i).equals(mSyncList.getData().get(i)));
+                    }
+
+                    return;
+                }
+                Assert.assertTrue(false);
+            }
+        });
+
+
+        client.start();
+        client.connect(5000, "127.0.0.1", NET_TCP_PORT, NET_UDP_PORT);
+
+        client.sendTCP(Packer.PackabletoByteArray(mSyncList));
+
+        Thread.sleep(2000);
+
+        client.stop();
+        server.stop();
+        client.close();
+        server.close();
+    }
+
+
 
 }

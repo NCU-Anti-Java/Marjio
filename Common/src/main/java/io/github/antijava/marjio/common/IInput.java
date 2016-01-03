@@ -3,6 +3,7 @@ package io.github.antijava.marjio.common;
 import io.github.antijava.marjio.common.input.*;
 import io.github.antijava.marjio.common.network.Packable;
 
+import java.lang.annotation.Inherited;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -32,9 +33,12 @@ public interface IInput {
     List<Status> getStatuses();
     List<Request> getRequest();
 
+    List<SyncList> getSyncList();
 
-    @NetWorkData({Status.class, Request.class})
+
+    @NetWorkData({Status.class, Request.class, SyncList.class})
     List<? extends Packable> getNetWorkData(Class c);
 
     void triggerEvent(Event evt);
+
 }

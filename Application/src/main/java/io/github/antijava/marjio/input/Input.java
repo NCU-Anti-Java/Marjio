@@ -53,7 +53,9 @@ public final class Input implements IInput {
 
     private void initNetWorkData() {
         try {
-            Method m = getClass().getMethod("getNetWorkData");
+            Class[] cArg = new Class[1];
+            cArg[0] = Class.class;
+            Method m = IInput.class.getMethod("getNetWorkData", cArg);
             NetWorkData data = m.getAnnotation(NetWorkData.class);
 
             for (Class c : data.value()) {
@@ -167,6 +169,12 @@ public final class Input implements IInput {
     @Override
     public List<Request> getRequest() {
         return (List<Request>)getNetWorkData(Request.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<SyncList> getSyncList() {
+        return (List<SyncList>)getNetWorkData(SyncList.class);
     }
 
     @Override
