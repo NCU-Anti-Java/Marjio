@@ -44,7 +44,7 @@ public class StageScene extends SceneBase implements Constant {
 
 
 
-    public StageScene(IApplication application, int stage) {
+    public StageScene(IApplication application, boolean IsServer, int stage) {
         super(application);
         final IGraphics graphics = application.getGraphics();
 
@@ -58,7 +58,7 @@ public class StageScene extends SceneBase implements Constant {
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
 
-        mIsServer = !application.getServer().getClients().isEmpty();
+        mIsServer = IsServer;
 
         if (mIsServer) {
             mYourPlayerID = application.getServer().getMyId();

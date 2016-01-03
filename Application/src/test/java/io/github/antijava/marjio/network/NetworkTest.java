@@ -34,8 +34,9 @@ public class NetworkTest implements Constant{
     @Before
     public void setUp() throws Exception {
         mPlayerStatus = new SceneObjectStatus();
-        mPlayerStatus.uuid = clientId;
-        mPlayerStatus.type = SceneObjectStatus.Types.Player;
+        mPlayerStatus.setClientID(clientId);
+        mPlayerStatus.setType(Status.Types.ClientMessage);
+        mPlayerStatus.mDataType = SceneObjectStatus.SceneObjectTypes.Player;
         mPlayerStatus.x = 0;
         mPlayerStatus.y = 0;
         mPlayerStatus.vx = 55;
@@ -43,7 +44,7 @@ public class NetworkTest implements Constant{
         mPlayerStatus.ax = 77;
         mPlayerStatus.ay = 88;
 
-        mStatus = new Status(mPlayerStatus, Status.Types.ClientMessage);
+        mStatus = mPlayerStatus;
         mSyncList = new SyncList(genArrayList());
     }
 
