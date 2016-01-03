@@ -29,6 +29,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
         JUMP(0),
         WALK1(1),
         WALK2(2),
+        WALK3(3),
         STOP(3);
 
         private final int mValue;
@@ -303,11 +304,13 @@ public class Player extends SceneObjectObjectBase implements Constant {
                 mAnimationCounter = 0;
             }
             else {
-                if (mAnimationCounter >= 4)
+                if (mAnimationCounter >= 6)
+                    setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK3.getValue()]);
+                else if (mAnimationCounter >= 3)
                     setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK1.getValue()]);
                 else
                     setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK2.getValue()]);
-                mAnimationCounter = ++mAnimationCounter % 10;
+                mAnimationCounter = ++mAnimationCounter % 9;
             }
         }
     }
