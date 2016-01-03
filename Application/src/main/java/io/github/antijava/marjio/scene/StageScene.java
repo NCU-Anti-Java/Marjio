@@ -46,7 +46,7 @@ public class StageScene extends SceneBase implements Constant {
         mCountDown = START_GAME_COUNTER * FPS;
         GameViewPort = graphics.createViewport();
 
-        mTimer = new SpriteBase(application.getGraphics().getDefaultViewport());
+        mTimer = new SpriteBase(graphics.getDefaultViewport());
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
 
