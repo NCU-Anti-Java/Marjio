@@ -49,6 +49,7 @@ public class Network implements IClient, IServer, Constant {
 
     }
 
+    // region ServerSide(Host)
     @Override
     public void start() {
         if (mRunningFlag) {
@@ -64,9 +65,38 @@ public class Network implements IClient, IServer, Constant {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
+    @Override
+    public void send(Packable packableObj, UUID clientID) throws Exception {
+        Connection connection = mConnectionMap.get(clientID);
+        connection.sendUDP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public void sendTCP(Packable packableObj) throws Exception {
+        mApplication.getLogger().info("Client send message");
+        mClient.sendTCP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public void broadcast(Packable packableObj) throws Exception {
+        mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    // server only
+    @Override
+    public void broadcastTCP(Packable packableObject) throws Exception {
+        mServer.sendToAllTCP(Packer.PackabletoByteArray(packableObject));
+    }
+
+    @Override
+    public List<ClientInfo> getClients() {
+        return mClientList;
+    }
+    // endregion ServerSide(Host)
+
+    // region ClientSide(OtherPlayer)
     @Override
     public void start(InetAddress hostAddress) throws IOException {
         if (mRunningFlag) {
@@ -85,6 +115,24 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
+    public void send(Packable packableObj) throws Exception {
+        mClient.sendUDP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
+        Connection connection = mConnectionMap.get(clientID);
+        connection.sendTCP(Packer.PackabletoByteArray(packableObj));
+    }
+
+    @Override
+    public boolean isConnected() {
+        return mConnectedFlag;
+    }
+    // endregion ClientSide(OtherPlayer)
+
+    // region BothSide
+    @Override
     public void stop() throws InterruptedException, UnsupportedOperationException {
         mRunningFlag = false;
         mServer.stop();
@@ -99,57 +147,13 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public boolean isConnected() {
-        return mConnectedFlag;
-    }
-
-    @Override
-    public void send(Packable packableObj) throws Exception {
-        mClient.sendUDP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void sendTCP(Packable packableObj) throws Exception {
-        mApplication.getLogger().info("Client send message");
-        mClient.sendTCP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void send(Packable packableObj, UUID clientID) throws Exception {
-        Connection connection = mConnectionMap.get(clientID);
-        connection.sendUDP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
-        Connection connection = mConnectionMap.get(clientID);
-        connection.sendTCP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void broadcast(Packable packableObj) throws Exception {
-        mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
-    }
-
-    @Override
-    public void broadcastTCP(Packable packableObject) throws Exception {
-        mServer.sendToAllTCP(Packer.PackabletoByteArray(packableObject));
-    }
-
-    @Override
-    public List<ClientInfo> getClients() {
-        return mClientList;
-    }
-
-    @Override
     public void setMyId(UUID mMyId) {
         this.mMyId = mMyId;
     }
 
     @Override
     public UUID getMyId() {
-
         return mMyId;
     }
-
+    // endregion BothSide
 }
