@@ -21,8 +21,6 @@ import java.util.logging.Logger;
  */
 public class RoomScene extends SceneBase implements Constant {
     private final String[] MENU_TEXT = {"Start Game", "Exit Room"};
-    private final int START_GAME = 0;
-    private final int EXIT_ROOM = 1;
     private final boolean mIsServer;
     private int mCurrentChoice;
 
@@ -126,6 +124,9 @@ public class RoomScene extends SceneBase implements Constant {
      * Do option execution
      */
     private void select() {
+        final int START_GAME = 0;
+        final int EXIT_ROOM = 1;
+
         switch(mCurrentChoice) {
             case START_GAME: {
                 if(mIsServer) {
