@@ -21,6 +21,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 
@@ -155,10 +157,13 @@ public class Graphics implements IGraphics, GameConstant {
     public IBitmap loadBitmap(String path) throws NoSuchFileException {
         try {
             final ClassLoader classLoader = getClass().getClassLoader();
-            final File file = new File(classLoader.getResource(path).getFile());
+            final URL resource = classLoader.getResource(path);
+            if (resource == null)
+                throw new NoSuchFileException(path);
+            final File file = new File(resource.getFile());
             final BufferedImage bufferedImage = ImageIO.read(file);
             return new Bitmap(this, bufferedImage);
-        } catch (Exception e) {
+        } catch (IOException e) {
             return null;
         }
     }
