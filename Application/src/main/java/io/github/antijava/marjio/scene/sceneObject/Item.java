@@ -5,15 +5,19 @@ package io.github.antijava.marjio.scene.sceneObject;
  */
 public class Item {
     private final String name;
+    private final ItemType type;
 
     // region Enum
-    enum ItemType {
+    public enum ItemType {
+        None,
         Trap
     }
     // endregion Enum
 
     // region Constructor
     public Item(ItemType type) {
+        this.type = type;
+
         switch (type) {
             case Trap:
                 name = "Trap";
@@ -27,6 +31,9 @@ public class Item {
     // region Getter
     public String getName() {
         return name;
+    }
+    public ItemType getType() {
+        return type;
     }
     // endregion Getter
 }
