@@ -1,10 +1,8 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.SceneManager;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Request;
-import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.input.SyncList;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowCommand;
@@ -14,12 +12,12 @@ import io.github.antijava.marjio.common.network.ClientInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Room Scene
+ * 
  * Created by Zheng-Yuan on 12/27/2015.
  */
 public class RoomScene extends SceneBase implements Constant {
@@ -97,6 +95,9 @@ public class RoomScene extends SceneBase implements Constant {
     }
 
     // region Common
+    /**
+     * Check key trigger
+     */
     private void checkKeyState() {
         final IInput input = getApplication().getInput();
 
@@ -118,6 +119,9 @@ public class RoomScene extends SceneBase implements Constant {
         }
     }
 
+    /**
+     * Do option execution
+     */
     private void select() {
         switch(mCurrentChoice) {
             case START_GAME: {
@@ -161,8 +165,10 @@ public class RoomScene extends SceneBase implements Constant {
     // endregion Common
 
     // region ServerSideOnly
+    /**
+     * broadcast playlist to client with TCP
+     */
     private void broadcastPlayerList() {
-        // TODO: broadcast player list
         ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
         SyncList syncList = new SyncList(playerList);
         getApplication().getServer().broadcastTCP(syncList);
@@ -212,6 +218,9 @@ public class RoomScene extends SceneBase implements Constant {
     // endregion ServerSideOnly
 
     // region ClientSideOnly
+    /**
+     * Check request from server
+     */
     private void checkServerStatus() {
         final IInput input = getApplication().getInput();
         final ISceneManager sceneManager = getApplication().getSceneManager();
@@ -228,6 +237,9 @@ public class RoomScene extends SceneBase implements Constant {
         }
     }
 
+    /**
+     * Update player list of room
+     */
     private void updatePlayerList() {
         // TODO: get input and update list
         final IInput input = getApplication().getInput();
