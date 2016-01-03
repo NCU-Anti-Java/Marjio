@@ -36,7 +36,6 @@ public class SceneObjectStatus extends Status implements IKeyInput {
         Item;
     }
 
-    public SceneObjectStatus() {}
 
     public SceneObjectStatus(UUID id, SceneObjectTypes types) {
         super(id);
