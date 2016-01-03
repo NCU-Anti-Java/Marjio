@@ -119,9 +119,11 @@ public class JoinScene extends SceneBase implements Constant {
                     client.sendTCP(joinRequest);
                     resetTimeout();
 
-                    logger.log(Level.INFO, "Client sent \"ClientWannaJoinRoom\" request to server.");
+                    mWindowBack.setActive(false);
+                    mWindowCommand.setActive(false);
+                    mWindowIPAddressInput.setActive(false);
 
-                    // TODO: Let user know we are waiting response (eg. unable option)
+                    logger.log(Level.INFO, "Client sent \"ClientWannaJoinRoom\" request to server.");
 
                     return true;
                 }
@@ -226,6 +228,15 @@ public class JoinScene extends SceneBase implements Constant {
             }
         }
         mResponseTimeout--;
+
+        if (mResponseTimeout == 0) {
+            mWindowCommand.setActive(true);
+            try {
+                client.stop();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         return false;
     }
