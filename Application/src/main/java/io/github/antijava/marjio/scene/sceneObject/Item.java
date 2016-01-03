@@ -17,7 +17,10 @@ public class Item extends SceneObjectObjectBase {
     // region Enum
     public enum ItemType {
         TrapTool,
-        Trap
+        Trap,
+        SpeedTool,
+        Weapon,
+        Bullet
     }
     // endregion Enum
 
@@ -43,6 +46,21 @@ public class Item extends SceneObjectObjectBase {
             case Trap:
                 mName = "Trap";
                 bitmap = rm.tile("default.png", 15, 6);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            case SpeedTool:
+                mName = "Speed Tool";
+                bitmap = rm.tile("default.png", 11, 2);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            case Weapon:
+                mName = "Weapon";
+                bitmap = rm.tile("default.png", 27, 4);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            case Bullet:
+                mName = "Bullet";
+                bitmap = rm.tile("default.png", 27, 4);
                 bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
                 break;
             default:
