@@ -31,6 +31,13 @@ public interface IServer {
     void broadcast(Packable packableObject) throws Exception;
 
     /**
+     * Broadcast message to all connected clients.
+     *
+     * @param packableObject information package
+     */
+    void broadcastTCP(Packable packableObject) throws Exception;
+
+    /**
      * Send message to specific client
      *
      * @param packableObject information package

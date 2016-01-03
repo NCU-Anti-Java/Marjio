@@ -38,6 +38,7 @@ public class Request implements Packable {
         ClientWannaJoinRoom,
         ClientCanJoinRoom,
         ClientWannaExitRoom,
-        ClientExitedRoom;
+        ClientExitedRoom,
+        ServerCancelRoom;
     }
 }

@@ -133,6 +133,11 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
+    public void broadcastTCP(Packable packableObj) throws Exception {
+        mServer.sendToAllTCP(Packer.PackableToData(packableObj));
+    }
+
+    @Override
     public List<ClientInfo> getClients() {
         return mClientList;
     }

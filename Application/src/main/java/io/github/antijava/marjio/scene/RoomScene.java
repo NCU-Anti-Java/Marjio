@@ -1,5 +1,6 @@
 package io.github.antijava.marjio.scene;
 
+import io.github.antijava.marjio.SceneManager;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Request;
@@ -75,6 +76,7 @@ public class RoomScene extends SceneBase implements Constant {
                 //broadcastPlayerList();
             } else {
                 updatePlayerList();
+                checkServerCacnel();
             }
 
 
@@ -83,11 +85,24 @@ public class RoomScene extends SceneBase implements Constant {
         }
     }
 
+    private void checkServerCacnel() throws Exception {
+        final IInput input = getApplication().getInput();
+        final ISceneManager sceneManager = getApplication().getSceneManager();
+        List<Request> requests = input.getRequest();
+
+        for (Request request : requests) {
+            if(request.getType() == Request.Types.ServerCancelRoom) {
+                sceneManager.translationTo(new MainScene(getApplication()));
+                break;
+            }
+        }
+    }
+
     private void broadcastPlayerList() throws Exception {
         // TODO: broadcast player list
         ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
         SyncList syncList = new SyncList(playerList);
-        getApplication().getServer().broadcast(syncList);
+        getApplication().getServer().broadcastTCP(syncList);
     }
 
     private void updatePlayerList() {
@@ -176,11 +191,16 @@ public class RoomScene extends SceneBase implements Constant {
                 if (mIsServer) {
                     final IServer server = getApplication().getServer();
                     // TODO: Server should broadcast to clients that the room is canceled.
+                    final Request cancelRequest = new Request(Request.Types.ServerCancelRoom);
+
                     try {
+                        server.broadcastTCP(cancelRequest);
                         server.stop();
                     } catch (InterruptedException e) {
                         // TODO
                     } catch (UnsupportedOperationException e) {
+                        // TODO
+                    } catch (Exception e) {
                         // TODO
                     }
                 }
