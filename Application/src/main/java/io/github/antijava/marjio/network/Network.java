@@ -174,6 +174,8 @@ public class Network implements IClient, IServer, Constant {
 
         if (mIsServerFlag) {
             mServer.stop();
+            mConnectionMap.clear();
+            mClientList.clear();
             mApplication.getLogger().info("Server stopped.");
         } else {
             mClient.stop();

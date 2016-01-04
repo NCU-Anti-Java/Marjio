@@ -143,6 +143,7 @@ public class RoomScene extends SceneBase implements Constant {
         switch(mCurrentChoice) {
             case START_GAME: {
                 if(mIsServer) {
+
                     final Request request = new Request(Request.Types.ClientCanStartGame);
                     getApplication().getServer().broadcastTCP(request);
                     getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
@@ -219,6 +220,7 @@ public class RoomScene extends SceneBase implements Constant {
 
             // Client Join
             if (request.getType() == Request.Types.ClientWannaJoinRoom) {
+                if (client.getIsJoined())   continue;
                 server.sendTCP(new Request(client.getClientID(), Request.Types.ClientCanJoinRoom),
                         client.getClientID());
                 client.setIsJoined(true);
