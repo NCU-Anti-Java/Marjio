@@ -382,7 +382,6 @@ public class StageScene extends SceneBase implements Constant {
 
                 case ServerMessage: {
                     if (!mIsServer)
-                        logger.info("get server message");
 
                     if (player == null) {
                         player = new Player(getApplication(),
