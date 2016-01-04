@@ -28,6 +28,7 @@ import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 import io.github.antijava.marjio.scene.sceneObject.SceneObjectObjectBase;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ public class StageScene extends SceneBase implements Constant {
 
     private final Sprite mTimer;
     private int mTick;
+    private List<Item> mItems;
 
     private boolean mGameSet;
 
@@ -81,6 +83,7 @@ public class StageScene extends SceneBase implements Constant {
 
         mIsServer = IsServer;
         mPlayers = new HashMap<>();
+        mItems = new ArrayList<>();
 
         final Logger logger = application.getLogger();
 
@@ -203,28 +206,30 @@ public class StageScene extends SceneBase implements Constant {
         checkGameSet();
 
         if (mGameSet) {
-            UUID[] rankTable = new UUID[mPlayers.size()];
-            Map<UUID, Boolean> used = new HashMap<>();
-            for (int i = 0; i < mPlayers.size(); i++) {
-                UUID maxID = null;
-                double x = -1;
-                for (UUID uuid : mPlayers.keySet()) {
-                    if (used.containsKey(uuid)) continue;
-                    if (mPlayers.get(uuid).getX() > x) {
-                        x = mPlayers.get(uuid).getX();
-                        maxID = uuid;
+            if (mIsServer) {
+                UUID[] rankTable = new UUID[mPlayers.size()];
+                Map<UUID, Boolean> used = new HashMap<>();
+                for (int i = 0; i < mPlayers.size(); i++) {
+                    UUID maxID = null;
+                    double x = -1;
+                    for (UUID uuid : mPlayers.keySet()) {
+                        if (used.containsKey(uuid)) continue;
+                        if (mPlayers.get(uuid).getX() > x) {
+                            x = mPlayers.get(uuid).getX();
+                            maxID = uuid;
+                        }
                     }
+                    rankTable[i] = maxID;
+                    used.put(maxID, true);
                 }
-                rankTable[i] = maxID;
-                used.put(maxID, true);
+                final GameSet data = new GameSet(mYourPlayerID);
+                final IGraphics graphics = getApplication().getGraphics();
+                data.setData(rankTable);
+                getApplication().getServer().broadcastTCP(data);
+                getApplication().getSceneManager().translationTo(new ScoreBoardScene(
+                        getApplication(), mYourPlayerID, rankTable, graphics.snapToBitmap()
+                ));
             }
-            final GameSet data = new GameSet(mYourPlayerID);
-            data.setData(rankTable);
-
-            getApplication().getServer().broadcastTCP(data);
-            getApplication().getSceneManager().translationTo(new ScoreBoardScene(
-                    getApplication(), mYourPlayerID, rankTable, null
-            ));
             return ;
         }
         checkDead(players);
@@ -377,7 +382,6 @@ public class StageScene extends SceneBase implements Constant {
 
                 case ServerMessage: {
                     if (!mIsServer)
-                        logger.info("get server message");
 
                     if (player == null) {
                         player = new Player(getApplication(),
@@ -437,8 +441,11 @@ public class StageScene extends SceneBase implements Constant {
         final List<GameSet> gameSets = input.getGameSet();
         for (GameSet gameSet : gameSets) {
             final ISceneManager sceneManager = getApplication().getSceneManager();
+            final IGraphics graphics = getApplication().getGraphics();
+            final UUID[] uuids = gameSet.getData();
+
             sceneManager.translationTo(new ScoreBoardScene(
-                    getApplication(), mYourPlayerID, gameSet.getData(), null));
+                    getApplication(), mYourPlayerID, uuids, graphics.snapToBitmap()));
             mGameSet = true;
             break;
         }
@@ -577,14 +584,28 @@ public class StageScene extends SceneBase implements Constant {
                         player.setVelocityYWithModify(nvy);
                         player.setAccelerationY(0.0);
 
-                        if (b.getType() == Block.Type.WOOD) {
+                        List<Block.Type> itemTypes = new ArrayList<>();
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_BULLET);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_GUN);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_SPEED);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_TRAP);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_TRAP);
+
+                        if (b.getType() == Block.Type.WOOD || itemTypes.contains(b.getType())) {
                             int col = (int) Math.floor(b.getX() / BLOCK_SIZE);
                             int row = (int) Math.floor(b.getY() / BLOCK_SIZE);
+                            int x = b.getX();
+                            int y = b.getY();
+                            int z = b.getZ();
 
-                            Block airBlock = new Block(Block.Type.AIR.getValue(), b.getX(), b.getY(), GameViewPort, null);
+                            Block airBlock = new Block(Block.Type.AIR.getValue(), x, y, GameViewPort, null);
                             mMap.getBlock(row, col).dispose();
                             mMap.setBlock(row, col, airBlock);
 
+                            if (itemTypes.contains(b.getType())) {
+                                Item.ItemType type = Item.ItemType.values()[b.getType().getValue() - 4];
+                                mItems.add(new Item(GameViewPort, getApplication(), x, y, z, type));
+                            }
                         }
                     } else if (b.getY() < player.getY()) {
                         player.setVelocityY(0.0);

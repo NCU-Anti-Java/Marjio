@@ -31,7 +31,15 @@ public class Block extends SceneObjectObjectBase {
         WIN_LINE(3),
 
         // Block which could be broken and generate item
-        ITEM_BLOCK(4);
+        ITEM_BLOCK_SUPER_TRAP(4),
+
+        ITEM_BLOCK_TRAP(5),
+
+        ITEM_BLOCK_SUPER_SPEED(6),
+
+        ITEM_BLOCK_SUPER_GUN(7),
+
+        ITEM_BLOCK_SUPER_BULLET(8);
 
 
 
@@ -87,7 +95,19 @@ public class Block extends SceneObjectObjectBase {
                 mType = Type.WIN_LINE;
                 break;
             case 4:
-                mType = Type.ITEM_BLOCK;
+                mType = Type.ITEM_BLOCK_SUPER_TRAP;
+                break;
+            case 5:
+                mType = Type.ITEM_BLOCK_TRAP;
+                break;
+            case 6:
+                mType = Type.ITEM_BLOCK_SUPER_SPEED;
+                break;
+            case 7:
+                mType = Type.ITEM_BLOCK_SUPER_GUN;
+                break;
+            case 8:
+                mType = Type.ITEM_BLOCK_SUPER_BULLET;
                 break;
         }
     }

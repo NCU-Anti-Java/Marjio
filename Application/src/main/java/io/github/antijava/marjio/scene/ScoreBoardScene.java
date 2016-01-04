@@ -32,7 +32,6 @@ public class ScoreBoardScene extends SceneBase {
         mBackground = new SpriteBase(application.getGraphics().getDefaultViewport());
         mBackground.setBitmap(background);
         mWindowScoreBoard = new WindowScoreBoard(application, yourPlayerUUID, rankTable);
-        application.getLogger().info("In Scoreboard");
     }
 
     @Override
@@ -50,14 +49,22 @@ public class ScoreBoardScene extends SceneBase {
             sceneManager.translationTo(new MainScene(getApplication()));
         }
 
-        getApplication().getLogger().info("In Scoreboard update");
-
     }
 
     @Override
     public void dispose() {
         super.dispose();
 
+        try {
+            getApplication().getClient().stop();
+        }
+        catch (Exception e) {
+        }
+        try {
+            getApplication().getServer().stop();
+        }
+        catch (Exception e) {
+        }
         mWindowScoreBoard.dispose();
         mBackground.dispose();
     }

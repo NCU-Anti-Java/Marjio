@@ -1,6 +1,10 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
+import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.ISceneManager;
+import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.SyncList;
@@ -239,6 +243,7 @@ public class RoomScene extends SceneBase implements Constant {
 
             // Client Join
             if (request.getType() == Request.Types.ClientWannaJoinRoom) {
+                if (client.getIsJoined())   continue;
                 server.sendTCP(new Request(client.getClientID(), Request.Types.ClientCanJoinRoom),
                         client.getClientID());
                 client.setIsJoined(true);
@@ -273,6 +278,7 @@ public class RoomScene extends SceneBase implements Constant {
             if(request.getType() == Request.Types.ServerCancelRoom) {
                 logger.info("Server canceled game.");
                 sceneManager.translationTo(new MainScene(getApplication()));
+                getApplication().getClient().stop();
                 return true;
             } else if (request.getType() == Request.Types.ClientCanStartGame) {
                 logger.info("Server start game.");
