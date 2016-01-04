@@ -160,6 +160,13 @@ public class WindowBase extends SpriteBase implements WindowConstant {
         mCursorDirty = true;
     }
 
+    @Override
+    public void setOpacity(final int opacity) {
+        super.setOpacity(opacity);
+
+        dirty();
+    }
+
     public void setCursorRect(final Rectangle rect) {
         if (rect != null) {
             if (rect.width < 16)
@@ -227,8 +234,12 @@ public class WindowBase extends SpriteBase implements WindowConstant {
         if (!mDirty)
             return;
 
+        mBitmap.clear();
+        if (getOpacity() == 255)
+            return;
+
         mBitmap.blt(0, 0, mBackgroundBitmap, mBackgroundBitmap.getRect(), mBackgroundOpacity);
-        mBitmap.blt(16, 16, mContentBitmap, mContentBitmap.getRect(), 0);
+        mBitmap.blt(16, 16, mContentBitmap, mContentBitmap.getRect(), getOpacity());
 
         if (isActive() && getCursorRect() != null) {
             mCursorAnimationIdx = (mCursorAnimationIdx + 1) % CURSOR_ANIMATION_SRC.length;

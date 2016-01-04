@@ -6,6 +6,7 @@ import io.github.antijava.marjio.common.input.Request;
 import io.github.antijava.marjio.common.input.SyncList;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowCommand;
+import io.github.antijava.marjio.window.WindowMessage;
 import io.github.antijava.marjio.window.WindowPlayerList;
 import io.github.antijava.marjio.common.network.ClientInfo;
 
@@ -26,6 +27,7 @@ public class RoomScene extends SceneBase implements Constant {
 
     private WindowCommand mWindowCommand;
     private WindowPlayerList mWindowPlayerList;
+    private WindowMessage mWindowMessage;
 
     // unit: how many frame
     private int mBroadCasePeriod = 0;
@@ -63,11 +65,6 @@ public class RoomScene extends SceneBase implements Constant {
             }
         }
 
-
-
-        mWindowCommand.update();
-        mWindowPlayerList.update();
-
         if (mIsServer) {
             checkClientRequest();
 
@@ -79,10 +76,17 @@ public class RoomScene extends SceneBase implements Constant {
             }
         } else {
             updatePlayerList();
-            checkServerStatus();
+            if (checkServerStatus())
+                return;
         }
 
-        checkKeyState();
+        if (mWindowMessage == null || mWindowMessage.isDisposed() || !mWindowMessage.isActive()) {
+            mWindowCommand.update();
+            mWindowPlayerList.update();
+            checkKeyState();
+        } else {
+            mWindowMessage.update();
+        }
     }
 
     @Override
@@ -92,6 +96,8 @@ public class RoomScene extends SceneBase implements Constant {
         getApplication().getLogger().info("Leave RoomScene");
         mWindowPlayerList.dispose();
         mWindowCommand.dispose();
+        if (mWindowMessage != null)
+            mWindowMessage.dispose();
     }
 
     /**
@@ -143,9 +149,23 @@ public class RoomScene extends SceneBase implements Constant {
         switch(mCurrentChoice) {
             case START_GAME: {
                 if(mIsServer) {
-                    final Request request = new Request(Request.Types.ClientCanStartGame);
-                    getApplication().getServer().broadcastTCP(request);
-                    getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
+                    if (mWindowPlayerList.getPlayerList().size() < 2) {
+                        if (mWindowMessage != null)
+                            mWindowMessage.dispose();
+                        mWindowMessage = new WindowMessage(getApplication(), "Players must be 2 or more.", 450);
+                        mWindowMessage.setZ(999);
+                        mWindowMessage.setActive(true);
+                    } else {
+                        final Request request = new Request(Request.Types.ClientCanStartGame);
+                        getApplication().getServer().broadcastTCP(request);
+                        getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
+                    }
+                } else {
+                    if (mWindowMessage != null)
+                        mWindowMessage.dispose();
+                    mWindowMessage = new WindowMessage(getApplication(), "Only host can start the game.", 450);
+                    mWindowMessage.setZ(999);
+                    mWindowMessage.setActive(true);
                 }
                 break;
             }
@@ -243,7 +263,7 @@ public class RoomScene extends SceneBase implements Constant {
     /**
      * Check request from server
      */
-    private void checkServerStatus() {
+    private boolean checkServerStatus() {
         final IInput input = getApplication().getInput();
         final ISceneManager sceneManager = getApplication().getSceneManager();
         final Logger logger = getApplication().getLogger();
@@ -253,13 +273,14 @@ public class RoomScene extends SceneBase implements Constant {
             if(request.getType() == Request.Types.ServerCancelRoom) {
                 logger.info("Server canceled game.");
                 sceneManager.translationTo(new MainScene(getApplication()));
-                break;
+                return true;
             } else if (request.getType() == Request.Types.ClientCanStartGame) {
                 logger.info("Server start game.");
                 sceneManager.translationTo(new StageScene(getApplication(), false, 1));
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     /**
