@@ -22,6 +22,8 @@ public class SceneObjectStatus extends Status implements IKeyInput {
     public double ax;
     public double ay;
 
+    public String item_type;
+
     public boolean query;
 
     public int send_tick;
