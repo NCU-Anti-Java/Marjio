@@ -465,7 +465,7 @@ public class StageScene extends SceneBase implements Constant {
 
     private void solveBumpBlock (Player player) {
         List<Block> entityBlocks = mMap.getAdjacentBlocks(player).stream()
-                .filter(block -> block.getType() != Block.Type.AIR)
+                .filter(block -> block.getType() != Block.Type.AIR && block.getType() != Block.Type.WIN_LINE )
                 .collect(Collectors.toList());
 
         for (Block b : entityBlocks) {

@@ -28,7 +28,9 @@ public class Block extends SceneObjectObjectBase {
         /**
          * breakable block
          */
-        WOOD(2);
+        WOOD(2),
+
+        WIN_LINE(3);
 
         private final int mValue;
         Type(int value) {
@@ -76,6 +78,10 @@ public class Block extends SceneObjectObjectBase {
                 break;
             case 2:
                 mType = Type.WOOD;
+                break;
+
+            case 3:
+                mType = Type.WIN_LINE;
                 break;
         }
     }
