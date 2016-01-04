@@ -316,6 +316,8 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mY = data.y;
         mVelocityX = data.vx;
         mVelocityY = data.vy;
+        mVelocityXModify = data.vxm;
+        mVelocityYModify = data.vym;
         mAccelerationX = data.ax;
         mAccelerationY = data.ay;
         mStatusUpdate = true;
@@ -335,6 +337,8 @@ public class Player extends SceneObjectObjectBase implements Constant {
         data.y = mY;
         data.vx = mVelocityX;
         data.vy = mVelocityY;
+        data.vxm = mVelocityXModify;
+        data.vym = mVelocityYModify;
         data.ax = mAccelerationX;
         data.ay = mAccelerationY;
 
