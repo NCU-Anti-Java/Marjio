@@ -7,4 +7,5 @@ public interface SceneObjectConstant {
     String BLOCK_IMAGE = "ctiles.png";
     int BLOCK_SIZE = 50;
     int PLAYER_SIZE = 50;
+    int MAP_SCROLL_PADDING = GameConstant.GAME_WIDTH / 3;
 }
