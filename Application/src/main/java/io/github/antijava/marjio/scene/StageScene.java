@@ -1,12 +1,19 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
+import io.github.antijava.marjio.common.IGraphics;
+import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
-import io.github.antijava.marjio.common.input.*;
 
+import io.github.antijava.marjio.common.input.IKeyInput;
+import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
+import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.TickRequest;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
@@ -17,7 +24,12 @@ import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
 import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -181,17 +193,16 @@ public class StageScene extends SceneBase implements Constant {
 
         players.forEach(Player::update);
 
-        //TODO : slide viewport when player is running or out of viewport
-        if (Math.abs(Math.abs(player.getVelocityX()) - Player.HUMAN_LIMTT) < 1e-3)
-            GameViewPort.x -= player.getVelocityX();
+        final int playerCenterX = player.getX() + PLAYER_SIZE / 2;
+        if (playerCenterX > GameViewPort.ox + GAME_WIDTH - MAP_SCROLL_PADDING)
+            GameViewPort.ox = playerCenterX - (GAME_WIDTH - MAP_SCROLL_PADDING);
+        else if (playerCenterX < GameViewPort.ox + MAP_SCROLL_PADDING)
+            GameViewPort.ox = playerCenterX - MAP_SCROLL_PADDING;
 
-
-        /*
-        //TODO: fake data
-         ba.setX(p.getX());
-         ba.setY(p.getY());
-         ba.update();
-        */
+        if (GameViewPort.ox + GAME_WIDTH > mMap.getCol() * BLOCK_SIZE)
+            GameViewPort.ox = mMap.getCol() * BLOCK_SIZE - GAME_WIDTH;
+        else if (GameViewPort.ox < 0)
+            GameViewPort.ox = 0;
 
         if (mIsServer) {
             IServer server = getApplication().getServer();

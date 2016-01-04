@@ -50,6 +50,14 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
                     .log(Level.INFO, "Attemp to load map level > 1");
     }
 
+    public int getRow() {
+        return mRow;
+    }
+
+    public int getCol() {
+        return mCol;
+    }
+
     public List<Block> getAdjacentBlocks(Player player) {
         final int x = player.getX() / BLOCK_SIZE;
         final int y = player.getY() / BLOCK_SIZE;
