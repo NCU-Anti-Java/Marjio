@@ -31,6 +31,11 @@ public interface IBitmap extends Disposable {
      * @param height The new height of the bitmap.
      */
     void resize(int width, int height);
+
+    /**
+     * Blur the bitmap.
+     */
+    void blur();
     // endregion Drawing
 
     // region Draw Text

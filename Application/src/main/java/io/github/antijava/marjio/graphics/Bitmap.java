@@ -21,6 +21,8 @@ import java.awt.font.GlyphVector;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 
 /**
  * @author Jason
@@ -79,6 +81,24 @@ public class Bitmap implements IBitmap {
         mImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         mAwtGraphics2D = mImage.createGraphics();
         mAwtGraphics2D.drawImage(scaledImage, 0, 0, null);
+    }
+
+    @Override
+    public void blur() {
+        final float weight = 1.0f/9.0f;
+        final float[] elements = {
+                weight, weight, weight,
+                weight, weight, weight,
+                weight, weight, weight
+        };
+
+        final Kernel k = new Kernel(3, 3, elements);
+        final ConvolveOp op = new ConvolveOp(k);
+        final BufferedImage dest = new BufferedImage(getWidth(), getHeight(), mImage.getType());
+        op.filter(mImage, dest);
+
+        clear();
+        mAwtGraphics2D.drawImage(dest, 0, 0, null);
     }
     // endregion Drawing
 
