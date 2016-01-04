@@ -1,18 +1,11 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.common.IApplication;
-import io.github.antijava.marjio.common.IClient;
-import io.github.antijava.marjio.common.IGraphics;
-import io.github.antijava.marjio.common.IServer;
+import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Viewport;
 
-import io.github.antijava.marjio.common.input.IKeyInput;
-import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.SceneObjectStatus;
-import io.github.antijava.marjio.common.input.Status;
-import io.github.antijava.marjio.common.input.TickRequest;
+import io.github.antijava.marjio.common.input.*;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
@@ -58,10 +51,10 @@ public class StageScene extends SceneBase implements Constant {
     public StageScene(IApplication application, boolean IsServer, int stage) {
         super(application);
         final IGraphics graphics = application.getGraphics();
+        GameViewPort = application.getGraphics().createViewport();
 
-        mMap = new SceneMap(application, stage);
+        mMap = new SceneMap(application, stage, GameViewPort);
 
-        GameViewPort = application.getGraphics().getDefaultViewport();
 
         mTick = - START_GAME_TICKS;
 
@@ -193,6 +186,7 @@ public class StageScene extends SceneBase implements Constant {
         checkKeyState(input, player);
         checkPlayerBump(players);
         checkGameSet();
+
         if (mGameSet) {
             UUID[] rankTable = new UUID[mPlayers.size()];
             Map<UUID, Boolean> used = new HashMap<>();
@@ -216,6 +210,7 @@ public class StageScene extends SceneBase implements Constant {
             getApplication().getSceneManager().translationTo(new ScoreBoardScene(
                     getApplication(), mYourPlayerID, rankTable, null
             ));
+            return ;
         }
         checkDead(players);
 
