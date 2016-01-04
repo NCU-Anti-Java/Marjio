@@ -9,8 +9,13 @@ import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 import io.github.antijava.marjio.scene.SceneBase;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.InetAddress;
+import java.net.URL;
+import java.nio.Buffer;
 import java.util.*;
 import java.util.logging.Level;
 /**
@@ -28,12 +33,20 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
     private Block[][] mMap;
 
     public SceneMap(IApplication application, int level) {
+        this(application,
+                level,
+                application.getGraphics().getDefaultViewport());
+    }
+
+    public SceneMap(IApplication application, int level, Viewport viewport) {
         super(application);
 
         if (level == 1)
-            loadMapFile(MAPFILE);
+            loadMapFile(MAPFILE, viewport);
         else
-            getApplication().getLogger().log(Level.INFO, "Attemp to load map level > 1");
+            getApplication()
+                    .getLogger()
+                    .log(Level.INFO, "Attemp to load map level > 1");
     }
 
     public List<Block> getAdjacentBlocks(Player player) {
@@ -66,7 +79,12 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
         return mMap[row][col];
     }
 
-    private void loadMapFile(String filepath) {
+    public boolean isInMap(int row, int col) {
+        return (row >= 0 && row < mRow) &&
+                (col >= 0 && col < mCol);
+    }
+
+    private void loadMapFile(String filepath, final Viewport viewport) {
         try {
             final ClassLoader classLoader = getClass().getClassLoader();
             final File file = new File(classLoader.getResource(filepath).getFile());
@@ -77,13 +95,17 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
             for (int i = 0; i < mRow; i++) {
                 for (int j = 0; j < mCol; j++) {
                     final int type = scanner.nextInt();
-                    final Viewport viewport = getApplication().getGraphics().getDefaultViewport();
-                    final ResourcesManager rm = ((Application)getApplication()).getResourcesManager();
-                    final Pair<Integer, Integer> tileId = typeMap.getOrDefault(type, null);
+                    final ResourcesManager rm = ((Application)getApplication())
+                                                    .getResourcesManager();
+                    final Pair<Integer, Integer> tileId = typeMap.get(type);
                     Bitmap tileBitmap = null;
                     if (tileId != null)
-                        tileBitmap = rm.tile("default.png", tileId.getLeft(), tileId.getRight());
-                    mMap[i][j] = new Block(type, j * BLOCK_SIZE, i * BLOCK_SIZE, viewport, tileBitmap);
+                        tileBitmap = rm.tile("default.png",
+                                tileId.getLeft(), tileId.getRight());
+
+                    mMap[i][j] = new Block(type,
+                            j * BLOCK_SIZE, i * BLOCK_SIZE,
+                            viewport, tileBitmap);
                 }
             }
             scanner.close();
@@ -93,4 +115,40 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
             getApplication().getLogger().log(Level.INFO, ex.toString());
         }
     }
+
+    private void loadImageMapFile(String filepath, final Viewport viewport) {
+        try {
+            final ClassLoader classLoader = getClass().getClassLoader();
+            final BufferedImage image = ImageIO.read(classLoader.getResource(filepath));
+            final ResourcesManager rm = ((Application)getApplication())
+                                                    .getResourcesManager();
+            mRow = image.getHeight();
+            mCol = image.getWidth();
+
+            mMap = new Block[mRow][mCol];
+
+            for (int i = 0; i < mRow; i++) {
+                for (int j = 0; j < mCol; j++) {
+                    final int type = image.getRGB(j, i);
+                    final Pair<Integer, Integer> tileId = typeMap.get(type);
+                    Bitmap tileBitmap = null;
+
+                    if (tileId != null)
+                        tileBitmap = rm.tile("default.png",
+                                tileId.getLeft(), tileId.getRight());
+
+                    mMap[i][j] = new Block(type,
+                            j * BLOCK_SIZE, i * BLOCK_SIZE,
+                            viewport, tileBitmap);
+                }
+            }
+
+        } catch (FileNotFoundException ex) {
+            getApplication().getLogger().log(Level.INFO, filepath + " can not be found.");
+        } catch (Exception ex) {
+            getApplication().getLogger().log(Level.INFO, ex.toString());
+        };
+    }
+
+
 }

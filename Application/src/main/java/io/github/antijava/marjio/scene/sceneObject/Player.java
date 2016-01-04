@@ -1,35 +1,96 @@
 package io.github.antijava.marjio.scene.sceneObject;
 
+import io.github.antijava.marjio.application.Application;
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.graphics.Color;
+import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
+
+import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.constant.Constant;
+import io.github.antijava.marjio.graphics.Bitmap;
+import io.github.antijava.marjio.resourcemanager.ResourcesManager;
+
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
 import io.github.antijava.marjio.common.input.Status;
 
-import java.util.UUID;
+
+import java.util.*;
 
 /**
  * Created by firejox on 2015/12/28.
  */
-public class Player extends SceneObjectObjectBase {
+public class Player extends SceneObjectObjectBase implements Constant {
+    public static final double VELOCITY_LIMIT =
+            (double)BLOCK_SIZE / 2.0D - 1.0D;
+    public static final double HUMAN_LIMTT = 6.0;
 
-    UUID id;
+    public static final Key[] action_keys = {
+       Key.MOVE_LEFT, Key.MOVE_RIGHT, Key.JUMP, Key.CAST
+    };
 
+    private enum Animation {
+        JUMP(0),
+        WALK1(1),
+        WALK2(2),
+        WALK3(3),
+        STOP(3);
+
+        private final int mValue;
+        Animation(int value) {
+            mValue = value;
+        }
+
+        public int getValue() {
+            return mValue;
+        }
+    };
+
+    private enum Face {
+        LEFT(0), RIGHT(1);
+        private final int mValue;
+        Face (int value) { mValue = value; }
+        public int getValue() { return mValue; }
+    }
+
+    private static final String MARIO_FILE_NAME = "mario.png";
+    private static Map<Color, List<IBitmap[]>> sPlayer_styles;
+    private static boolean sStyleLoaded = false;
+
+    private int mAnimationCounter;
+    private Face mFinalFace;
+
+    UUID mId;
+
+    int mTick;
 
     int mX;
     int mY;
 
     double mVelocityX;
+    double mVelocityXModify;
     double mVelocityY;
+    double mVelocityYModify;
+
 
     double mAccelerationX;
     double mAccelerationY;
 
-    boolean Jet;
+    boolean mStatusUpdate;
+
+    Item mHave;
+
+    Queue<IAction> mEffect;
 
 
-    public Player(Viewport viewport, UUID id) {
+    public Player(final IApplication application, Viewport viewport, UUID id) {
         super(viewport);
-        this.id = id;
+        mId = id;
+
+        mTick = 0;
+
         mX = super.getX();
         mY = super.getY();
 
@@ -39,32 +100,77 @@ public class Player extends SceneObjectObjectBase {
         mAccelerationX = 0;
         mAccelerationY = 0;
 
-        Jet = false;
+        mStatusUpdate = false;
+
+        mHave = null;
+
+        mVelocityXModify = 1.0;
+        mVelocityYModify = 1.0;
+
+        if (!sStyleLoaded) {
+            final ResourcesManager resourceManager = ((Application)application).getResourcesManager();
+            sPlayer_styles = new HashMap<>();
+            IBitmap[] leftAnimation = new IBitmap[4];
+            IBitmap[] rightAnimation = new IBitmap[4];
+            for (int i = 0; i < 4; i++) {
+                leftAnimation[i] = resourceManager.mario(MARIO_FILE_NAME, i, Face.LEFT.getValue());
+                rightAnimation[i] = resourceManager.mario(MARIO_FILE_NAME, i, Face.RIGHT.getValue());
+            }
+            List<IBitmap[]> marioAnimation = new ArrayList<>(Arrays.asList(leftAnimation, rightAnimation));
+            sPlayer_styles.put(Color.RED, marioAnimation);
+            sStyleLoaded = true;
+        }
+
+        mFinalFace = Face.RIGHT;
+        setZoomX(BLOCK_SIZE * 1.0D / 16.0D);
+        setZoomY(BLOCK_SIZE * 1.0D / 16.0D);
+        setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.STOP.getValue()]);
+        mAnimationCounter = 0;
     }
 
+    public void reset() {
+        mX = 0;
+        mY = 0;
+
+        mVelocityX = 0;
+        mVelocityY = 0;
+
+        mAccelerationX = 0;
+        mAccelerationY = 0;
+
+        mStatusUpdate = false;
+    }
 
     @Override
     public void update() {
 
-        mX += Math.round(mVelocityX);
-        mY += Math.round(mVelocityY);
+        mX = getNextX();
+        mY = getNextY();
 
         super.setX(mX);
         super.setY(mY);
+
+        mTick++;
+        mStatusUpdate = false;
+
+        if (mVelocityX > 0)
+            mFinalFace = Face.RIGHT;
+        else if (mVelocityX < 0)
+            mFinalFace = Face.LEFT;
+        updateAnimation();
     }
 
     public UUID getId() {
-        return id;
+        return mId;
     }
 
+    public void setTick(int tick) {
+        mTick = tick;
+    }
 
-    public void preUpdateStatusData(SceneObjectStatus data) {
-        mX = data.x;
-        mY = data.y;
-        mVelocityX = data.vx;
-        mVelocityY = data.vy;
-        mAccelerationX = data.ax;
-        mAccelerationY = data.ay;
+    public int getTick() {
+        return mTick;
+
     }
 
     @Override
@@ -88,24 +194,38 @@ public class Player extends SceneObjectObjectBase {
     }
 
     public int getNextX() {
-        return mX + (int)Math.round(mVelocityX);
+        return mX + (int)Math.round(normalizeVelocityX());
     }
 
     public int getNextY() {
-        return mY + (int)Math.round(mVelocityY);
+        return mY + (int)Math.round(normalizeVelocityY());
     }
 
 
     public double getVelocityX (){
-        return mVelocityX;
+        return mVelocityX * mVelocityXModify;
     }
 
     public double getVelocityY (){
-        return mVelocityY;
+        return mVelocityY * mVelocityYModify;
     }
 
     public void setVelocityX (double vx) {
         mVelocityX = vx;
+    }
+
+    public void setVelocityXWithModify(double vx) {
+        if (mVelocityXModify < 0.01)
+            mVelocityX = 0.0;
+        else
+            mVelocityX = vx / mVelocityXModify;
+    }
+
+    public void setVelocityYWithModify(double vy) {
+        if (mVelocityYModify < 0.01)
+            mVelocityY = 0.0;
+        else
+            mVelocityY = vy / mVelocityYModify;
     }
 
     public void setVelocityY (double vy) {
@@ -128,8 +248,6 @@ public class Player extends SceneObjectObjectBase {
         mAccelerationY = ay;
     }
 
-
-
     public void preUpdate() {
 
         mVelocityX += mAccelerationX;
@@ -140,15 +258,39 @@ public class Player extends SceneObjectObjectBase {
             mVelocityX = Math.signum(mVelocityX) *
                     (Math.abs(mVelocityX) - PhysicsConstant.friction);
 
+        if (mVelocityX > 0)
+            mVelocityX = Math.min(HUMAN_LIMTT, mVelocityX);
+        else
+            mVelocityX = Math.max(-HUMAN_LIMTT, mVelocityX);
+
+        if (Math.abs(Math.abs(mVelocityX) - HUMAN_LIMTT) < 0.01)
+            mAccelerationX = Math.signum(mVelocityX) *
+                    (PhysicsConstant.friction - 1e-5);
+
         mVelocityY += mAccelerationY + PhysicsConstant.gravity;
     }
 
-    public SceneObjectStatus getStatusData() {
-        SceneObjectStatus data = new SceneObjectStatus();
+    public void preUpdateStatus(SceneObjectStatus data) {
+        mTick = data.tick;
+        mX = data.x;
+        mY = data.y;
+        mVelocityX = data.vx;
+        mVelocityY = data.vy;
+        mAccelerationX = data.ax;
+        mAccelerationY = data.ay;
+        mStatusUpdate = true;
+    }
 
-        data.uuid = id;
-        data.type = SceneObjectStatus.Types.Player;
+    public boolean isStatusUpdate() {
+        return mStatusUpdate;
+    }
 
+    public SceneObjectStatus getStatus() {
+        SceneObjectStatus data = new SceneObjectStatus(mId,
+                SceneObjectStatus.SceneObjectTypes.Player);
+
+
+        data.tick = mTick;
         data.x = mX;
         data.y = mY;
         data.vx = mVelocityX;
@@ -161,23 +303,50 @@ public class Player extends SceneObjectObjectBase {
 
 
     public boolean isValidData (SceneObjectStatus data) {
-        // TODO: need to find good speed limit;
+        if (data.getDataType() != SceneObjectStatus.SceneObjectTypes.Player)
 
-        if (data.type != SceneObjectStatus.Types.Player)
             return false;
 
-        return false;
+        return data.isValidKeySets();
     }
 
-    public void normalizeVelocity(double lim) {
-        if (mVelocityX < 0)
-            mVelocityX = Math.max(mVelocityX, -lim);
+
+    public double normalizeVelocityX() {
+        final double vx = getVelocityX();
+
+        if (vx < 0)
+            return Math.max(vx, -VELOCITY_LIMIT);
         else
-            mVelocityX = Math.min(mVelocityX, lim);
-        mVelocityY = Math.min(mVelocityY, lim);
-
+           return Math.min(vx, VELOCITY_LIMIT);
     }
 
+    public double normalizeVelocityY() {
+        final double vy = getVelocityY();
+        return Math.min(vy, VELOCITY_LIMIT);
+    }
+
+    public void updateAnimation() {
+        // TODO: Solve the frame of jumping state at the top. or not to solve?
+        if (Math.abs(mVelocityY) > 1.0) {
+            setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.JUMP.getValue()]);
+            mAnimationCounter = 0;
+        }
+        else {
+            if (mVelocityX == 0 && mVelocityY == 0) {
+                setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.STOP.getValue()]);
+                mAnimationCounter = 0;
+            }
+            else {
+                if (mAnimationCounter >= 6)
+                    setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK3.getValue()]);
+                else if (mAnimationCounter >= 3)
+                    setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK1.getValue()]);
+                else
+                    setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK2.getValue()]);
+                mAnimationCounter = ++mAnimationCounter % 9;
+            }
+        }
+    }
 
     @Override
     public Rectangle getOccupiedSpace() {

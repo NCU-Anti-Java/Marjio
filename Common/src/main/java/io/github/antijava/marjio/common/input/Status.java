@@ -2,28 +2,22 @@ package io.github.antijava.marjio.common.input;
 
 import io.github.antijava.marjio.common.network.Packable;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.UUID;
 
 /**
  * Created by firejox on 2015/12/25.
  */
-public class Status implements Packable, Externalizable {
-    private Types mType;
-    private Object mObject;
-    private UUID mId;
+public class Status implements Packable {
+    public Types mType;
 
-    public Status() {
+    public UUID mId;
 
-    }
 
-    public Status(SceneObjectStatus obj, Types type) {
-        mType = type;
-        mObject = obj;
-        mId = obj.uuid;
+
+    public Status(UUID id) {
+        mId = id;
     }
 
     @Override
@@ -36,19 +30,14 @@ public class Status implements Packable, Externalizable {
         mId = id;
     }
 
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(mType);
-        out.writeObject(mObject);
-        out.writeObject(mId);
+    public Types getType() {
+        return mType;
     }
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        mType = (Types) in.readObject();
-        mObject = in.readObject();
-        mId = (UUID) in.readObject();
+    public void setType(final Types type) {
+        mType = type;
     }
+
 
     public enum Types {
         ServerMessage,
@@ -56,11 +45,5 @@ public class Status implements Packable, Externalizable {
         ClientMessage;
     }
 
-    public Types getType() {
-        return mType;
-    }
 
-    public Object getData() {
-        return mObject;
-    }
 }

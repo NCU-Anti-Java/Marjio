@@ -14,13 +14,11 @@ import java.util.UUID;
  */
 public class PackerTest {
     Status st;
+
     SceneObjectStatus data;
 
     @Before
     public void setUp() throws Exception {
-        data = new SceneObjectStatus();
-        data.uuid = UUID.randomUUID();
-        st = new Status(data, Status.Types.ClientMessage);
     }
 
     @After
