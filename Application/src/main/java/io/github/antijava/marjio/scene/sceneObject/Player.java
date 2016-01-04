@@ -59,6 +59,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
     private static Map<Color, List<IBitmap[]>> sPlayer_styles;
     private static boolean sStyleLoaded = false;
 
+    private Color mClothColor;
     private int mAnimationCounter;
     private Face mFinalFace;
 
@@ -85,7 +86,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
     Queue<IAction> mEffect;
 
 
-    public Player(final IApplication application, Viewport viewport, UUID id) {
+    public Player(final IApplication application, Viewport viewport, UUID id, Color clothColor) {
         super(viewport);
         mId = id;
 
@@ -107,24 +108,36 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mVelocityXModify = 1.0;
         mVelocityYModify = 1.0;
 
+        mClothColor = clothColor;
+
         if (!sStyleLoaded) {
             final ResourcesManager resourceManager = ((Application)application).getResourcesManager();
             sPlayer_styles = new HashMap<>();
-            IBitmap[] leftAnimation = new IBitmap[4];
-            IBitmap[] rightAnimation = new IBitmap[4];
-            for (int i = 0; i < 4; i++) {
-                leftAnimation[i] = resourceManager.mario(MARIO_FILE_NAME, i, Face.LEFT.getValue());
-                rightAnimation[i] = resourceManager.mario(MARIO_FILE_NAME, i, Face.RIGHT.getValue());
+            Color[] colors = new Color[]{Color.BLUE, Color.RED};
+            for (Color color : colors) {
+                IBitmap[] leftAnimation = new IBitmap[4];
+                IBitmap[] rightAnimation = new IBitmap[4];
+                int index = 0;
+                if (color == Color.BLUE) {
+                    index = 0;
+                }
+                else if (color == Color.RED) {
+                    index = 1;
+                }
+                for (int i = 0; i < 4; i++) {
+                    leftAnimation[i] = resourceManager.mario(MARIO_FILE_NAME, i, index * 2 + Face.LEFT.getValue());
+                    rightAnimation[i] = resourceManager.mario(MARIO_FILE_NAME, i, index * 2 + Face.RIGHT.getValue());
+                }
+                List<IBitmap[]> marioAnimation = new ArrayList<>(Arrays.asList(leftAnimation, rightAnimation));
+                sPlayer_styles.put(color, marioAnimation);
             }
-            List<IBitmap[]> marioAnimation = new ArrayList<>(Arrays.asList(leftAnimation, rightAnimation));
-            sPlayer_styles.put(Color.RED, marioAnimation);
             sStyleLoaded = true;
         }
 
         mFinalFace = Face.RIGHT;
         setZoomX(BLOCK_SIZE * 1.0D / 16.0D);
         setZoomY(BLOCK_SIZE * 1.0D / 16.0D);
-        setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.STOP.getValue()]);
+        setBitmap(sPlayer_styles.get(mClothColor).get(mFinalFace.getValue())[Animation.STOP.getValue()]);
         mAnimationCounter = 0;
     }
 
@@ -328,21 +341,21 @@ public class Player extends SceneObjectObjectBase implements Constant {
     public void updateAnimation() {
         // TODO: Solve the frame of jumping state at the top. or not to solve?
         if (Math.abs(mVelocityY) > 1.0) {
-            setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.JUMP.getValue()]);
+            setBitmap(sPlayer_styles.get(mClothColor).get(mFinalFace.getValue())[Animation.JUMP.getValue()]);
             mAnimationCounter = 0;
         }
         else {
             if (mVelocityX == 0 && mVelocityY == 0) {
-                setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.STOP.getValue()]);
+                setBitmap(sPlayer_styles.get(mClothColor).get(mFinalFace.getValue())[Animation.STOP.getValue()]);
                 mAnimationCounter = 0;
             }
             else {
                 if (mAnimationCounter >= 6)
-                    setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK3.getValue()]);
+                    setBitmap(sPlayer_styles.get(mClothColor).get(mFinalFace.getValue())[Animation.WALK3.getValue()]);
                 else if (mAnimationCounter >= 3)
-                    setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK1.getValue()]);
+                    setBitmap(sPlayer_styles.get(mClothColor).get(mFinalFace.getValue())[Animation.WALK1.getValue()]);
                 else
-                    setBitmap(sPlayer_styles.get(Color.RED).get(mFinalFace.getValue())[Animation.WALK2.getValue()]);
+                    setBitmap(sPlayer_styles.get(mClothColor).get(mFinalFace.getValue())[Animation.WALK2.getValue()]);
                 mAnimationCounter = ++mAnimationCounter % 9;
             }
         }
