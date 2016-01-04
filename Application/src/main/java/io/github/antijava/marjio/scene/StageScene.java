@@ -469,14 +469,7 @@ public class StageScene extends SceneBase implements Constant {
                 .collect(Collectors.toList());
 
         for (Block b : entityBlocks) {
-            final double dx =
-                    (double)(b.getX() - player.getNextX()) / BLOCK_SIZE;
-            final double dy =
-                    (double)(b.getY() - player.getNextY()) / BLOCK_SIZE;
-
-
-
-            if (magicbumpTest(dx, dy)) {
+            if (bumpValidation(b, player)) {
 
                 //TODO: setup reflect direction
                 final double vx = player.getVelocityX();
@@ -539,24 +532,16 @@ public class StageScene extends SceneBase implements Constant {
         }
     }
 
-    public static boolean magicbumpTest(double dx, double dy) {
+    /**
+     * Validate if player bump to SceneObjectObjectBase
+     * @param sceneObject scene object
+     * @param player player
+     * @return does it bump or not
+     */
+    private static boolean bumpValidation(SceneObjectObjectBase sceneObject, Player player) {
+        final double dx =  (double)(sceneObject.getX() - player.getNextX()) / BLOCK_SIZE;
+        final double dy =  (double)(sceneObject.getY() - player.getNextY()) / BLOCK_SIZE;
 
         return ((dx*dx*dx*dx) + (dy*dy*dy*dy)) <= 1.0D;
-    }
-
-
-
-    public static boolean bumpTest(Rectangle a, Rectangle b) {
-
-
-        return isInsideRectangle(a.x, a.y, b) ||
-                isInsideRectangle(a.x, a.y - a.height, b) ||
-                isInsideRectangle(a.x + a.width, a.y, b) ||
-                isInsideRectangle(a.x + a.width, a.y - a.height, b);
-    }
-
-    public static boolean isInsideRectangle(int x, int y, Rectangle rect) {
-        return x > rect.x && x < rect.x + rect.width &&
-                y > rect.y && y < rect.y + rect.height;
     }
 }
