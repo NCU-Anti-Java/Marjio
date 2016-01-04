@@ -50,6 +50,7 @@ public class StageScene extends SceneBase implements Constant {
 
     private final Sprite mTimer;
     private int mTick;
+    private List<Item> mItems;
 
     private boolean mGameSet;
 
@@ -81,6 +82,7 @@ public class StageScene extends SceneBase implements Constant {
 
         mIsServer = IsServer;
         mPlayers = new HashMap<>();
+        mItems = new ArrayList<>();
 
         final Logger logger = application.getLogger();
 
@@ -577,14 +579,21 @@ public class StageScene extends SceneBase implements Constant {
                         player.setVelocityYWithModify(nvy);
                         player.setAccelerationY(0.0);
 
-                        if (b.getType() == Block.Type.WOOD) {
+                        if (b.getType() == Block.Type.WOOD || b.getType() == Block.Type.ITEM_BLOCK) {
                             int col = (int) Math.floor(b.getX() / BLOCK_SIZE);
                             int row = (int) Math.floor(b.getY() / BLOCK_SIZE);
+                            int x = b.getX();
+                            int y = b.getY();
+                            int z = b.getZ();
 
-                            Block airBlock = new Block(Block.Type.AIR.getValue(), b.getX(), b.getY(), GameViewPort, null);
+                            Block airBlock = new Block(Block.Type.AIR.getValue(), x, y, GameViewPort, null);
                             mMap.getBlock(row, col).dispose();
                             mMap.setBlock(row, col, airBlock);
 
+                            if (b.getType() == Block.Type.ITEM_BLOCK) {
+                                Item.ItemType type = Item.ItemType.values()[new Random().nextInt(5)];
+                                    mItems.add(new Item(GameViewPort, getApplication(), x, y, z, type));
+                            }
                         }
                     } else if (b.getY() < player.getY()) {
                         player.setVelocityY(0.0);
