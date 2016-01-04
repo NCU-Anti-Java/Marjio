@@ -120,6 +120,9 @@ public class StageScene extends SceneBase implements Constant {
         for (UUID uuid : mPlayers.keySet()) {
             mPlayers.get(uuid).dispose();
         }
+        for (Item item : mItems) {
+            item.dispose();
+        }
     }
 
     @Override
