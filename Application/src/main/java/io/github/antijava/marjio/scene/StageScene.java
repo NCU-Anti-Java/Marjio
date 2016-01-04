@@ -68,7 +68,7 @@ public class StageScene extends SceneBase implements Constant {
         mItemSlotText.setZ(99);
 
         // Test
-        mItemOwned = new Item(graphics.getDefaultViewport(), application, 50, 50, 99, Item.ItemType.TrapTool);
+        mItemOwned = new Item(graphics.getDefaultViewport(), application, 50, 50, 99, Item.ItemType.SuperTrap);
         mItemOwned.getBitmap().resize(40, 40);
         mItemOwned.setX(35);
         mItemOwned.setY(55);
