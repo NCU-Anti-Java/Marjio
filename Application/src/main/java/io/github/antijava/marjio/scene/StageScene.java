@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 public class StageScene extends SceneBase implements Constant {
 
     private final Viewport GameViewPort;
+    private final Viewport UIViewport;
     private SceneMap mMap;
     UUID mYourPlayerID;
     Map<UUID, Player> mPlayers;
@@ -74,6 +75,8 @@ public class StageScene extends SceneBase implements Constant {
         super(application);
         final IGraphics graphics = application.getGraphics();
         GameViewPort = application.getGraphics().createViewport();
+        UIViewport = application.getGraphics().createViewport();
+        UIViewport.z = 999;
 
         mMap = new SceneMap(application, stage, GameViewPort);
 
@@ -90,7 +93,7 @@ public class StageScene extends SceneBase implements Constant {
         mPlayers = new HashMap<>();
         mItems = new ArrayList<>();
         //Item
-        mItemSlot = new SpriteBase(GameViewPort);
+        mItemSlot = new SpriteBase(UIViewport);
         try {
             mItemSlot.setBitmap(graphics.loadBitmap("slot.png"));
 
@@ -102,7 +105,7 @@ public class StageScene extends SceneBase implements Constant {
         mItemSlot.setY(50);
         mItemSlot.setZ(99);
 
-        mItemSlotText = new SpriteBase(GameViewPort);
+        mItemSlotText = new SpriteBase(UIViewport);
         mItemSlotText.setBitmap(graphics.createBitmap(50, 20));
         mItemSlotText.getBitmap().drawText("Item", 0,0, 50,20, Color.WHITE, IBitmap.TextAlign.CENTER);
         mItemSlotText.setX(30);
@@ -326,7 +329,7 @@ public class StageScene extends SceneBase implements Constant {
                     (double)p.getNextY() / BLOCK_SIZE);
 
             if (!mMap.isInMap(y, x)) {
-                if (y >= 0) { //drop in hole
+                if (y >= 40) { //drop in hole
                     p.reset();
                 } else if (y < -1000) { //fly to death, it means you
                     p.reset();          // leave the atmosphere
