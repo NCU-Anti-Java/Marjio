@@ -1,3 +1,6 @@
+/.idea/modules.xml
+/Application/application.iml
+/Common/common.iml
 ### Java
 *.class
 
@@ -10,6 +13,8 @@
 *.ear
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+/common/common.iml
+/application/application.iml
 hs_err_pid*
 
 ### JetBrains

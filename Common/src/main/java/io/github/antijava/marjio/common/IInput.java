@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 /**
  * Created by fntsr on 2015/12/23.
  */
-public interface IInput {
+public interface IInput extends IKeyInput {
     int key_start_ticks = 24;
     int key_repeat_ticks = 6;
 
@@ -19,24 +19,16 @@ public interface IInput {
      */
     void update();
 
-
-    boolean isPressing(Key key);
-    boolean isPressed(Key key);
-    boolean isReleased(Key key);
     boolean isTrigger(Key key);
-
-    /**
-     * with key pressed for a while then key is repeat.
-     * */
-    boolean isRepeat(Key key);
 
     List<Status> getStatuses();
     List<Request> getRequest();
+    List<TickRequest> getTickRequest();
 
     List<SyncList> getSyncList();
 
 
-    @NetWorkData({Status.class, Request.class, SyncList.class})
+    @NetWorkData({Status.class, Request.class, SyncList.class, TickRequest.class})
     List<? extends Packable> getNetWorkData(Class c);
 
     void triggerEvent(Event evt);
