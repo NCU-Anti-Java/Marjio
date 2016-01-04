@@ -28,7 +28,7 @@ import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 import io.github.antijava.marjio.scene.sceneObject.SceneObjectObjectBase;
 
-import java.util.ArrayList;
+import java.nio.file.NoSuchFileException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -51,18 +51,21 @@ public class StageScene extends SceneBase implements Constant {
 
     private final Sprite mTimer;
     private int mTick;
-    private List<Item> mItems;
 
     private boolean mGameSet;
 
     boolean mIsServer;
+
+
 
     /*
      //TODO: fake data
     final WindowBase ba;
     final Player p;
 */
-
+    private final Sprite mItemSlot;
+    private final Sprite mItemSlotText;
+    private Item mItemOwned;
 
 
     public StageScene(IApplication application, boolean IsServer, int stage) {
@@ -79,11 +82,34 @@ public class StageScene extends SceneBase implements Constant {
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
 
+        //Item
+        mItemSlot = new SpriteBase(GameViewPort);
+        try {
+            mItemSlot.setBitmap(graphics.loadBitmap("slot.png"));
+
+        } catch(NoSuchFileException ex) {
+            ex.printStackTrace();
+        }
+
+        mItemSlot.setX(30);
+        mItemSlot.setY(50);
+        mItemSlot.setZ(99);
+
+        mItemSlotText = new SpriteBase(GameViewPort);
+        mItemSlotText.setBitmap(graphics.createBitmap(50, 20));
+        mItemSlotText.getBitmap().drawText("Item", 0,0, 50,20, Color.WHITE, IBitmap.TextAlign.CENTER);
+        mItemSlotText.setX(30);
+        mItemSlotText.setY(30);
+        mItemSlotText.setZ(99);
+        
+        mItemOwned = null;
+
         mGameSet = false;
 
         mIsServer = IsServer;
         mPlayers = new HashMap<>();
-        mItems = new ArrayList<>();
+
+        final Logger logger = application.getLogger();
 
         if (mIsServer) {
             mYourPlayerID = application.getServer().getMyId();
@@ -107,6 +133,7 @@ public class StageScene extends SceneBase implements Constant {
                         mYourPlayerID, Color.BLUE));
         }
 
+
     }
 
     @Override
@@ -117,9 +144,6 @@ public class StageScene extends SceneBase implements Constant {
         mMap.dispose();
         for (UUID uuid : mPlayers.keySet()) {
             mPlayers.get(uuid).dispose();
-        }
-        for (Item item : mItems) {
-            item.dispose();
         }
     }
 
@@ -207,30 +231,28 @@ public class StageScene extends SceneBase implements Constant {
         checkGameSet();
 
         if (mGameSet) {
-            if (mIsServer) {
-                UUID[] rankTable = new UUID[mPlayers.size()];
-                Map<UUID, Boolean> used = new HashMap<>();
-                for (int i = 0; i < mPlayers.size(); i++) {
-                    UUID maxID = null;
-                    double x = -1;
-                    for (UUID uuid : mPlayers.keySet()) {
-                        if (used.containsKey(uuid)) continue;
-                        if (mPlayers.get(uuid).getX() > x) {
-                            x = mPlayers.get(uuid).getX();
-                            maxID = uuid;
-                        }
+            UUID[] rankTable = new UUID[mPlayers.size()];
+            Map<UUID, Boolean> used = new HashMap<>();
+            for (int i = 0; i < mPlayers.size(); i++) {
+                UUID maxID = null;
+                double x = -1;
+                for (UUID uuid : mPlayers.keySet()) {
+                    if (used.containsKey(uuid)) continue;
+                    if (mPlayers.get(uuid).getX() > x) {
+                        x = mPlayers.get(uuid).getX();
+                        maxID = uuid;
                     }
-                    rankTable[i] = maxID;
-                    used.put(maxID, true);
                 }
-                final GameSet data = new GameSet(mYourPlayerID);
-                final IGraphics graphics = getApplication().getGraphics();
-                data.setData(rankTable);
-                getApplication().getServer().broadcastTCP(data);
-                getApplication().getSceneManager().translationTo(new ScoreBoardScene(
-                        getApplication(), mYourPlayerID, rankTable, graphics.snapToBitmap()
-                ));
+                rankTable[i] = maxID;
+                used.put(maxID, true);
             }
+            final GameSet data = new GameSet(mYourPlayerID);
+            data.setData(rankTable);
+
+            getApplication().getServer().broadcastTCP(data);
+            getApplication().getSceneManager().translationTo(new ScoreBoardScene(
+                    getApplication(), mYourPlayerID, rankTable, null
+            ));
             return ;
         }
         checkDead(players);
@@ -337,6 +359,7 @@ public class StageScene extends SceneBase implements Constant {
     }
 
     private void checkStatus (final Collection<Player> players) {
+        final Logger logger = getApplication().getLogger();
         final List<Status> fetchedStatus = getValidStatuses();
         final IServer server = getApplication().getServer();
         int send_tick = 0;
@@ -346,11 +369,15 @@ public class StageScene extends SceneBase implements Constant {
 
         for (final Status st : fetchedStatus) {
             Player player = mPlayers.get(st.getClientID());
+            if (!mIsServer && player == null) {
+                logger.info("client id: " + st.getClientID().toString());
+            }
 
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
                         final boolean check = player.isValidData((SceneObjectStatus) st);
+                        logger.info("client message");
                         if (check)
                             checkKeyState((SceneObjectStatus)st, player);
 
@@ -377,6 +404,9 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerMessage: {
+                    if (!mIsServer)
+                        logger.info("get server message");
+
                     if (player == null) {
                         player = new Player(getApplication(),
                                         GameViewPort,
@@ -394,6 +424,9 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerVerification: {
+                    if (!mIsServer)
+                        logger.info("get server verify message");
+
                     if (!((SceneObjectStatus)st).query) {
                         player.preUpdateStatus((SceneObjectStatus)st);
 
@@ -432,11 +465,8 @@ public class StageScene extends SceneBase implements Constant {
         final List<GameSet> gameSets = input.getGameSet();
         for (GameSet gameSet : gameSets) {
             final ISceneManager sceneManager = getApplication().getSceneManager();
-            final IGraphics graphics = getApplication().getGraphics();
-            final UUID[] uuids = gameSet.getData();
-
             sceneManager.translationTo(new ScoreBoardScene(
-                    getApplication(), mYourPlayerID, uuids, graphics.snapToBitmap()));
+                    getApplication(), mYourPlayerID, gameSet.getData(), null));
             mGameSet = true;
             break;
         }
@@ -485,7 +515,7 @@ public class StageScene extends SceneBase implements Constant {
 
         if (input.isPressed(Key.CAST)) {
             final Item.ItemType item = player.getHave();
-            
+
 
         }
 
@@ -577,28 +607,14 @@ public class StageScene extends SceneBase implements Constant {
                         player.setVelocityYWithModify(nvy);
                         player.setAccelerationY(0.0);
 
-                        List<Block.Type> itemTypes = new ArrayList<>();
-                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_BULLET);
-                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_GUN);
-                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_SPEED);
-                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_TRAP);
-                        itemTypes.add(Block.Type.ITEM_BLOCK_TRAP);
-
-                        if (b.getType() == Block.Type.WOOD || itemTypes.contains(b.getType())) {
+                        if (b.getType() == Block.Type.WOOD) {
                             int col = (int) Math.floor(b.getX() / BLOCK_SIZE);
                             int row = (int) Math.floor(b.getY() / BLOCK_SIZE);
-                            int x = b.getX();
-                            int y = b.getY();
-                            int z = b.getZ();
 
-                            Block airBlock = new Block(Block.Type.AIR.getValue(), x, y, GameViewPort, null);
+                            Block airBlock = new Block(Block.Type.AIR.getValue(), b.getX(), b.getY(), GameViewPort, null);
                             mMap.getBlock(row, col).dispose();
                             mMap.setBlock(row, col, airBlock);
 
-                            if (itemTypes.contains(b.getType())) {
-                                Item.ItemType type = Item.ItemType.values()[b.getType().getValue() - 4];
-                                mItems.add(new Item(GameViewPort, getApplication(), x, y, z, type));
-                            }
                         }
                     } else if (b.getY() < player.getY()) {
                         player.setVelocityY(0.0);
