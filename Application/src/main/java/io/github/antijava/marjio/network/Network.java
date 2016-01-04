@@ -58,8 +58,10 @@ public class Network implements IClient, IServer, Constant {
             throw new UnsupportedOperationException();
         }
 
-        mServer.start();
         mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
+        mServer.start();
+        mApplication.getLogger().info("Server started.");
+
         mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
         mRunningFlag = true;
         mIsServerFlag = true;
@@ -67,7 +69,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void send(Packable packableObj, UUID clientID) throws Exception {
+    public void send(Packable packableObj, UUID clientID) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -77,7 +79,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void sendTCP(Packable packableObj) throws Exception {
+    public void sendTCP(Packable packableObj) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -87,7 +89,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void broadcast(Packable packableObj) throws Exception {
+    public void broadcast(Packable packableObj) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -95,9 +97,8 @@ public class Network implements IClient, IServer, Constant {
         mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
     }
 
-    // server only
     @Override
-    public void broadcastTCP(Packable packableObject) throws Exception {
+    public void broadcastTCP(Packable packableObject) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -122,7 +123,11 @@ public class Network implements IClient, IServer, Constant {
             throw new UnsupportedOperationException();
         }
 
+        // If it unable to connect server, will throw IOException.
+        // Also not keep executing other statements
         mClient.start();
+        mApplication.getLogger().info("Client started.");
+
         mClient.addListener(new ClientReceiver(mApplication));
         mClient.connect(NET_TIMEOUT, hostAddress, NET_TCP_PORT, NET_UDP_PORT);
         mRunningFlag = true;
@@ -130,7 +135,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void send(Packable packableObj) throws Exception {
+    public void send(Packable packableObj) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -139,7 +144,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
+    public void sendTCP(Packable packableObj, UUID clientID) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -160,7 +165,7 @@ public class Network implements IClient, IServer, Constant {
 
     // region BothSide
     @Override
-    public void stop() throws InterruptedException, UnsupportedOperationException {
+    public void stop() {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -169,8 +174,10 @@ public class Network implements IClient, IServer, Constant {
 
         if (mIsServerFlag) {
             mServer.stop();
+            mApplication.getLogger().info("Server stopped.");
         } else {
             mClient.stop();
+            mApplication.getLogger().info("Client stopped.");
         }
     }
 

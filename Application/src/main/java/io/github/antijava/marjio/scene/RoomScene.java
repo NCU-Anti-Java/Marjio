@@ -1,10 +1,8 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.SceneManager;
 import io.github.antijava.marjio.common.*;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.common.input.Request;
-import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.common.input.SyncList;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowCommand;
@@ -14,16 +12,15 @@ import io.github.antijava.marjio.common.network.ClientInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
+ * Room Scene
+ *
  * Created by Zheng-Yuan on 12/27/2015.
  */
 public class RoomScene extends SceneBase implements Constant {
     private final String[] MENU_TEXT = {"Start Game", "Exit Room"};
-    private final int START_GAME = 0;
-    private final int EXIT_ROOM = 1;
     private final boolean mIsServer;
     private int mCurrentChoice;
 
@@ -32,25 +29,60 @@ public class RoomScene extends SceneBase implements Constant {
 
     public RoomScene(IApplication application, boolean isServer) {
         super(application);
+        application.getLogger().info("Enter RoomScene");
+
         mIsServer = isServer;
         mCurrentChoice = 0;
 
         initWindows();
+    }
 
-        if (mIsServer) {
+    @Override
+    public void update() {
+        super.update();
+
+        // Check if server started
+        if (mIsServer && !getApplication().getServer().isRunning()) {
+            final Logger logger = getApplication().getLogger();
             try {
-                application.getServer().start();
+                getApplication().getServer().start();
                 mWindowPlayerList.addPlayer(getApplication().getServer().getMyId().toString());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.info("Server started. ");
             } catch (IOException e) {
-                e.printStackTrace();
+                final ISceneManager sceneManager = getApplication().getSceneManager();
+
+                // TODO: Let user know the port of game use is occupied, so we can't start server
+
+                logger.info("Host game failed. The port of game using is occupied.");
+                sceneManager.translationTo(new MainScene(getApplication()));
+                return;
             }
         }
 
+        if (mIsServer) {
+            checkClientRequest();
+        } else {
+            updatePlayerList();
+            checkServerStatus();
+        }
 
+        mWindowCommand.update();
+        mWindowPlayerList.update();
+        checkKeyState();
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        getApplication().getLogger().info("Leave RoomScene");
+        mWindowPlayerList.dispose();
+        mWindowCommand.dispose();
+    }
+
+    /**
+     * Create windows
+     */
     private void initWindows() {
         final IApplication application = getApplication();
 
@@ -62,116 +94,20 @@ public class RoomScene extends SceneBase implements Constant {
         mWindowCommand.setY(490);
     }
 
-    @Override
-    public void update() {
-        super.update();
-        try {
-            mWindowCommand.update();
-            mWindowPlayerList.update();
-            checkKeyState();
-            checkStatus();
-
-            if (mIsServer && getApplication().getServer().isRunning()) {
-                checkClientRequest();
-                //broadcastPlayerList();
-            } else {
-                updatePlayerList();
-                checkServerStatus();
-            }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void checkServerStatus() throws Exception {
-        final IInput input = getApplication().getInput();
-        final ISceneManager sceneManager = getApplication().getSceneManager();
-        List<Request> requests = input.getRequest();
-
-        for (Request request : requests) {
-            if(request.getType() == Request.Types.ServerCancelRoom) {
-                sceneManager.translationTo(new MainScene(getApplication()));
-                break;
-            } else if (request.getType() == Request.Types.ClientCanStartGame) {
-                sceneManager.translationTo(new StageScene(getApplication(), false, 1));
-                break;
-            }
-        }
-    }
-
-    private void broadcastPlayerList() throws Exception {
-        // TODO: broadcast player list
-        ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
-        SyncList syncList = new SyncList(playerList);
-        getApplication().getServer().broadcastTCP(syncList);
-    }
-
-    private void updatePlayerList() {
-        // TODO: get input and update list
-        final IInput input = getApplication().getInput();
-
-        List<SyncList> syncLists = input.getSyncList();
-
-        for (SyncList syncList : syncLists) {
-            mWindowPlayerList.updatePlayerList((List<String>)syncList.getData());
-        }
-    }
-
+    // region Common
     /**
-     * Check if there has client wanna join or exit
-     * @throws Exception
+     * Check key trigger
      */
-    private void checkClientRequest() throws Exception {
-        final IInput input = getApplication().getInput();
-        final IServer server = getApplication().getServer();
-
-        List<Request> requests = input.getRequest();
-        List<ClientInfo> clients = server.getClients();
-
-        for (Request request : requests) {
-
-            // Find request is asked from which client
-            getApplication().getLogger().log(Level.INFO, request.getClientID().toString());
-            ClientInfo client = null;
-            for (ClientInfo clientInfo : clients) {
-                if (clientInfo.getClientID().equals(request.getClientID())) {
-                    client = clientInfo;
-                }
-            }
-            if (client == null) {
-                return;
-            }
-
-            // Client Join
-            if (request.getType() == Request.Types.ClientWannaJoinRoom) {
-                server.sendTCP(new Request(client.getClientID(), Request.Types.ClientCanJoinRoom),
-                        client.getClientID());
-                client.setIsJoined(true);
-                mWindowPlayerList.addPlayer(client.getClientID().toString());
-            }
-
-            // Client Exit
-            else if (request.getType() == Request.Types.ClientWannaExitRoom) {
-                getApplication().getLogger().log(Level.INFO, "del!!!");
-                client.setIsJoined(false);
-                mWindowPlayerList.delPlayer(client.getClientID().toString());
-            }
-            broadcastPlayerList();
-        }
-    }
-
     private void checkKeyState() {
         final IInput input = getApplication().getInput();
 
-        if (input.isPressed(Key.LEFT) || input.isPressing(Key.LEFT)) {
+        if (input.isRepeat(Key.LEFT) || input.isPressed(Key.LEFT)) {
             if (--mCurrentChoice < 0)
                 mCurrentChoice = 0;
             mWindowCommand.setActive(false);
             mWindowPlayerList.setActive(true);
         }
-        else if(input.isPressed(Key.RIGHT) || input.isPressing(Key.RIGHT)) {
+        else if(input.isRepeat(Key.RIGHT) || input.isPressed(Key.RIGHT)) {
             if (++mCurrentChoice >= MENU_TEXT.length)
                 mCurrentChoice = MENU_TEXT.length - 1;
             mWindowCommand.setActive(true);
@@ -183,75 +119,149 @@ public class RoomScene extends SceneBase implements Constant {
         }
     }
 
-    public void checkStatus () {
-        List<Status> fetchedStatus = getApplication().getInput().getStatuses();
-    }
-
+    /**
+     * Do option execution
+     */
     private void select() {
+        final int START_GAME = 0;
+        final int EXIT_ROOM = 1;
+
         switch(mCurrentChoice) {
+            case START_GAME: {
+                if(mIsServer) {
+                    final Request request = new Request(Request.Types.ClientCanStartGame);
+                    getApplication().getServer().broadcastTCP(request);
+                    getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
+                }
+                break;
+            }
+
             case EXIT_ROOM: {
                 final ISceneManager sceneManager = getApplication().getSceneManager();
 
                 if (mIsServer) {
                     final IServer server = getApplication().getServer();
-                    // TODO: Server should broadcast to clients that the room is canceled.
                     final Request cancelRequest = new Request(Request.Types.ServerCancelRoom);
 
-                    try {
-                        server.broadcastTCP(cancelRequest);
-                        server.stop();
-                    } catch (InterruptedException e) {
-                        // TODO
-                    } catch (UnsupportedOperationException e) {
-                        // TODO
-                    } catch (Exception e) {
-                        // TODO
-                    }
-                }
-                else {
+                    server.broadcastTCP(cancelRequest);
+                    server.stop();
+                } else {
                     final IClient client = getApplication().getClient();
-                    // TODO: Client should send message to server that I quit.
+                    final Request exitRequest = new Request(Request.Types.ClientWannaExitRoom);
+                    exitRequest.setClientID(client.getMyId());
+                    client.sendTCP(exitRequest);
+
+                    // To prevent message sending be interrupt
                     try {
-                        final Request exitRequest = new Request(Request.Types.ClientWannaExitRoom);
-                        exitRequest.setClientID(client.getMyId());
-                        client.sendTCP(exitRequest);
-                        // TODO: check if TCP not timeout and server really receive
                         Thread.sleep(10);
-                        client.stop();
                     } catch (InterruptedException e) {
-                        // TODO
-                    } catch (UnsupportedOperationException e) {
-                        // TODO
-                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
+                    client.stop();
                 }
                 sceneManager.translationTo(new MainScene(getApplication()));
                 break;
             }
-            case START_GAME: {
-                // TODO: Only server can start game, then server broadcast to clients to start game.
-                if(mIsServer) {
+        }
+    }
+    // endregion Common
 
-                    try {
-                        Request request = new Request(Request.Types.ClientCanStartGame);
-                        getApplication().getServer().broadcastTCP(request);
-                        getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+    // region ServerSideOnly
+    /**
+     * broadcast playlist to client with TCP
+     */
+    private void broadcastPlayerList() {
+        ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
+        SyncList syncList = new SyncList(playerList);
+        getApplication().getServer().broadcastTCP(syncList);
+    }
+
+    /**
+     * Check if there has client wanna join or exit
+     */
+    private void checkClientRequest() {
+        final IInput input = getApplication().getInput();
+        final IServer server = getApplication().getServer();
+        final Logger logger = getApplication().getLogger();
+
+        List<Request> requests = input.getRequest();
+        List<ClientInfo> clients = server.getClients();
+
+        for (Request request : requests) {
+
+            // Find request is asked from which client
+            ClientInfo client = null;
+            for (ClientInfo clientInfo : clients) {
+                if (clientInfo.getClientID().equals(request.getClientID())) {
+                    client = clientInfo;
+                    break;
                 }
+            }
+            if (client == null) {
+                return;
+            }
+            logger.info("Get client's request from " + client.getClientID().toString() + ".");
+
+            // Client Join
+            if (request.getType() == Request.Types.ClientWannaJoinRoom) {
+                server.sendTCP(new Request(client.getClientID(), Request.Types.ClientCanJoinRoom),
+                        client.getClientID());
+                client.setIsJoined(true);
+                mWindowPlayerList.addPlayer(client.getClientID().toString());
+                logger.info("Player {" + client.getClientID().toString() + "} join room.");
+            }
+
+            // Client Exit
+            else if (request.getType() == Request.Types.ClientWannaExitRoom) {
+                client.setIsJoined(false);
+                mWindowPlayerList.delPlayer(client.getClientID().toString());
+                logger.info("Player {" + client.getClientID().toString() + "} leave room.");
+            }
+
+            logger.info("Server broadcast player list to clients.");
+            broadcastPlayerList();
+        }
+    }
+    // endregion ServerSideOnly
+
+    // region ClientSideOnly
+    /**
+     * Check request from server
+     */
+    private void checkServerStatus() {
+        final IInput input = getApplication().getInput();
+        final ISceneManager sceneManager = getApplication().getSceneManager();
+        final Logger logger = getApplication().getLogger();
+        List<Request> requests = input.getRequest();
+
+        for (Request request : requests) {
+            if(request.getType() == Request.Types.ServerCancelRoom) {
+                logger.info("Server canceled game.");
+                sceneManager.translationTo(new MainScene(getApplication()));
+                break;
+            } else if (request.getType() == Request.Types.ClientCanStartGame) {
+                logger.info("Server start game.");
+                sceneManager.translationTo(new StageScene(getApplication(), false, 1));
                 break;
             }
         }
     }
 
-    @Override
-    public void dispose() {
+    /**
+     * Update player list of room
+     */
+    private void updatePlayerList() {
+        final IInput input = getApplication().getInput();
+        final Logger logger = getApplication().getLogger();
 
-        super.dispose();
-        mWindowPlayerList.dispose();
-        mWindowCommand.dispose();
+        List<SyncList> syncLists = input.getSyncList();
+
+        for (SyncList syncList : syncLists) {
+            mWindowPlayerList.updatePlayerList((List<String>) syncList.getData());
+        }
+
+        logger.info("Client update player list from server.");
     }
+    // endregion ClientSideOnly
 }

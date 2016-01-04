@@ -16,26 +16,26 @@ public interface IClient {
      *
      * @param hostAddress Server address
      */
-    void start(InetAddress hostAddress) throws InterruptedException, UnsupportedOperationException, IOException;
+    void start(InetAddress hostAddress) throws IOException;
 
     /**
      * Stop the connection.
      */
-    void stop() throws InterruptedException, UnsupportedOperationException;
+    void stop();
 
     /**
      * Send message to Server.
      *
      * @param packableObject information package
      */
-    void send(Packable packableObject) throws Exception;
+    void send(Packable packableObject);
 
     /**
      * Send message to Server.
      *
      * @param packableObject information package
      */
-    void sendTCP(Packable packableObject) throws Exception;
+    void sendTCP(Packable packableObject);
 
     /**
      * Specific if this client is trying to connect or is connected.

@@ -19,7 +19,6 @@ public class ClientReceiver extends Listener {
     @Override
     public void received (Connection connection, Object object) {
         if (object instanceof byte[]) {
-            //mApplication.getLogger().info("Client receive message");
             Packable packableObj = Packer.ByteArraytoPackable((byte[]) object);
             Event event = Packer.toEvent(packableObj, Event.Type.NetWorkClient);
             mApplication.getInput().triggerEvent(event);

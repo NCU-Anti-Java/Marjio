@@ -4,7 +4,8 @@ import io.github.antijava.marjio.common.Disposable;
 import io.github.antijava.marjio.common.IGraphics;
 
 /**
- * Created by Davy on 2015/12/25.
+ * @author Davy
+ * @author Jason
  */
 public interface IBitmap extends Disposable {
     // region Drawing
@@ -14,22 +15,25 @@ public interface IBitmap extends Disposable {
     void clear();
 
     /**
-     * Clears the specified rectangle area of the bitmap.
+     * Returns a rectangle contains the outline text.
      *
-     * @param x The x coordinate for the upper-left corner.
-     * @param y The y coordinate for the upper-left corner.
-     * @param width The width of the rectangle to clear.
-     * @param height The height of the rectangle to clear.
+     * @param text The text.
+     * @param lineHeight The height of the text line.
+     *
+     * @return The rectangle measured.
      */
-    void clearRect(int x, int y, int width, int height);
+    Rectangle measureText(CharSequence text, int lineHeight);
 
     /**
-     * Clears the specified rectangle of the bitmap.
+     * Resizes the bitmap.
      *
-     * @param rect The rectangle.
+     * @param width The new width of the bitmap.
+     * @param height The new height of the bitmap.
      */
-    void clearRect(Rectangle rect);
+    void resize(int width, int height);
+    // endregion Drawing
 
+    // region Draw Text
     /**
      * Draws the outline text on the bitmap.
      *
@@ -96,17 +100,28 @@ public interface IBitmap extends Disposable {
      * @see #drawText(CharSequence, Rectangle, Color, TextAlign)
      */
     void drawText(CharSequence text, Rectangle rect, int lineHeight);
+    // endregion Draw Text
+
+    // region Clear Rectangle
+    /**
+     * Clears the specified rectangle area of the bitmap.
+     *
+     * @param x The x coordinate for the upper-left corner.
+     * @param y The y coordinate for the upper-left corner.
+     * @param width The width of the rectangle to clear.
+     * @param height The height of the rectangle to clear.
+     */
+    void clearRect(int x, int y, int width, int height);
 
     /**
-     * Returns a rectangle contains the outline text.
+     * Clears the specified rectangle of the bitmap.
      *
-     * @param text The text.
-     * @param lineHeight The height of the text line.
-     *
-     * @return The rectangle measured.
+     * @param rect The rectangle.
      */
-    Rectangle measureText(CharSequence text, int lineHeight);
+    void clearRect(Rectangle rect);
+    // endregion Clear Rectangle
 
+    // region Fill Rectangle
     /**
      * Fills the entire bitmap with specified color.
      *
@@ -132,26 +147,9 @@ public interface IBitmap extends Disposable {
      * @param color The color of the rectangle.
      */
     void fillRect(Rectangle rect, Color color);
+    // endregion Fill Rectangle
 
-    /**
-     * Returns pixel color at the specified point.
-     *
-     * @param x The x coordinate of the pixel in the bitmap.
-     * @param y The y coordinate of the pixel in the bitmap.
-     *
-     * @return The pixel color.
-     */
-    Color getPixel(int x, int y);
-
-    /**
-     * Changes pixel color to the specified point.
-     *
-     * @param x The x coordinate of the pixel in the bitmap.
-     * @param y The y coordinate of the pixel in the bitmap.
-     * @param color The pixel color.
-     */
-    void setPixel(int x, int y, Color color);
-
+    // region Block transfer
     /**
      * Performs a block transfer from the {@param src} box {@param srcRect} to specified coordinates.
      *
@@ -208,15 +206,7 @@ public interface IBitmap extends Disposable {
      * @param opacity Opacity can be set from 0 to 255.
      */
     void tileBlt(Rectangle rect, IBitmap src, Rectangle srcRect, int opacity);
-
-    /**
-     * Resizes the bitmap.
-     *
-     * @param width The new width of the bitmap.
-     * @param height The new height of the bitmap.
-     */
-    void resize(int width, int height);
-    // endregion Drawing
+    // endregion Block Transfer
 
     // region Setter
     /**
@@ -225,6 +215,15 @@ public interface IBitmap extends Disposable {
      * @param font The font.
      */
     void setFont(IFont font);
+
+    /**
+     * Changes pixel color to the specified point.
+     *
+     * @param x The x coordinate of the pixel in the bitmap.
+     * @param y The y coordinate of the pixel in the bitmap.
+     * @param color The pixel color.
+     */
+    void setPixel(int x, int y, Color color);
     // endregion Setter
 
     // region Getter
@@ -245,14 +244,26 @@ public interface IBitmap extends Disposable {
     IFont getFont();
 
     /**
+     * Returns pixel color at the specified point.
+     *
+     * @param x The x coordinate of the pixel in the bitmap.
+     * @param y The y coordinate of the pixel in the bitmap.
+     *
+     * @return The pixel color.
+     */
+    Color getPixel(int x, int y);
+
+    /**
      * Returns the rectangle of the bitmap.
      */
     Rectangle getRect();
     // endregion Getter
 
+    // region Enum
     enum TextAlign {
         LEFT,
         CENTER,
         RIGHT,
     }
+    // endregion Enum
 }
