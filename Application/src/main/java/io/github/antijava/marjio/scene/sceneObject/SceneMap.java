@@ -25,8 +25,8 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
     private final static String MAPFILE = "map/map";
     private static final Map<Integer, Pair<Integer, Integer>> typeMap = new HashMap<>();
     static {
-        typeMap.put(1, Pair.of(0, 4));
-        typeMap.put(2, Pair.of(4, 1));
+        typeMap.put(1, Pair.of(4, 1));
+        typeMap.put(2, Pair.of(0, 4));
     }
     private int mRow;
     private int mCol;
