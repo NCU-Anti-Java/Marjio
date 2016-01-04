@@ -220,11 +220,11 @@ public class StageScene extends SceneBase implements Constant {
                     used.put(maxID, true);
                 }
                 final GameSet data = new GameSet(mYourPlayerID);
+                final IGraphics graphics = getApplication().getGraphics();
                 data.setData(rankTable);
-
                 getApplication().getServer().broadcastTCP(data);
                 getApplication().getSceneManager().translationTo(new ScoreBoardScene(
-                        getApplication(), mYourPlayerID, rankTable, null
+                        getApplication(), mYourPlayerID, rankTable, graphics.snapToBitmap()
                 ));
             }
             return ;
@@ -439,9 +439,11 @@ public class StageScene extends SceneBase implements Constant {
         final List<GameSet> gameSets = input.getGameSet();
         for (GameSet gameSet : gameSets) {
             final ISceneManager sceneManager = getApplication().getSceneManager();
+            final IGraphics graphics = getApplication().getGraphics();
             final UUID[] uuids = gameSet.getData();
+
             sceneManager.translationTo(new ScoreBoardScene(
-                    getApplication(), mYourPlayerID, uuids, null));
+                    getApplication(), mYourPlayerID, uuids, graphics.snapToBitmap()));
             mGameSet = true;
             break;
         }
