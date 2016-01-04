@@ -5,6 +5,8 @@ import io.github.antijava.marjio.common.IApplication;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.graphics.Bitmap;
+import io.github.antijava.marjio.graphics.SpriteBase;
 import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,9 +43,10 @@ public class WindowScoreBoard extends WindowBase {
     private void refresh() {
         // TODO: Replace image to mario!
         final ResourcesManager resourcesManager = ((Application)getApplication()).getResourcesManager();
-        final IBitmap yourMario = resourcesManager.tile("default.png", 1, 2);
-        final IBitmap opMario = resourcesManager.tile("default.png", 1, 8);
         final IBitmap content = getContent();
+        final IBitmap yourMario = resourcesManager.mario("mario.png", 1, 0);
+        final IBitmap opMario = resourcesManager.mario("mario.png", 1, 2);
+
         boolean youAreDrawn = false;
         content.clear();
 
@@ -55,7 +58,7 @@ public class WindowScoreBoard extends WindowBase {
             if (i >= MAX_PRINT || (i >= MAX_PRINT - 1 && !youAreDrawn))
                 break;
 
-            if (mRankTable[i] == mYourPlayerUUID) {
+            if (mRankTable[i].equals(mYourPlayerUUID)) {
                 String text = "Me";
                 youAreDrawn = true;
                 content.blt(40, 30 + i * 75, yourMario, yourMario.getRect(), 0);
@@ -69,7 +72,7 @@ public class WindowScoreBoard extends WindowBase {
         if (!youAreDrawn) {
             int yourPlayerRank;
             for (yourPlayerRank = 0; yourPlayerRank < mRankTable.length; yourPlayerRank++)
-                if (mRankTable[yourPlayerRank] == mYourPlayerUUID)
+                if (mRankTable[yourPlayerRank].equals(mYourPlayerUUID))
                     break;
             String text = "Me";
             content.drawText(text, 100, 3 * 75, 50, 75, Color.WHITE);
