@@ -113,9 +113,10 @@ public class Graphics implements IGraphics, GameConstant {
                 .forEach(viewport -> {
                     Observable.from(viewport.getSprites())
                             .filter(sprite -> sprite.getBitmap() != null)
+                            .filter(sprite -> !sprite.isDisposed())
                             .toSortedList((sprite, sprite2) -> {
                                 if (sprite.getZ() == sprite2.getZ())
-                                    if (sprite.getY() == sprite.getY())
+                                    if (sprite.getY() == sprite2.getY())
                                         return sprite.getX() > sprite2.getX() ? 1 : -1;
                                     else
                                         return sprite.getY() > sprite2.getY() ? 1 : -1;
