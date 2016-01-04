@@ -31,6 +31,7 @@ public class StageScene extends SceneBase implements Constant {
     private final Sprite mTimer;
     private int mTick;
 
+    private boolean mGameSet;
 
     boolean mIsServer;
 
@@ -55,6 +56,8 @@ public class StageScene extends SceneBase implements Constant {
         mTimer = new SpriteBase(GameViewPort);
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
+
+        mGameSet = false;
 
         mIsServer = IsServer;
         mPlayers = new HashMap<>();
@@ -90,6 +93,10 @@ public class StageScene extends SceneBase implements Constant {
         super.dispose();
         //mPlayers.values().forEach(Player::dispose);
         //ba.dispose();
+        mMap.dispose();
+        for (UUID uuid : mPlayers.keySet()) {
+            mPlayers.get(uuid).dispose();
+        }
     }
 
     @Override
@@ -173,6 +180,31 @@ public class StageScene extends SceneBase implements Constant {
         checkStatus(players);
         checkKeyState(input, player);
         checkPlayerBump(players);
+        checkGameSet();
+        if (mGameSet) {
+            UUID[] rankTable = new UUID[mPlayers.size()];
+            Map<UUID, Boolean> used = new HashMap<>();
+            for (int i = 0; i < mPlayers.size(); i++) {
+                UUID maxID = null;
+                double x = -1;
+                for (UUID uuid : mPlayers.keySet()) {
+                    if (used.containsKey(uuid)) continue;
+                    if (mPlayers.get(uuid).getX() > x) {
+                        x = mPlayers.get(uuid).getX();
+                        maxID = uuid;
+                    }
+                }
+                rankTable[i] = maxID;
+                used.put(maxID, true);
+            }
+            final GameSet data = new GameSet(mYourPlayerID);
+            data.setData(rankTable);
+
+            getApplication().getServer().broadcastTCP(data);
+            getApplication().getSceneManager().translationTo(new ScoreBoardScene(
+                    getApplication(), mYourPlayerID, rankTable, null
+            ));
+        }
         checkDead(players);
 
         players.forEach(Player::update);
@@ -379,6 +411,18 @@ public class StageScene extends SceneBase implements Constant {
 
     }
 
+    private void checkGameSet() {
+        final IInput input = getApplication().getInput();
+        final List<GameSet> gameSets = input.getGameSet();
+        for (GameSet gameSet : gameSets) {
+            final ISceneManager sceneManager = getApplication().getSceneManager();
+            sceneManager.translationTo(new ScoreBoardScene(
+                    getApplication(), mYourPlayerID, gameSet.getData(), null));
+            mGameSet = true;
+            break;
+        }
+    }
+
     private void checkKeyState(IKeyInput input, Player player) {
 
         if (input.isPressed(Key.MOVE_LEFT)) {
@@ -518,6 +562,19 @@ public class StageScene extends SceneBase implements Constant {
                     }
                 }
             }
+        }
+
+        if (mIsServer) {
+            // region touchable block
+            List<Block> winBlocks = mMap.getAdjacentBlocks(player).stream()
+                    .filter(block -> block.getType() == Block.Type.WIN_LINE )
+                    .collect(Collectors.toList());
+
+            winBlocks.stream().filter(b -> bumpValidation(b, player)).forEach(b -> {
+                if (mGameSet)   return;
+
+                mGameSet = true;
+            });
         }
     }
 

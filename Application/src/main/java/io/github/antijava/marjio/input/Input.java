@@ -196,6 +196,11 @@ public final class Input implements IInput, IKeyInput {
     }
 
     @Override
+    public List<GameSet> getGameSet() {
+        return (List<GameSet>)getNetWorkData(GameSet.class);
+    }
+
+    @Override
     public List<? extends Packable> getNetWorkData(Class c) {
         return mNetWorkDataCached.getOrDefault(c, Collections.emptyList());
     }
