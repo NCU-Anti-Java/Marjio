@@ -22,6 +22,7 @@ import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
 import io.github.antijava.marjio.graphics.SpriteBase;
 import io.github.antijava.marjio.scene.sceneObject.Block;
+import io.github.antijava.marjio.scene.sceneObject.Item;
 import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
 import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
