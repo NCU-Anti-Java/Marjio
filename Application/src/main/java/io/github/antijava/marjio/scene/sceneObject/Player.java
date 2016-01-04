@@ -78,7 +78,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
 
     boolean mStatusUpdate;
 
-    Item mHave;
+    Item.ItemType mHave;
 
     LinkedList<IEffect> mEffect;
 
@@ -281,10 +281,11 @@ public class Player extends SceneObjectObjectBase implements Constant {
     }
 
     public void setItem(Item item) {
-        mHave = item;
+        if (item != null)
+        mHave = item.getItemType();
     }
 
-    public Item getHave() {
+    public Item.ItemType getHave() {
         return mHave;
     }
 
@@ -320,6 +321,8 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mVelocityYModify = data.vym;
         mAccelerationX = data.ax;
         mAccelerationY = data.ay;
+        mHave = Item.ItemType.valueOf(data.item_type);
+
         mStatusUpdate = true;
     }
 
@@ -341,6 +344,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
         data.vym = mVelocityYModify;
         data.ax = mAccelerationX;
         data.ay = mAccelerationY;
+        data.item_type = (mHave == null) ? null : mHave.toString();
 
         return data;
     }

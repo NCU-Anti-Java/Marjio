@@ -484,7 +484,9 @@ public class StageScene extends SceneBase implements Constant {
         }
 
         if (input.isPressed(Key.CAST)) {
-            final Item item = player.getHave();
+            final Item.ItemType item = player.getHave();
+            
+
         }
 
     }
