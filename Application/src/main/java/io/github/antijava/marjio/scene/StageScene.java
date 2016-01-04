@@ -85,8 +85,6 @@ public class StageScene extends SceneBase implements Constant {
         mPlayers = new HashMap<>();
         mItems = new ArrayList<>();
 
-        final Logger logger = application.getLogger();
-
         if (mIsServer) {
             mYourPlayerID = application.getServer().getMyId();
             mPlayers.put(mYourPlayerID, new Player(application,
@@ -339,7 +337,6 @@ public class StageScene extends SceneBase implements Constant {
     }
 
     private void checkStatus (final Collection<Player> players) {
-        final Logger logger = getApplication().getLogger();
         final List<Status> fetchedStatus = getValidStatuses();
         final IServer server = getApplication().getServer();
         int send_tick = 0;
@@ -349,15 +346,11 @@ public class StageScene extends SceneBase implements Constant {
 
         for (final Status st : fetchedStatus) {
             Player player = mPlayers.get(st.getClientID());
-            if (!mIsServer && player == null) {
-                logger.info("client id: " + st.getClientID().toString());
-            }
 
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
                         final boolean check = player.isValidData((SceneObjectStatus) st);
-                        logger.info("client message");
                         if (check)
                             checkKeyState((SceneObjectStatus)st, player);
 
@@ -384,8 +377,6 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerMessage: {
-                    if (!mIsServer)
-
                     if (player == null) {
                         player = new Player(getApplication(),
                                         GameViewPort,
@@ -403,9 +394,6 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerVerification: {
-                    if (!mIsServer)
-                        logger.info("get server verify message");
-
                     if (!((SceneObjectStatus)st).query) {
                         player.preUpdateStatus((SceneObjectStatus)st);
 
