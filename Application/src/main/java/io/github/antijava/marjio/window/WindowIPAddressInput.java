@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
  */
 public class WindowIPAddressInput extends WindowBase {
     private int mIndex = 0; // includes '.'
-    private final int mIP[] = new int[] { 0, 0, 0, 0 };
+    private final int mIP[] = new int[] {127, 0, 0, 1 };
 
     public WindowIPAddressInput(@NotNull final IApplication application) {
         super(application, 280, WINDOW_LINE_HEIGHT + 32);
