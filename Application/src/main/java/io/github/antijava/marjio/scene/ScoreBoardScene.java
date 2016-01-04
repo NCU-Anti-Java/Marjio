@@ -55,6 +55,16 @@ public class ScoreBoardScene extends SceneBase {
     public void dispose() {
         super.dispose();
 
+        try {
+            getApplication().getClient().stop();
+        }
+        catch (Exception e) {
+        }
+        try {
+            getApplication().getServer().stop();
+        }
+        catch (Exception e) {
+        }
         mWindowScoreBoard.dispose();
         mBackground.dispose();
     }
