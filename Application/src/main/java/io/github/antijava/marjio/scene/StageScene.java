@@ -76,14 +76,14 @@ public class StageScene extends SceneBase implements Constant {
         if (mIsServer) {
             mYourPlayerID = application.getServer().getMyId();
             mPlayers.put(mYourPlayerID, new Player(application,
-                    GameViewPort, mYourPlayerID));
+                    GameViewPort, mYourPlayerID, Color.BLUE));
 
             final List<ClientInfo> infos = application.getServer().getClients();
 
             for (final ClientInfo info : infos) {
                 mPlayers.put(info.getClientID(), new Player(application,
                         GameViewPort,
-                        info.getClientID()));
+                        info.getClientID(), Color.RED));
 
             }
         }
@@ -92,7 +92,7 @@ public class StageScene extends SceneBase implements Constant {
 
             mPlayers.put(mYourPlayerID, new Player(application,
                         GameViewPort,
-                        mYourPlayerID));
+                        mYourPlayerID, Color.BLUE));
         }
 
     }
@@ -340,7 +340,7 @@ public class StageScene extends SceneBase implements Constant {
                     if (player == null) {
                         player = new Player(getApplication(),
                                         GameViewPort,
-                                        st.getClientID());
+                                        st.getClientID(), Color.RED);
 
                         mPlayers.put(st.getClientID(), player);
                     }
