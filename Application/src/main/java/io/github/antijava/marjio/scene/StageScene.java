@@ -188,28 +188,30 @@ public class StageScene extends SceneBase implements Constant {
         checkGameSet();
 
         if (mGameSet) {
-            UUID[] rankTable = new UUID[mPlayers.size()];
-            Map<UUID, Boolean> used = new HashMap<>();
-            for (int i = 0; i < mPlayers.size(); i++) {
-                UUID maxID = null;
-                double x = -1;
-                for (UUID uuid : mPlayers.keySet()) {
-                    if (used.containsKey(uuid)) continue;
-                    if (mPlayers.get(uuid).getX() > x) {
-                        x = mPlayers.get(uuid).getX();
-                        maxID = uuid;
+            if (mIsServer) {
+                UUID[] rankTable = new UUID[mPlayers.size()];
+                Map<UUID, Boolean> used = new HashMap<>();
+                for (int i = 0; i < mPlayers.size(); i++) {
+                    UUID maxID = null;
+                    double x = -1;
+                    for (UUID uuid : mPlayers.keySet()) {
+                        if (used.containsKey(uuid)) continue;
+                        if (mPlayers.get(uuid).getX() > x) {
+                            x = mPlayers.get(uuid).getX();
+                            maxID = uuid;
+                        }
                     }
+                    rankTable[i] = maxID;
+                    used.put(maxID, true);
                 }
-                rankTable[i] = maxID;
-                used.put(maxID, true);
-            }
-            final GameSet data = new GameSet(mYourPlayerID);
-            data.setData(rankTable);
+                final GameSet data = new GameSet(mYourPlayerID);
+                data.setData(rankTable);
 
-            getApplication().getServer().broadcastTCP(data);
-            getApplication().getSceneManager().translationTo(new ScoreBoardScene(
-                    getApplication(), mYourPlayerID, rankTable, null
-            ));
+                getApplication().getServer().broadcastTCP(data);
+                getApplication().getSceneManager().translationTo(new ScoreBoardScene(
+                        getApplication(), mYourPlayerID, rankTable, null
+                ));
+            }
             return ;
         }
         checkDead(players);
@@ -422,8 +424,9 @@ public class StageScene extends SceneBase implements Constant {
         final List<GameSet> gameSets = input.getGameSet();
         for (GameSet gameSet : gameSets) {
             final ISceneManager sceneManager = getApplication().getSceneManager();
+            final UUID[] uuids = gameSet.getData();
             sceneManager.translationTo(new ScoreBoardScene(
-                    getApplication(), mYourPlayerID, gameSet.getData(), null));
+                    getApplication(), mYourPlayerID, uuids, null));
             mGameSet = true;
             break;
         }
