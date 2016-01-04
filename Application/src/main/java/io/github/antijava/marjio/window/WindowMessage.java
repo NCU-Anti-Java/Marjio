@@ -5,6 +5,7 @@ import io.github.antijava.marjio.common.IInput;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.input.Key;
 import io.github.antijava.marjio.constant.GameConstant;
+import io.github.antijava.marjio.scene.MainScene;
 import org.jetbrains.annotations.NotNull;
 
 import static io.github.antijava.marjio.common.graphics.Color.WHITE;
@@ -44,6 +45,7 @@ public class WindowMessage extends WindowBase {
         if (input.isPressed(Key.ENTER)) {
             setActive(false);
             super.update();
+            getApplication().getSceneManager().translationTo(new MainScene(getApplication()));
         }
     }
 
