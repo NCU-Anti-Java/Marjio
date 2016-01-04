@@ -321,7 +321,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mVelocityY = data.vy;
         mVelocityXModify = data.vxm;
         mVelocityYModify = data.vym;
-        mHave = Item.ItemType.valueOf(data.item_have);
+        mHave = null; //Item.ItemType.valueOf(data.item_have);
         mAccelerationX = data.ax;
         mAccelerationY = data.ay;
         mStatusUpdate = true;
