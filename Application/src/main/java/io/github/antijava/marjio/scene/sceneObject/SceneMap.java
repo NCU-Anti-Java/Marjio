@@ -29,6 +29,11 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
         typeMap.put(2, Pair.of(8, 3)); // Wood
         typeMap.put(3, Pair.of(2, 5)); // Win Line
         typeMap.put(4, Pair.of(0, 0)); // Item block
+        typeMap.put(5, Pair.of(0, 0)); // Item block
+        typeMap.put(6, Pair.of(0, 0)); // Item block
+        typeMap.put(7, Pair.of(0, 0)); // Item block
+        typeMap.put(8, Pair.of(0, 0)); // Item block
+
     }
     private int mRow;
     private int mCol;
