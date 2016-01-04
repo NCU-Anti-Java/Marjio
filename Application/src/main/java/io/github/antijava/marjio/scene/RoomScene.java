@@ -143,7 +143,6 @@ public class RoomScene extends SceneBase implements Constant {
         switch(mCurrentChoice) {
             case START_GAME: {
                 if(mIsServer) {
-
                     final Request request = new Request(Request.Types.ClientCanStartGame);
                     getApplication().getServer().broadcastTCP(request);
                     getApplication().getSceneManager().translationTo(new StageScene(getApplication(), true, 1));
@@ -255,6 +254,7 @@ public class RoomScene extends SceneBase implements Constant {
             if(request.getType() == Request.Types.ServerCancelRoom) {
                 logger.info("Server canceled game.");
                 sceneManager.translationTo(new MainScene(getApplication()));
+                getApplication().getClient().stop();
                 break;
             } else if (request.getType() == Request.Types.ClientCanStartGame) {
                 logger.info("Server start game.");
