@@ -1,17 +1,31 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
+import io.github.antijava.marjio.common.IGraphics;
+import io.github.antijava.marjio.common.IInput;
+import io.github.antijava.marjio.common.ISceneManager;
+import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
 import io.github.antijava.marjio.common.graphics.Viewport;
 
-import io.github.antijava.marjio.common.input.*;
+import io.github.antijava.marjio.common.input.GameSet;
+import io.github.antijava.marjio.common.input.IKeyInput;
+import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
+import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.TickRequest;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
 import io.github.antijava.marjio.graphics.SpriteBase;
-import io.github.antijava.marjio.scene.sceneObject.*;
+import io.github.antijava.marjio.scene.sceneObject.Block;
+import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
+import io.github.antijava.marjio.scene.sceneObject.Player;
+import io.github.antijava.marjio.scene.sceneObject.SceneMap;
+import io.github.antijava.marjio.scene.sceneObject.SceneObjectObjectBase;
 
 import java.util.Collection;
 import java.util.HashMap;
