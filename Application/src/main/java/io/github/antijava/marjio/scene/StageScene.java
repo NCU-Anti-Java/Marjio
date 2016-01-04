@@ -28,6 +28,7 @@ import io.github.antijava.marjio.scene.sceneObject.Player;
 import io.github.antijava.marjio.scene.sceneObject.SceneMap;
 import io.github.antijava.marjio.scene.sceneObject.SceneObjectObjectBase;
 
+import java.nio.file.NoSuchFileException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -55,12 +56,16 @@ public class StageScene extends SceneBase implements Constant {
 
     boolean mIsServer;
 
+
+
     /*
      //TODO: fake data
     final WindowBase ba;
     final Player p;
 */
-
+    private final Sprite mItemSlot;
+    private final Sprite mItemSlotText;
+    private Item mItemOwned;
 
 
     public StageScene(IApplication application, boolean IsServer, int stage) {
@@ -76,6 +81,28 @@ public class StageScene extends SceneBase implements Constant {
         mTimer = new SpriteBase(GameViewPort);
         mTimer.setBitmap(graphics.createBitmap(GAME_WIDTH, GAME_HEIGHT));
         mTimer.setZ(99);
+
+        //Item
+        mItemSlot = new SpriteBase(GameViewPort);
+        try {
+            mItemSlot.setBitmap(graphics.loadBitmap("slot.png"));
+
+        } catch(NoSuchFileException ex) {
+            ex.printStackTrace();
+        }
+
+        mItemSlot.setX(30);
+        mItemSlot.setY(50);
+        mItemSlot.setZ(99);
+
+        mItemSlotText = new SpriteBase(GameViewPort);
+        mItemSlotText.setBitmap(graphics.createBitmap(50, 20));
+        mItemSlotText.getBitmap().drawText("Item", 0,0, 50,20, Color.WHITE, IBitmap.TextAlign.CENTER);
+        mItemSlotText.setX(30);
+        mItemSlotText.setY(30);
+        mItemSlotText.setZ(99);
+        
+        mItemOwned = null;
 
         mGameSet = false;
 
@@ -105,6 +132,7 @@ public class StageScene extends SceneBase implements Constant {
                         GameViewPort,
                         mYourPlayerID, Color.BLUE));
         }
+
 
     }
 
@@ -487,7 +515,7 @@ public class StageScene extends SceneBase implements Constant {
 
         if (input.isPressed(Key.CAST)) {
             final Item.ItemType item = player.getHave();
-            
+
 
         }
 
