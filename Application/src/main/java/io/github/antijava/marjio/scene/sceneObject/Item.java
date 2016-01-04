@@ -16,10 +16,10 @@ public class Item extends SceneObjectObjectBase {
 
     // region Enum
     public enum ItemType {
-        TrapTool,
+        SuperTrap,
         Trap,
-        SpeedTool,
-        Weapon,
+        SuperSpeed,
+        SuperGun,
         Bullet
     }
     // endregion Enum
@@ -38,8 +38,8 @@ public class Item extends SceneObjectObjectBase {
         ResourcesManager rm = ((Application)application).getResourcesManager();
         IBitmap bitmap;
         switch (type) {
-            case TrapTool:
-                mName = "Trap Tool";
+            case SuperTrap:
+                mName = "Super Trap";
                 bitmap = rm.tile("default.png", 18, 6);
                 bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
                 break;
@@ -48,13 +48,13 @@ public class Item extends SceneObjectObjectBase {
                 bitmap = rm.tile("default.png", 15, 6);
                 bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
                 break;
-            case SpeedTool:
-                mName = "Speed Tool";
+            case SuperSpeed:
+                mName = "Super Speed";
                 bitmap = rm.tile("default.png", 11, 2);
                 bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
                 break;
-            case Weapon:
-                mName = "Weapon";
+            case SuperGun:
+                mName = "Super Gun";
                 bitmap = rm.tile("default.png", 27, 4);
                 bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
                 break;
