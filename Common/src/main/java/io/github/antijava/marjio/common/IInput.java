@@ -26,9 +26,10 @@ public interface IInput extends IKeyInput {
     List<TickRequest> getTickRequest();
 
     List<SyncList> getSyncList();
+    List<GameSet> getGameSet();
 
 
-    @NetWorkData({Status.class, Request.class, SyncList.class, TickRequest.class})
+    @NetWorkData({Status.class, Request.class, SyncList.class, TickRequest.class, GameSet.class})
     List<? extends Packable> getNetWorkData(Class c);
 
     void triggerEvent(Event evt);

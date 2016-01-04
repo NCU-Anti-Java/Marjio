@@ -160,5 +160,11 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
         };
     }
 
+    @Override
+    public void dispose() {
+        for (int i = 0; i < mRow; i++)
+            for (int j = 0; j < mCol; j++)
+                mMap[i][j].dispose();
+    }
 
 }
