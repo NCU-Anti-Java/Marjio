@@ -12,7 +12,7 @@ import io.github.antijava.marjio.window.WindowCommand;
  * Created by Zheng-Yuan on 12/24/2015.
  */
 public class MainScene extends SceneBase implements Constant {
-    private static final String[] MENU_TEXT = {"Host Game", "Join Game", "Exit"};
+    private static final String[] MENU_TEXT = {"Create Game", "Join Game", "Exit"};
     private static final int HOST_GAME = 0;
     private static final int JOIN_GAME = 1;
     private static final int EXIT = 2;
