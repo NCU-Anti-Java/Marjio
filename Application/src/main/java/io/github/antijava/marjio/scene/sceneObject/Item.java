@@ -69,6 +69,10 @@ public class Item extends SceneObjectObjectBase {
         }
         setBitmap(bitmap);
     }
+
+    public Item(Viewport viewport, IApplication application, int x, int y, ItemType type) {
+       this(viewport, application, x, y, 0, type);
+    }
     // endregion Constructor
 
     // region Getter

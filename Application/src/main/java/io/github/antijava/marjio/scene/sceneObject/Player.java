@@ -8,13 +8,10 @@ import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
 
 import io.github.antijava.marjio.common.input.Key;
-import io.github.antijava.marjio.common.input.Status;
 import io.github.antijava.marjio.constant.Constant;
-import io.github.antijava.marjio.graphics.Bitmap;
 import io.github.antijava.marjio.resourcemanager.ResourcesManager;
 
 import io.github.antijava.marjio.common.input.SceneObjectStatus;
-import io.github.antijava.marjio.common.input.Status;
 
 
 import java.util.*;
@@ -83,7 +80,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
 
     Item mHave;
 
-    Queue<IAction> mEffect;
+    LinkedList<IEffect> mEffect;
 
 
     public Player(final IApplication application, Viewport viewport, UUID id, Color clothColor) {
@@ -109,6 +106,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mVelocityYModify = 1.0;
 
         mClothColor = clothColor;
+        mEffect = new LinkedList<>();
 
         if (!sStyleLoaded) {
             final ResourcesManager resourceManager = ((Application)application).getResourcesManager();
@@ -151,7 +149,11 @@ public class Player extends SceneObjectObjectBase implements Constant {
         mAccelerationX = 0;
         mAccelerationY = 0;
 
+        mVelocityXModify = 1.0;
+        mVelocityYModify = 1.0;
+
         mStatusUpdate = false;
+        mEffect.clear();
     }
 
     @Override
@@ -171,6 +173,19 @@ public class Player extends SceneObjectObjectBase implements Constant {
         else if (mVelocityX < 0)
             mFinalFace = Face.LEFT;
         updateAnimation();
+
+        mEffect.forEach(IEffect::update);
+
+        if (mEffect.removeIf(IEffect::isFinish)) {
+            mVelocityXModify = mEffect
+                    .stream()
+                    .mapToDouble(IEffect::getVelocityModifyX)
+                    .reduce(1.0, (a, b) -> a*b);
+            mVelocityYModify = mEffect
+                    .stream()
+                    .mapToDouble(IEffect::getVelocityModifyY)
+                    .reduce(1.0, (a, b) -> a*b);
+        }
     }
 
     public UUID getId() {
@@ -259,6 +274,18 @@ public class Player extends SceneObjectObjectBase implements Constant {
 
     public void setAccelerationY (double ay) {
         mAccelerationY = ay;
+    }
+
+    public void addEffect(IEffect effect) {
+        mEffect.add(effect);
+    }
+
+    public void setItem(Item item) {
+        mHave = item;
+    }
+
+    public Item getHave() {
+        return mHave;
     }
 
     public void preUpdate() {

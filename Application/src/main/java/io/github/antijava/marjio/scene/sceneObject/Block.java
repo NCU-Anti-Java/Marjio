@@ -60,6 +60,7 @@ public class Block extends SceneObjectObjectBase {
     @Override
     public void update() {
         // TODO:
+
     }
 
     @Override

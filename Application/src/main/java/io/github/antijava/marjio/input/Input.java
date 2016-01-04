@@ -21,6 +21,7 @@ public final class Input implements IInput, IKeyInput {
         sKeymap.put(Key.MOVE_RIGHT, Key.RIGHT);
         sKeymap.put(Key.MOVE_LEFT, Key.LEFT);
         sKeymap.put(Key.CROUCH, Key.DOWN);
+        sKeymap.put(Key.CAST, Key.SPACE);
     }
 
     private boolean  mAnyKeyPressed;
