@@ -50,6 +50,7 @@ public class Graphics implements IGraphics, GameConstant {
         mCanvasGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         mCanvasGraphics.setBackground(Color.BLACK);
         mFpsMeterBitmap = (Bitmap) createBitmap(GAME_WIDTH, GAME_HEIGHT);
+        mFpsMeterBitmap.setFont(new Font("Consolas", 9, false, false));
 
         mSwingPanel = new JPanel() {
             @Override
@@ -191,15 +192,11 @@ public class Graphics implements IGraphics, GameConstant {
         final Application application = (Application) mApplication;
         mFpsMeterBitmap.clear();
 
-        mFpsMeterBitmap.drawText("Fps: " + application.getFps(), 1, 1, -1, 24,
-                io.github.antijava.marjio.common.graphics.Color.BLACK);
-        mFpsMeterBitmap.drawText("Fps: " + application.getFps(), 0, 0, -1, 24,
-                io.github.antijava.marjio.common.graphics.Color.WHITE);
+        mFpsMeterBitmap.drawText("Fps: " + application.getFps(), 0, 1, -1, 9,
+                io.github.antijava.marjio.common.graphics.Color.RED);
 
-        mFpsMeterBitmap.drawText("Real Fps: " + application.getRealFps(), 1, 25, -1, 24,
-                io.github.antijava.marjio.common.graphics.Color.BLACK);
-        mFpsMeterBitmap.drawText("Real Fps: " + application.getRealFps(), 0, 24, -1, 24,
-                io.github.antijava.marjio.common.graphics.Color.WHITE);
+        mFpsMeterBitmap.drawText("Real Fps: " + application.getRealFps(), 65, 0, -1, 9,
+                io.github.antijava.marjio.common.graphics.Color.RED);
 
         mCanvasGraphics.drawImage(mFpsMeterBitmap.mImage, 0, 0, null);
     }
