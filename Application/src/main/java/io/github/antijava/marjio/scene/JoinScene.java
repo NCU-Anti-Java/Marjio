@@ -12,6 +12,7 @@ import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.window.WindowBase;
 import io.github.antijava.marjio.window.WindowCommand;
 import io.github.antijava.marjio.window.WindowIPAddressInput;
+import io.github.antijava.marjio.window.WindowMessage;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +29,7 @@ public class JoinScene extends SceneBase implements Constant {
     private WindowBase mWindowBack;
     private WindowIPAddressInput mWindowIPAddressInput;
     private WindowCommand mWindowCommand;
+    private WindowMessage mWindowMessage;
 
     // unit: how many frame
     private int mResponseTimeout = 0;
@@ -50,6 +52,11 @@ public class JoinScene extends SceneBase implements Constant {
 
         // Check whether response of request is back
         if (mResponseTimeout > 0 && checkJoin()) {
+            return;
+        }
+
+        if (mWindowMessage != null && !mWindowMessage.isDisposed() && mWindowMessage.isActive()) {
+            mWindowMessage.update();
             return;
         }
 
@@ -134,7 +141,11 @@ public class JoinScene extends SceneBase implements Constant {
                 catch (IOException e) {
                     final Logger logger = getApplication().getLogger();
                     logger.info(e.getMessage() + " and stopped client.");
-
+                    if (mWindowMessage != null)
+                        mWindowMessage.dispose();
+                    mWindowMessage = new WindowMessage(getApplication(), "Unable to connect.", 450);
+                    mWindowMessage.setZ(999);
+                    mWindowMessage.setActive(true);
                     // TODO: Let user know connection failed
                 }
 
@@ -228,9 +239,13 @@ public class JoinScene extends SceneBase implements Constant {
 
         if (mResponseTimeout == 0) {
             logger.info("Client waiting response time out ");
+            if (mWindowMessage != null)
+                mWindowMessage.dispose();
+            mWindowMessage = new WindowMessage(getApplication(), "Timeout.", 450);
+            mWindowMessage.setZ(999);
+            mWindowMessage.setActive(true);
             mWindowCommand.setActive(true);
             client.stop();
-
         }
 
         return false;
