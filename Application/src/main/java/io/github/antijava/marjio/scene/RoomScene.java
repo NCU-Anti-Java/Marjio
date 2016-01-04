@@ -59,6 +59,9 @@ public class RoomScene extends SceneBase implements Constant {
             }
         }
 
+        mWindowCommand.update();
+        mWindowPlayerList.update();
+
         if (mIsServer) {
             checkClientRequest();
         } else {
@@ -66,8 +69,6 @@ public class RoomScene extends SceneBase implements Constant {
             checkServerStatus();
         }
 
-        mWindowCommand.update();
-        mWindowPlayerList.update();
         checkKeyState();
     }
 
