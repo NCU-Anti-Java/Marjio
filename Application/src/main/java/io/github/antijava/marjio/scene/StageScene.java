@@ -518,6 +518,16 @@ public class StageScene extends SceneBase implements Constant {
 
                         player.setVelocityYWithModify(nvy);
                         player.setAccelerationY(0.0);
+
+                        if (b.getType() == Block.Type.WOOD) {
+                            int col = (int) Math.floor(b.getX() / BLOCK_SIZE);
+                            int row = (int) Math.floor(b.getY() / BLOCK_SIZE);
+
+                            Block airBlock = new Block(Block.Type.AIR.getValue(), b.getX(), b.getY(), GameViewPort, null);
+                            mMap.getBlock(row, col).dispose();
+                            mMap.setBlock(row, col, airBlock);
+
+                        }
                     } else if (b.getY() < player.getY()) {
                         player.setVelocityY(0.0);
                         player.setY(b.getY() + BLOCK_SIZE);
