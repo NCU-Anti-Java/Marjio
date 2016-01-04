@@ -91,7 +91,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
 
         mTick = 0;
 
-        mX = super.getX();
+        mX = super.getX() + BLOCK_SIZE * 1;
         mY = super.getY();
 
         mVelocityX = 0;
@@ -129,7 +129,7 @@ public class Player extends SceneObjectObjectBase implements Constant {
     }
 
     public void reset() {
-        mX = 0;
+        mX = BLOCK_SIZE;
         mY = 0;
 
         mVelocityX = 0;

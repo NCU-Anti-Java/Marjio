@@ -250,7 +250,7 @@ public class StageScene extends SceneBase implements Constant {
                 } else if (y < -1000) { //fly to death, it means you
                     p.reset();          // leave the atmosphere
                 } else if (x < 0) { //prevent move out of start line
-                    p.setX(0);
+                    p.setX(BLOCK_SIZE * 1);
                     p.setVelocityX(0.0);
                 }
                 if(p == mPlayers.get(mYourPlayerID))
