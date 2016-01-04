@@ -181,6 +181,11 @@ public class Graphics implements IGraphics, GameConstant {
         return viewport;
     }
 
+    @Override
+    public IBitmap snapToBitmap() {
+        return new Bitmap(this, mCanvas);
+    }
+
     private void drawFps() {
         final Application application = (Application) mApplication;
         mFpsMeterBitmap.clear();

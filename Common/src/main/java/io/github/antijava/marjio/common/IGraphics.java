@@ -49,4 +49,11 @@ public interface IGraphics {
      * @return The viewport.
      */
     Viewport createViewport();
+
+    /**
+     * Take snapshot.
+     *
+     * @return THe bitmap.
+     */
+    IBitmap snapToBitmap();
 }
