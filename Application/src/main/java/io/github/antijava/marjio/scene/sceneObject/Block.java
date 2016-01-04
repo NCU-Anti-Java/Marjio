@@ -17,18 +17,23 @@ public class Block extends SceneObjectObjectBase {
     // TODO: Different type with different block image.
     // TODO: Need images.
     public enum Type {
-        /**
-         * Not touchable
-         */
+
+        // Not touchable
         AIR(0),
-        /**
-         * Not breakable block
-         */
+
+        // Not breakable block
         GROUND(1),
-        /**
-         * breakable block
-         */
-        WOOD(2);
+
+        // breakable block
+        WOOD(2),
+
+        // Block let player touch and over the game
+        WIN_LINE(3),
+
+        // Block which could be broken and generate item
+        ITEM_BLOCK(4);
+
+
 
         private final int mValue;
         Type(int value) {
@@ -76,6 +81,12 @@ public class Block extends SceneObjectObjectBase {
                 break;
             case 2:
                 mType = Type.WOOD;
+                break;
+            case 3:
+                mType = Type.WIN_LINE;
+                break;
+            case 4:
+                mType = Type.ITEM_BLOCK;
                 break;
         }
     }
