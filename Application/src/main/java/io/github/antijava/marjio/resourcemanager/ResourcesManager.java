@@ -19,12 +19,14 @@ public class ResourcesManager implements ResourcesConstant {
     private final Bitmap mEmptyBitmap;
     private final Map<String, Bitmap> mCachedBitmaps;
     private final Map<Triple<String, Integer, Integer>, Bitmap> mCachedTiles;
+    private final Map<Triple<String, Integer, Integer>, Bitmap> mCachedMarios;
 
     public ResourcesManager(@NotNull final Application application) {
         mApplication = application;
         mEmptyBitmap = (Bitmap) mApplication.getGraphics().createBitmap(1, 1);
         mCachedBitmaps = new HashMap<>();
         mCachedTiles = new HashMap<>();
+        mCachedMarios = new HashMap<>();
     }
 
     public Bitmap emptyBitmap() {
@@ -49,6 +51,22 @@ public class ResourcesManager implements ResourcesConstant {
         tile.blt(0, 0, tilemap, new Rectangle(x * 18, y * 18, 16, 16), 0);
         mCachedTiles.put(key, tile);
         return tile;
+    }
+
+    public Bitmap mariomap(final String path) {
+        return readBitmap(RESOURCE_MARIO_PATH + path);
+    }
+
+    public Bitmap mario(final String path, final int x, final int y) {
+        final Triple<String, Integer, Integer> key = Triple.of(path, x, y);
+        if (mCachedMarios.containsKey(key))
+            return mCachedMarios.get(key);
+
+        final Bitmap mariomap = mariomap(path);
+        final Bitmap mario = (Bitmap) mApplication.getGraphics().createBitmap(16, 16);
+        mario.blt(0, 0, mariomap, new Rectangle(1 + x * 18, 1 + y * 18, 16, 16), 0);
+        mCachedTiles.put(key, mario);
+        return mario;
     }
 
     private Bitmap readBitmap(final String path) {

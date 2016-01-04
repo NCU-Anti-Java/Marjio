@@ -58,10 +58,10 @@ public class Network implements IClient, IServer, Constant {
             throw new UnsupportedOperationException();
         }
 
+        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
         mServer.start();
         mApplication.getLogger().info("Server started.");
 
-        mServer.bind(NET_TCP_PORT, NET_UDP_PORT);
         mServer.addListener(new ServerReceiver(mApplication, mConnectionMap, mClientList));
         mRunningFlag = true;
         mIsServerFlag = true;
@@ -69,7 +69,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void send(Packable packableObj, UUID clientID) throws Exception {
+    public void send(Packable packableObj, UUID clientID) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -79,7 +79,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void sendTCP(Packable packableObj) throws Exception {
+    public void sendTCP(Packable packableObj) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -89,7 +89,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void broadcast(Packable packableObj) throws Exception {
+    public void broadcast(Packable packableObj) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -97,9 +97,8 @@ public class Network implements IClient, IServer, Constant {
         mServer.sendToAllUDP(Packer.PackabletoByteArray(packableObj));
     }
 
-    // server only
     @Override
-    public void broadcastTCP(Packable packableObject) throws Exception {
+    public void broadcastTCP(Packable packableObject) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -136,7 +135,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void send(Packable packableObj) throws Exception {
+    public void send(Packable packableObj) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -145,7 +144,7 @@ public class Network implements IClient, IServer, Constant {
     }
 
     @Override
-    public void sendTCP(Packable packableObj, UUID clientID) throws Exception {
+    public void sendTCP(Packable packableObj, UUID clientID) {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }
@@ -166,7 +165,7 @@ public class Network implements IClient, IServer, Constant {
 
     // region BothSide
     @Override
-    public void stop() throws InterruptedException, UnsupportedOperationException {
+    public void stop() {
         if (!mRunningFlag) {
             throw new UnsupportedOperationException();
         }

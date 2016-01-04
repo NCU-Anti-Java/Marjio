@@ -9,6 +9,8 @@ package io.github.antijava.marjio.common.graphics;
 public class Color {
     public static final Color BLACK = new Color(0xff000000);
     public static final Color WHITE = new Color(0xffffffff);
+    public static final Color RED = new Color(0xff0000ff);
+    public static final Color BLUE = new Color(0, 0, 1, 1);
 
     /** The red, green, blue and alpha components **/
     public int r, g, b, a;

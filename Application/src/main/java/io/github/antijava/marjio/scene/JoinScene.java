@@ -138,11 +138,6 @@ public class JoinScene extends SceneBase implements Constant {
                     // TODO: Let user know connection failed
                 }
 
-                // If there got exception, means the program have something wrong
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-
                 return false;
             }
 
@@ -234,11 +229,8 @@ public class JoinScene extends SceneBase implements Constant {
         if (mResponseTimeout == 0) {
             logger.info("Client waiting response time out ");
             mWindowCommand.setActive(true);
-            try {
-                client.stop();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            client.stop();
+
         }
 
         return false;
