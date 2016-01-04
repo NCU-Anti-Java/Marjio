@@ -25,9 +25,10 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
     private final static String MAPFILE = "map/map";
     private static final Map<Integer, Pair<Integer, Integer>> typeMap = new HashMap<>();
     static {
-        typeMap.put(1, Pair.of(4, 1));
-        typeMap.put(2, Pair.of(0, 4));
-        typeMap.put(3, Pair.of(2, 5));
+        typeMap.put(1, Pair.of(4, 1)); // Ground
+        typeMap.put(2, Pair.of(8, 3)); // Wood
+        typeMap.put(3, Pair.of(2, 5)); // Win Line
+        typeMap.put(4, Pair.of(0, 0)); // Item block
     }
     private int mRow;
     private int mCol;
@@ -48,6 +49,14 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
             getApplication()
                     .getLogger()
                     .log(Level.INFO, "Attemp to load map level > 1");
+    }
+
+    public int getRow() {
+        return mRow;
+    }
+
+    public int getCol() {
+        return mCol;
     }
 
     public List<Block> getAdjacentBlocks(Player player) {

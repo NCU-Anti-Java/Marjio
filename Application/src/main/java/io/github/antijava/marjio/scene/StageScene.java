@@ -1,23 +1,31 @@
 package io.github.antijava.marjio.scene;
 
-import io.github.antijava.marjio.common.*;
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.IClient;
+import io.github.antijava.marjio.common.IGraphics;
+import io.github.antijava.marjio.common.IServer;
 import io.github.antijava.marjio.common.graphics.Color;
 import io.github.antijava.marjio.common.graphics.IBitmap;
-import io.github.antijava.marjio.common.graphics.Rectangle;
 import io.github.antijava.marjio.common.graphics.Viewport;
-import io.github.antijava.marjio.common.input.*;
 
+import io.github.antijava.marjio.common.input.IKeyInput;
+import io.github.antijava.marjio.common.input.Key;
+import io.github.antijava.marjio.common.input.SceneObjectStatus;
+import io.github.antijava.marjio.common.input.Status;
+import io.github.antijava.marjio.common.input.TickRequest;
 import io.github.antijava.marjio.common.network.ClientInfo;
 import io.github.antijava.marjio.constant.Constant;
 import io.github.antijava.marjio.graphics.Font;
 import io.github.antijava.marjio.graphics.Sprite;
 import io.github.antijava.marjio.graphics.SpriteBase;
-import io.github.antijava.marjio.scene.sceneObject.Block;
-import io.github.antijava.marjio.scene.sceneObject.PhysicsConstant;
-import io.github.antijava.marjio.scene.sceneObject.Player;
-import io.github.antijava.marjio.scene.sceneObject.SceneMap;
+import io.github.antijava.marjio.scene.sceneObject.*;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,14 +76,14 @@ public class StageScene extends SceneBase implements Constant {
         if (mIsServer) {
             mYourPlayerID = application.getServer().getMyId();
             mPlayers.put(mYourPlayerID, new Player(application,
-                    GameViewPort, mYourPlayerID));
+                    GameViewPort, mYourPlayerID, Color.BLUE));
 
             final List<ClientInfo> infos = application.getServer().getClients();
 
             for (final ClientInfo info : infos) {
                 mPlayers.put(info.getClientID(), new Player(application,
                         GameViewPort,
-                        info.getClientID()));
+                        info.getClientID(), Color.RED));
 
             }
         }
@@ -84,7 +92,7 @@ public class StageScene extends SceneBase implements Constant {
 
             mPlayers.put(mYourPlayerID, new Player(application,
                         GameViewPort,
-                        mYourPlayerID));
+                        mYourPlayerID, Color.BLUE));
         }
 
     }
@@ -176,22 +184,21 @@ public class StageScene extends SceneBase implements Constant {
 
         checkStatus(players);
         checkKeyState(input, player);
-        solveBumps(players);
+        checkPlayerBump(players);
         checkDead(players);
 
         players.forEach(Player::update);
 
-        //TODO : slide viewport when player is running or out of viewport
-        if (Math.abs(Math.abs(player.getVelocityX()) - Player.HUMAN_LIMTT) < 1e-3)
-            GameViewPort.x -= player.getVelocityX();
+        final int playerCenterX = player.getX() + PLAYER_SIZE / 2;
+        if (playerCenterX > GameViewPort.ox + GAME_WIDTH - MAP_SCROLL_PADDING)
+            GameViewPort.ox = playerCenterX - (GAME_WIDTH - MAP_SCROLL_PADDING);
+        else if (playerCenterX < GameViewPort.ox + MAP_SCROLL_PADDING)
+            GameViewPort.ox = playerCenterX - MAP_SCROLL_PADDING;
 
-
-        /*
-        //TODO: fake data
-         ba.setX(p.getX());
-         ba.setY(p.getY());
-         ba.update();
-        */
+        if (GameViewPort.ox + GAME_WIDTH > mMap.getCol() * BLOCK_SIZE)
+            GameViewPort.ox = mMap.getCol() * BLOCK_SIZE - GAME_WIDTH;
+        else if (GameViewPort.ox < 0)
+            GameViewPort.ox = 0;
 
         if (mIsServer) {
             IServer server = getApplication().getServer();
@@ -261,7 +268,7 @@ public class StageScene extends SceneBase implements Constant {
 
     }
 
-    public List<Status> getValidStatuses() {
+    private List<Status> getValidStatuses() {
         final Stream<Status> statuses = getApplication()
                 .getInput()
                 .getStatuses()
@@ -281,7 +288,7 @@ public class StageScene extends SceneBase implements Constant {
 
     }
 
-    public void checkStatus (final Collection<Player> players) {
+    private void checkStatus (final Collection<Player> players) {
         final Logger logger = getApplication().getLogger();
         final List<Status> fetchedStatus = getValidStatuses();
         final IServer server = getApplication().getServer();
@@ -333,7 +340,7 @@ public class StageScene extends SceneBase implements Constant {
                     if (player == null) {
                         player = new Player(getApplication(),
                                         GameViewPort,
-                                        st.getClientID());
+                                        st.getClientID(), Color.RED);
 
                         mPlayers.put(st.getClientID(), player);
                     }
@@ -426,17 +433,19 @@ public class StageScene extends SceneBase implements Constant {
 
     }
 
-    private void solveBumps(final Collection<Player> players) {
-
-
-
+    /**
+     * Check whether players bump and execute their behavior
+     * @param players
+     */
+    private void checkPlayerBump(final Collection<Player> players) {
         //TODO: BUG need fix
         //time synchronized for players in client
 
+        // bump anticipation of client
         if (!mIsServer) {
             while (players.stream().anyMatch(p -> p.getTick() < mTick)) {
-                final Stream<Player> s_players = players.stream();
-                s_players.filter(p -> p.getTick() < mTick)
+                players.stream()
+                        .filter(p -> p.getTick() < mTick)
                         .sorted((player1, player2) -> {
                             if (player1.getX() == player2.getX())
                                 return (player1.getY() > player2.getY()) ? 1 : -1;
@@ -444,61 +453,51 @@ public class StageScene extends SceneBase implements Constant {
                                 return (player1.getX() > player2.getX()) ? 1 : -1;
                         })
                         .forEach(p -> {
-                            solveBumpBlock(p);
+                            checkPlayerBumpObject(p);
                             p.update();
                             p.preUpdate();
                         });
             }
         }
 
-        final Stream<Player> s_players = players.stream();
-        s_players
+        players.stream()
                 .sorted((player1, player2) -> {
                         if (player1.getX() == player2.getX())
                             return (player1.getY() > player2.getY()) ? 1 : -1;
                         else
                             return (player1.getX() > player2.getX()) ? 1 : -1;
                     })
-                .forEach(this::solveBumpBlock);
-
+                .forEach(this::checkPlayerBumpObject);
     }
 
-    private void solveBumpBlock (Player player) {
+
+    /**
+     * Check whether player bump scene objects (except other players)
+     * @param player player
+     */
+    private void checkPlayerBumpObject(Player player) {
         List<Block> entityBlocks = mMap.getAdjacentBlocks(player).stream()
                 .filter(block -> block.getType() != Block.Type.AIR && block.getType() != Block.Type.WIN_LINE )
                 .collect(Collectors.toList());
 
         for (Block b : entityBlocks) {
-            final double dx =
-                    (double)(b.getX() - player.getNextX()) / BLOCK_SIZE;
-            final double dy =
-                    (double)(b.getY() - player.getNextY()) / BLOCK_SIZE;
-
-
-
-            if (magicbumpTest(dx, dy)) {
+            if (bumpValidation(b, player)) {
 
                 //TODO: setup reflect direction
                 final double vx = player.getVelocityX();
                 final double vy = player.getVelocityY();
-
-                //getApplication().getLogger().info(player.toString());
-                //getApplication().getLogger().info(b.toString());
-
 
                 if (Math.abs(b.getY() - player.getY()) <= BLOCK_SIZE/2) {
                     if (b.getX() >= player.getX() + BLOCK_SIZE) {
                         final double nvx = b.getX() - player.getX() - BLOCK_SIZE;
 
                         player.setVelocityXWithModify(nvx);
-
                         player.setAccelerationX(0.0);
 
                     } else if (b.getX() <= player.getX() - BLOCK_SIZE) {
                         final double nvx = b.getX() - player.getX() + BLOCK_SIZE;
 
                         player.setVelocityXWithModify(nvx);
-
                         player.setAccelerationX(0.0);
                     } else {
                         player.setVelocityX(-vx);
@@ -513,18 +512,14 @@ public class StageScene extends SceneBase implements Constant {
                         final double nvy = b.getY() - player.getY() - BLOCK_SIZE;
 
                         player.setVelocityYWithModify(nvy);
-
                         player.setAccelerationY(-PhysicsConstant.gravity);
-
                     } else if (b.getY() < player.getY() - BLOCK_SIZE) {
                         final double nvy = b.getY() - player.getY() + BLOCK_SIZE;
 
                         player.setVelocityYWithModify(nvy);
-
                         player.setAccelerationY(0.0);
                     } else if (b.getY() < player.getY()) {
                         player.setVelocityY(0.0);
-
                         player.setY(b.getY() + BLOCK_SIZE);
                         player.setAccelerationY(0.0);
                     } else {
@@ -533,30 +528,20 @@ public class StageScene extends SceneBase implements Constant {
                         player.setAccelerationY(0.0);
                     }
                 }
-
-                //getApplication().getLogger().info(player.toString());
             }
         }
     }
 
-    public static boolean magicbumpTest(double dx, double dy) {
+    /**
+     * Validate if player bump to SceneObjectObjectBase
+     * @param sceneObject scene object
+     * @param player player
+     * @return does it bump or not
+     */
+    private static boolean bumpValidation(SceneObjectObjectBase sceneObject, Player player) {
+        final double dx =  (double)(sceneObject.getX() - player.getNextX()) / BLOCK_SIZE;
+        final double dy =  (double)(sceneObject.getY() - player.getNextY()) / BLOCK_SIZE;
 
         return ((dx*dx*dx*dx) + (dy*dy*dy*dy)) <= 1.0D;
-    }
-
-
-
-    public static boolean bumpTest(Rectangle a, Rectangle b) {
-
-
-        return isInsideRectangle(a.x, a.y, b) ||
-                isInsideRectangle(a.x, a.y - a.height, b) ||
-                isInsideRectangle(a.x + a.width, a.y, b) ||
-                isInsideRectangle(a.x + a.width, a.y - a.height, b);
-    }
-
-    public static boolean isInsideRectangle(int x, int y, Rectangle rect) {
-        return x > rect.x && x < rect.x + rect.width &&
-                y > rect.y && y < rect.y + rect.height;
     }
 }
