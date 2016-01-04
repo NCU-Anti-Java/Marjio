@@ -146,7 +146,8 @@ public class RoomScene extends SceneBase implements Constant {
 
             // Client Join
             if (request.getType() == Request.Types.ClientWannaJoinRoom) {
-                server.sendTCP(new Request(Request.Types.ClientCanJoinRoom), client.getClientID());
+                server.sendTCP(new Request(client.getClientID(), Request.Types.ClientCanJoinRoom),
+                        client.getClientID());
                 client.setIsJoined(true);
                 mWindowPlayerList.addPlayer(client.getClientID().toString());
             }

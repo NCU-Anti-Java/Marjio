@@ -80,8 +80,8 @@ public class SceneMap extends SceneBase implements SceneObjectConstant {
     }
 
     public boolean isInMap(int row, int col) {
-        return (row >= 0 && row <= mRow) &&
-                (col >= 0 && col <= mCol);
+        return (row >= 0 && row < mRow) &&
+                (col >= 0 && col < mCol);
     }
 
     private void loadMapFile(String filepath, final Viewport viewport) {

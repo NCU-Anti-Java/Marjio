@@ -70,8 +70,6 @@ public class StageScene extends SceneBase implements Constant {
             mPlayers.put(mYourPlayerID, new Player(application,
                     GameViewPort, mYourPlayerID));
 
-            logger.info("Server : " + mYourPlayerID.toString());
-
             final List<ClientInfo> infos = application.getServer().getClients();
 
             for (final ClientInfo info : infos) {
@@ -88,21 +86,6 @@ public class StageScene extends SceneBase implements Constant {
                         GameViewPort,
                         mYourPlayerID));
         }
-
-/*
-
-
-         //TODO: Fake data
-        mIsServer = true;
-        ba = new WindowBase(getApplication(), PLAYER_SIZE, PLAYER_SIZE);
-        mYourPlayerID = UUID.randomUUID();
-
-        p = new Player(application.getGraphics()
-                .getDefaultViewport(), mYourPlayerID);
-
-        mPlayers = new HashMap<>();
-        mPlayers.put(mYourPlayerID, p);
-        */
 
     }
 
@@ -180,13 +163,7 @@ public class StageScene extends SceneBase implements Constant {
 
             return ;
         } else if (mTick == 0) {
-            if (!mIsServer) {
-                final Logger logger = getApplication().getLogger();
 
-                for (Player p : mPlayers.values()) {
-                    logger.info("client players :" + p.toString());
-                }
-            }
             mTimer.getBitmap().clear();
             mTimer.update();
         }
@@ -204,7 +181,7 @@ public class StageScene extends SceneBase implements Constant {
 
         players.forEach(Player::update);
 
-        //TODO : slide viewport when player is running
+        //TODO : slide viewport when player is running or out of viewport
         if (Math.abs(Math.abs(player.getVelocityX()) - Player.HUMAN_LIMTT) < 1e-3)
             GameViewPort.x -= player.getVelocityX();
 
@@ -276,6 +253,8 @@ public class StageScene extends SceneBase implements Constant {
                     p.setX(0);
                     p.setVelocityX(0.0);
                 }
+                if(p == mPlayers.get(mYourPlayerID))
+                    GameViewPort.x = 0;
             }
 
         });
@@ -286,11 +265,11 @@ public class StageScene extends SceneBase implements Constant {
         final Stream<Status> statuses = getApplication()
                 .getInput()
                 .getStatuses()
-                .stream()
-                .filter(st -> mPlayers.containsKey(st.getClientID()));
+                .stream();
 
         if (mIsServer)
             return statuses
+                    .filter(st -> mPlayers.containsKey(st.getClientID()))
                     .sorted((st, st2) ->
                             ((SceneObjectStatus)st).send_tick > ((SceneObjectStatus)st2).send_tick ? 1 : -1)
                     .collect(Collectors.toList());
@@ -313,15 +292,17 @@ public class StageScene extends SceneBase implements Constant {
 
         for (final Status st : fetchedStatus) {
             Player player = mPlayers.get(st.getClientID());
-
+            if (!mIsServer && player == null) {
+                logger.info("client id: " + st.getClientID().toString());
+            }
 
             switch (st.getType()) {
                 case ClientMessage: {
                     if (mIsServer) {
                         final boolean check = player.isValidData((SceneObjectStatus) st);
-
+                        logger.info("client message");
                         if (check)
-                            player.preUpdateStatus((SceneObjectStatus) st);
+                            checkKeyState((SceneObjectStatus)st, player);
 
                         final SceneObjectStatus new_st = player.getStatus();
 
@@ -332,10 +313,10 @@ public class StageScene extends SceneBase implements Constant {
                         try {
                             if (check) {
                                 new_st.setType(Status.Types.ServerMessage);
-                                server.send(new_st, player.getId());
+                                server.broadcast(new_st);
                             } else {
                                 new_st.setType(Status.Types.ServerVerification);
-                                server.broadcast(new_st);
+                                server.send(new_st, player.getId());
                             }
 
                         } catch (Exception ex) {
@@ -346,6 +327,17 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerMessage: {
+                    if (!mIsServer)
+                        logger.info("get server message");
+
+                    if (player == null) {
+                        player = new Player(getApplication(),
+                                        GameViewPort,
+                                        st.getClientID());
+
+                        mPlayers.put(st.getClientID(), player);
+                    }
+
                     player.preUpdateStatus((SceneObjectStatus)st);
 
                     if (player.getId().equals(mYourPlayerID))
@@ -355,6 +347,9 @@ public class StageScene extends SceneBase implements Constant {
                 }
 
                 case ServerVerification: {
+                    if (!mIsServer)
+                        logger.info("get server verify message");
+
                     if (!((SceneObjectStatus)st).query) {
                         player.preUpdateStatus((SceneObjectStatus)st);
 
@@ -371,19 +366,20 @@ public class StageScene extends SceneBase implements Constant {
         /**
          * time synchronized for players in client
          * */
+        if (!mIsServer) {
+            if (mPlayers.get(mYourPlayerID).isStatusUpdate()) {
+                final int recieve_tick = mPlayers.get(mYourPlayerID).getTick();
+                players.stream()
+                        .filter(p -> !p.isStatusUpdate())
+                        .forEach(p -> p.setTick(recieve_tick));
 
-        if (mPlayers.get(mYourPlayerID).isStatusUpdate()) {
-            final int recieve_tick = mPlayers.get(mYourPlayerID).getTick();
-            players.stream()
-                    .filter(p -> !p.isStatusUpdate())
-                    .forEach(p -> p.setTick(recieve_tick));
+                mTick = Math.max(recieve_tick + (mTick - send_tick) / 2,
+                        last_recieve_tick);
+            } else {
+                mTick = Math.max(mTick, last_recieve_tick);
+            }
 
-            mTick = Math.max(recieve_tick + (mTick - send_tick) / 2,
-                    last_recieve_tick);
-        } else {
-            mTick = Math.max(mTick, last_recieve_tick);
         }
-
 
     }
 
