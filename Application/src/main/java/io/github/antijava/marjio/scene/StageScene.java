@@ -293,7 +293,7 @@ public class StageScene extends SceneBase implements Constant {
                     (double)p.getNextY() / BLOCK_SIZE);
 
             if (!mMap.isInMap(y, x)) {
-                if (y > 0) { //drop in hole
+                if (y >= 0) { //drop in hole
                     p.reset();
                 } else if (y < -1000) { //fly to death, it means you
                     p.reset();          // leave the atmosphere
@@ -482,6 +482,10 @@ public class StageScene extends SceneBase implements Constant {
                 player.setAccelerationY(0.0);
             }
 
+        }
+
+        if (input.isPressed(Key.CAST)) {
+            final Item item = player.getHave();
         }
 
     }

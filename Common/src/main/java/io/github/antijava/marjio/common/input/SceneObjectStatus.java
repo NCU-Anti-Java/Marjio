@@ -16,7 +16,9 @@ public class SceneObjectStatus extends Status implements IKeyInput {
     public int x;
     public int y;
     public double vx;
+    public double vxm;
     public double vy;
+    public double vym;
     public double ax;
     public double ay;
 

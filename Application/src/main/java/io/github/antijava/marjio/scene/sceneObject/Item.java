@@ -1,7 +1,92 @@
 package io.github.antijava.marjio.scene.sceneObject;
 
+import io.github.antijava.marjio.application.Application;
+import io.github.antijava.marjio.common.IApplication;
+import io.github.antijava.marjio.common.graphics.IBitmap;
+import io.github.antijava.marjio.common.graphics.Rectangle;
+import io.github.antijava.marjio.common.graphics.Viewport;
+import io.github.antijava.marjio.resourcemanager.ResourcesManager;
+
 /**
- * Created by firejox on 2015/12/28.
+ * @author Jason
  */
-public class Item {
+public class Item extends SceneObjectObjectBase {
+    private final String mName;
+    private final ItemType mItemType;
+
+    // region Enum
+    public enum ItemType {
+        SuperTrap,
+        Trap,
+        SuperSpeed,
+        SuperGun,
+        Bullet
+    }
+    // endregion Enum
+
+    // region Constructor
+    public Item(Viewport viewport, IApplication application, int x, int y, int z, ItemType type) {
+        super(viewport);
+
+        // Set properties
+        setX(x);
+        setY(y);
+        setZ(z);
+        this.mItemType = type;
+
+        // Set bitmap for this item
+        ResourcesManager rm = ((Application)application).getResourcesManager();
+        IBitmap bitmap;
+        switch (type) {
+            case SuperTrap:
+                mName = "Super Trap";
+                bitmap = rm.tile("default.png", 18, 6);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            case Trap:
+                mName = "Trap";
+                bitmap = rm.tile("default.png", 15, 6);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            case SuperSpeed:
+                mName = "Super Speed";
+                bitmap = rm.tile("default.png", 11, 2);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            case SuperGun:
+                mName = "Super Gun";
+                bitmap = rm.tile("default.png", 27, 4);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            case Bullet:
+                mName = "Bullet";
+                bitmap = rm.tile("default.png", 27, 4);
+                bitmap.resize(BLOCK_SIZE, BLOCK_SIZE);
+                break;
+            default:
+                mName = "";
+                bitmap = application.getGraphics().createBitmap(BLOCK_SIZE, BLOCK_SIZE);
+        }
+        setBitmap(bitmap);
+    }
+
+    public Item(Viewport viewport, IApplication application, int x, int y, ItemType type) {
+       this(viewport, application, x, y, 0, type);
+    }
+    // endregion Constructor
+
+    // region Getter
+    public String getName() {
+        return mName;
+    }
+
+    public ItemType getItemType() {
+        return mItemType;
+    }
+
+    @Override
+    public Rectangle getOccupiedSpace() {
+        return new Rectangle(getX(), getY(), BLOCK_SIZE, BLOCK_SIZE);
+    }
+    // endregion Getter
 }
