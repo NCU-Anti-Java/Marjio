@@ -29,6 +29,7 @@ public class ScoreBoardScene extends SceneBase {
      */
     public ScoreBoardScene(IApplication application, UUID yourPlayerUUID, UUID[] rankTable, IBitmap background) {
         super(application);
+        background.blur();
         mBackground = new SpriteBase(application.getGraphics().getDefaultViewport());
         mBackground.setBitmap(background);
         mWindowScoreBoard = new WindowScoreBoard(application, yourPlayerUUID, rankTable);
