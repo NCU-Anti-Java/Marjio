@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -586,7 +585,14 @@ public class StageScene extends SceneBase implements Constant {
                         player.setVelocityYWithModify(nvy);
                         player.setAccelerationY(0.0);
 
-                        if (b.getType() == Block.Type.WOOD || b.getType() == Block.Type.ITEM_BLOCK) {
+                        List<Block.Type> itemTypes = new ArrayList<>();
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_BULLET);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_GUN);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_SPEED);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_SUPER_TRAP);
+                        itemTypes.add(Block.Type.ITEM_BLOCK_TRAP);
+
+                        if (b.getType() == Block.Type.WOOD || itemTypes.contains(b.getType())) {
                             int col = (int) Math.floor(b.getX() / BLOCK_SIZE);
                             int row = (int) Math.floor(b.getY() / BLOCK_SIZE);
                             int x = b.getX();
@@ -597,9 +603,9 @@ public class StageScene extends SceneBase implements Constant {
                             mMap.getBlock(row, col).dispose();
                             mMap.setBlock(row, col, airBlock);
 
-                            if (b.getType() == Block.Type.ITEM_BLOCK) {
-                                Item.ItemType type = Item.ItemType.values()[new Random().nextInt(5)];
-                                    mItems.add(new Item(GameViewPort, getApplication(), x, y, z, type));
+                            if (itemTypes.contains(b.getType())) {
+                                Item.ItemType type = Item.ItemType.values()[b.getType().getValue() - 4];
+                                mItems.add(new Item(GameViewPort, getApplication(), x, y, z, type));
                             }
                         }
                     } else if (b.getY() < player.getY()) {
