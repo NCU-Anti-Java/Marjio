@@ -27,6 +27,10 @@ public class RoomScene extends SceneBase implements Constant {
     private WindowCommand mWindowCommand;
     private WindowPlayerList mWindowPlayerList;
 
+    // unit: how many frame
+    private int mBroadCasePeriod = 0;
+    private final static int DEFAULT_BROADCAST_PERIOD = 60;
+
     public RoomScene(IApplication application, boolean isServer) {
         super(application);
         application.getLogger().info("Enter RoomScene");
@@ -59,11 +63,20 @@ public class RoomScene extends SceneBase implements Constant {
             }
         }
 
+
+
         mWindowCommand.update();
         mWindowPlayerList.update();
 
         if (mIsServer) {
             checkClientRequest();
+
+            if (mBroadCasePeriod <= 0) {
+                broadcastPlayerList();
+                mBroadCasePeriod = DEFAULT_BROADCAST_PERIOD;
+            } else {
+                mBroadCasePeriod--;
+            }
         } else {
             updatePlayerList();
             checkServerStatus();
@@ -175,7 +188,7 @@ public class RoomScene extends SceneBase implements Constant {
     private void broadcastPlayerList() {
         ArrayList playerList = (ArrayList) mWindowPlayerList.getPlayerList();
         SyncList syncList = new SyncList(playerList);
-        getApplication().getServer().broadcastTCP(syncList);
+        getApplication().getServer().broadcast(syncList);
     }
 
     /**
@@ -260,9 +273,9 @@ public class RoomScene extends SceneBase implements Constant {
 
         for (SyncList syncList : syncLists) {
             mWindowPlayerList.updatePlayerList((List<String>) syncList.getData());
+            logger.info("Client update player list from server.");
         }
 
-        logger.info("Client update player list from server.");
     }
     // endregion ClientSideOnly
 }
